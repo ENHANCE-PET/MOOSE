@@ -198,3 +198,7 @@ if __name__ == "__main__":
             print(
                 'No PET or CT data found in folder ' + subject_folder + ', MOOSE cannot proceed, please check data')
             exit(1)
+    stop = timeit.default_timer()
+    logging.info(' ')
+    logging.info(f"Total time taken for MOOSE processing: {(stop - start) / 60:.2f} minutes")
+    logging.info(' ')
