@@ -163,6 +163,8 @@ def resample(fixed_img: str, moving_img: str, resampled_moving_img: str, registr
             cmd_to_run = f"greedy -d 3 -rf {re.escape(fixed_img)} -ri NN -rm {re.escape(moving_img)} " \
                          f"{re.escape(resampled_moving_img)} -r warp.nii.gz " \
                          f"affine.mat"
+    else:
+        sys.exit("Registration type not supported!")
     os.system(cmd_to_run)
     logging.info(f"Resampling parameters:")
     logging.info(f"- Reference image: {re.escape(fixed_img)}")

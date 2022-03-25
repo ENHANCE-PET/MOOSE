@@ -90,7 +90,7 @@ def dcm2nii(dicom_dir: str) -> None:
     """Convert DICOM images to NIFTI using dcm2niix
     :param dicom_dir: Directory containing the DICOM images
     """
-    cmd_to_run = f"dcm2niix {re.escape(dicom_dir)}"
+    cmd_to_run = f"dcm2niix -ba n {re.escape(dicom_dir)}" # -ba n: retains private tags (e.g patient weight)
     logging.info(f"Converting DICOM images in {dicom_dir} to NIFTI")
     spinner = Halo(text=f"Running command: {cmd_to_run}", spinner='dots')
     spinner.start()

@@ -77,7 +77,7 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Initiating post processing of abdominal organs...")
     imageOp.replace_intensity(image_to_replace=fop.get_files(out_dir, 'Organs*')[0], intensity=[12, 0, 13, 12],
                               out_image=fop.get_files(out_dir, 'Organs*')[0])
-    logging.info(f"- Removing skeleton...replacing bone intensity (12) with 0")
+    logging.info(f"- Removing skeleton...replacing skeleton intensity (12) with 0")
     logging.info(f"- Replacing lung intensity (13) with 12")
     logging.info(f"Abdominal organs segmented and saved in {fop.get_files(out_dir, 'Organs*')[0]}")
 
@@ -121,12 +121,12 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     return fop.get_files(out_dir, 'MOOSE*CT*nii.gz')[0]
 
 
-def segment_pt(nifti_img: str, out_dir: str) -> None:
+def segment_pt(nifti_img: str, out_dir: str) -> str:
     """
     Segment a given nifti image using nnUNet
     :param nifti_img: path to the nifti PT image
     :param out_dir: path to the output directory
-    :return: None
+    :return: path where the segmented pt image is saved
     """
     pt_file = nifti_img
     logging.info(f"PT image to be segmented: {pt_file}")
@@ -134,4 +134,12 @@ def segment_pt(nifti_img: str, out_dir: str) -> None:
     logging.info(f"Segmenting brain...")
     segment_tissue(pt_file, out_dir, 'Brain')
     out_label = fop.get_files(out_dir, c.CROPPED_BRAIN_FROM_PET[:13]+'*')[0]
-    fop.add_prefix_rename(out_label, 'Brain_')
+    fop.add_prefix_rename(out_label, 'Brain')
+    imageOp.shift_intensity(image_to_shift=fop.get_files(out_dir, 'Brain*')[0],
+                            shift_amount=c.NUM_OF_ORGANS+c.NUM_OF_BONES+c.NUM_OF_FAT_MUSCLE+c.NUM_OF_PSOAS,
+                            out_image=fop.get_files(out_dir, 'Brain*')[0])
+    imageOp.replace_intensity(image_to_replace=fop.get_files(out_dir, 'Brain*')[0], intensity=[
+        c.NUM_OF_ORGANS+c.NUM_OF_BONES+c.NUM_OF_FAT_MUSCLE+c.NUM_OF_PSOAS, 0],
+                              out_image=fop.get_files(out_dir, 'Brain*')[0])
+    logging.info(f"Brain segmented and saved in {fop.get_files(out_dir, 'Brain*')[0]}")
+    return fop.get_files(out_dir, 'Brain*')[0]

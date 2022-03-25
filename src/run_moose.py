@@ -15,6 +15,7 @@
 import argparse
 import logging
 import os
+import pathlib
 import timeit
 
 import checkArgs
@@ -60,16 +61,17 @@ if __name__ == "__main__":
     logging.info('- Error analysis: ' + str(args.error_analysis) + '[1 = True, 0 = False]')
     logging.info('- Total number of subjects to MOOSE: ' + str(len(fop.get_folders(main_folder))))
     logging.info(' ')
-    logging.info('SANITY CHECKS AND DATA PREPARATION')
-    logging.info('----------------------------------')
 
-    # --------------------------------------SANITY CHECKS AND DATA-PREPARATION------------------------------------------
+    # --------------------------------------Processing individual subjects------------------------------------------
 
     subject_folders = fop.get_folders(main_folder)
 
     for subject_folder in subject_folders:
-        logging.info(' ')
-        logging.info('Processing: ' + subject_folder)
+        logging.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+        logging.info('Working folder: ' + subject_folder)
+        processing_folder = str(pathlib.Path(subject_folder).stem)
+        logging.info('Processing subject: ' + processing_folder)
+        logging.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         logging.info(' ')
         imageIO.dcm2nii(subject_folder)
         dicom_jsons = fop.get_files(subject_folder, '*json')
@@ -104,6 +106,7 @@ if __name__ == "__main__":
             logging.info('--------------------------------------------------------------------------------------------')
             print('Initiating CT segmentation protocols')
             out_dir = fop.make_dir(subject_folder, 'labels')
+            temp_dir = fop.make_dir(subject_folder, 'temp')
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
             ie.segment_ct(ct_file[0], out_dir)
             logging.info('CT segmentation completed')
@@ -117,6 +120,7 @@ if __name__ == "__main__":
             logging.info('Initiating PET/CT segmentation protocols')
             print('Initiating PET/CT segmentation protocols')
             out_dir = fop.make_dir(subject_folder, 'labels')
+            temp_dir = fop.make_dir(subject_folder, 'temp')
             logging.info('Output folder: ' + out_dir)
             print('Output folder: ' + out_dir)
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
@@ -124,9 +128,19 @@ if __name__ == "__main__":
             logging.info('Aligning PET and CT data using diffeomorphic registration')
             print('Aligning PET and CT data using diffeomorphic registration')
             pet_file = fop.get_files(os.path.join(subject_folder, 'PT'), '*nii')
-            aligned_moose_ct_atlas = pp.align_pet_ct(pet_file[0], ct_file[0], moose_ct_atlas)
+            aligned_moose_ct_atlas = pp.align_pet_ct(pet_file[0], fop.get_files(os.path.join(subject_folder, 'CT'),
+                                                                                '*nii.gz')[0],
+                                                     moose_ct_atlas)
             logging.info('PET/CT alignment completed')
             print('PET/CT alignment completed')
+            logging.info('Calculating SUV parameters for SUV extraction...')
+            pet_stem = pathlib.Path(pet_file[0]).stem
+            pet_json = fop.get_files(subject_folder, pet_stem + '*json')[0]
+            suv_param = iop.get_suv_parameters(pet_json)
+            logging.info('Converting PET image to SUV Image...')
+            suv_image = iop.convert_bq_to_suv(bq_image=pet_file[0], out_suv_image=fop.add_prefix(pet_file[0],
+                                                                                                 'SUV-'),
+                                              suv_parameters=suv_param)
             if pp.brain_exists(moose_ct_atlas):
                 logging.info('Brain found in field-of-view of PET/CT data...')
                 print('Brain found in field-of-view of PET/CT data...')
@@ -134,21 +148,50 @@ if __name__ == "__main__":
                 print('Cropping brain from PET image using the aligned CT brain mask')
                 cropped_pet_brain = iop.crop_image_using_mask(image_to_crop=pet_file[0],
                                                               multilabel_mask=aligned_moose_ct_atlas,
-                                                              out_image=os.path.join(out_dir, c.CROPPED_BRAIN_FROM_PET),
+                                                              out_image=os.path.join(temp_dir,
+                                                                                     c.CROPPED_BRAIN_FROM_PET),
                                                               label_intensity=4)
                 logging.info('Brain region cropped from PET...')
                 print('Brain region cropped from PET...')
                 logging.info('Segmenting 83 tissue types of the Hammersmith atlas from the cropped PET brain')
-                ie.segment_pt(cropped_pet_brain, out_dir)
-                logging.info('Brain subregions segmented from PET...')
-                logging.info('PET/CT segmentation completed')
-                print('PET/CT segmentation completed')
+                brain_seg = ie.segment_pt(cropped_pet_brain, out_dir)
+                logging.info('83 tissue types segmented from the cropped PET brain')
+                print('83 tissue types segmented from the cropped PET brain')
+                logging.info('Merging PET and CT segmentations to construct the entire atlas...')
+                print('Merging PET and CT segmentations to construct the entire atlas...')
+                merged_seg = pp.merge_pet_ct_segmentations(brain_seg, aligned_moose_ct_atlas, os.path.join(out_dir,
+                                                                                                           'MOOSE'
+                                                                                                           '-unified'
+                                                                                                           '-PET-CT'
+                                                                                                           '-atlas'
+                                                                                                           '.nii.gz'))
+                logging.info(f'PET/CT segmentation completed and unified atlas constructed and stored in '
+                             f'{os.path.join(out_dir, "MOOSE-unified-PET-CT-atlas.nii.gz")}')
+                print(f'PET/CT segmentation completed and unified atlas constructed and stored in '
+                      f'{os.path.join(out_dir, "MOOSE-unified-PET-CT-atlas.nii.gz")}')
+                logging.info('Extracting SUV values from the PET image using the MOOSE atlas...')
+                print('Extracting SUV values from the PET image using the MOOSE atlas...')
+                iop.get_intensity_statistics(suv_image, merged_seg, os.path.join(subject_folder,
+                                                                                 processing_folder + 'SUV-values.csv'))
+                logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
+                logging.info(
+                    'SUV values stored in ' + os.path.join(subject_folder, processing_folder + 'SUV-values.csv'))
             else:
                 logging.info('No brain found in field-of-view of PET/CT data...')
                 print('No brain found in field-of-view of PET/CT data...')
-                fop.add_prefix_rename(aligned_moose_ct_atlas, 'No-Brain-FOV-')
+                no_brain_seg = fop.add_prefix_rename(aligned_moose_ct_atlas, 'No-Brain-FOV-')
                 logging.info('Writing out the aligned CT atlas without the brain...')
                 print('Writing out the aligned CT atlas without the brain...')
+                logging.info(f'MOOSE atlas stored in {no_brain_seg}')
+                print(f'MOOSE atlas stored in {no_brain_seg}')
+                logging.info('Extracting SUV values from the PET image using the MOOSE atlas...')
+                print('Extracting SUV values from the PET image using the MOOSE atlas...')
+                iop.get_intensity_statistics(suv_image, no_brain_seg, os.path.join(subject_folder,
+                                                                                   processing_folder + 'SUV-values.csv'))
+                logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
+                logging.info(
+                    'SUV values stored in ' + os.path.join(subject_folder, processing_folder + 'SUV-values.csv'))
+
         else:
             logging.error('No PET or CT data found in folder ' + subject_folder + ', MOOSE cannot proceed, '
                                                                                   'please check data')

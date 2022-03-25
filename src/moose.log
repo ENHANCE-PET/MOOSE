@@ -1,0 +1,100 @@
+2022-03-25 17:31:23,665 INFO     [run_moose.py:52] ****************************************************************************************************
+2022-03-25 17:31:23,665 INFO     [run_moose.py:53]                                      STARTING MOOSE V.1.0                                           
+2022-03-25 17:31:23,665 INFO     [run_moose.py:54] ****************************************************************************************************
+2022-03-25 17:31:23,665 INFO     [run_moose.py:57]  
+2022-03-25 17:31:23,665 INFO     [run_moose.py:58] INPUT ARGUMENTS
+2022-03-25 17:31:23,665 INFO     [run_moose.py:59] ------------------
+2022-03-25 17:31:23,665 INFO     [run_moose.py:60] - Main folder: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/
+2022-03-25 17:31:23,665 INFO     [run_moose.py:61] - Error analysis: True[1 = True, 0 = False]
+2022-03-25 17:31:23,665 INFO     [run_moose.py:62] - Total number of subjects to MOOSE: 1
+2022-03-25 17:31:23,665 INFO     [run_moose.py:63]  
+2022-03-25 17:31:23,665 INFO     [run_moose.py:70] :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+2022-03-25 17:31:23,665 INFO     [run_moose.py:71] Working folder: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM
+2022-03-25 17:31:23,665 INFO     [run_moose.py:73] Processing subject: SAM
+2022-03-25 17:31:23,665 INFO     [run_moose.py:74] :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+2022-03-25 17:31:23,665 INFO     [run_moose.py:76]  
+2022-03-25 17:31:23,665 INFO     [run_moose.py:77] Processing: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM
+2022-03-25 17:31:23,665 INFO     [run_moose.py:78]  
+2022-03-25 17:31:23,665 INFO     [imageIO.py:94] Converting DICOM images in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM to NIFTI
+2022-03-25 17:31:25,274 INFO     [imageIO.py:99] Conversion from DICOM to NIFTI done
+2022-03-25 17:31:25,276 INFO     [run_moose.py:86] Looking for modality type and organising the files accordingly
+2022-03-25 17:31:25,276 INFO     [run_moose.py:117] Both PET and CT data found in folder /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM, MOOSE will construct the full tissue atlas (n=120) based on both PET and CT data
+2022-03-25 17:31:25,276 INFO     [run_moose.py:123] Initiating PET/CT segmentation protocols
+2022-03-25 17:31:25,277 INFO     [run_moose.py:127] Output folder: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels
+2022-03-25 17:31:26,162 INFO     [inferenceEngine.py:70] CT image to be segmented: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/CT/SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3_0000\.nii\.gz
+2022-03-25 17:31:26,163 INFO     [inferenceEngine.py:71] Output directory: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels
+2022-03-25 17:31:26,163 INFO     [inferenceEngine.py:73] Segmenting abdominal organs...
+2022-03-25 17:43:40,249 INFO     [inferenceEngine.py:77] Initiating post processing of abdominal organs...
+2022-03-25 17:43:49,641 INFO     [inferenceEngine.py:80] - Removing skeleton...replacing skeleton intensity (12) with 0
+2022-03-25 17:43:49,642 INFO     [inferenceEngine.py:81] - Replacing lung intensity (13) with 12
+2022-03-25 17:43:49,642 INFO     [inferenceEngine.py:82] Abdominal organs segmented and saved in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/Organs_SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3.nii.gz
+2022-03-25 17:43:49,642 INFO     [inferenceEngine.py:84] Segmenting Bones...
+2022-03-25 18:00:37,569 INFO     [inferenceEngine.py:92] Bones segmented and saved in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/Bones_SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3.nii.gz
+2022-03-25 18:00:37,570 INFO     [inferenceEngine.py:94] Segmenting skeletal muscle, subcutaneous and visceral fat...
+2022-03-25 18:08:38,641 INFO     [inferenceEngine.py:103] Fat-Muscle segmented and saved in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/Fat-Muscle_SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3.nii.gz
+2022-03-25 18:08:38,641 INFO     [inferenceEngine.py:105] Segmenting psoas and assigning the right label intensity...
+2022-03-25 18:15:45,326 INFO     [inferenceEngine.py:115] Psoas segmented and saved in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/Psoas_SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3.nii.gz
+2022-03-25 18:15:45,326 INFO     [postprocess.py:46] Post processing of the segmented CT image...
+2022-03-25 18:15:45,326 INFO     [postprocess.py:47] - Removing overlays of organs from Bone segmentation
+2022-03-25 18:16:03,561 INFO     [postprocess.py:51] - Removing overlays of organs from fat-muscle segmentation
+2022-03-25 18:16:22,201 INFO     [postprocess.py:55] - Removing overlays of organs from Psoas segmentation
+2022-03-25 18:16:40,240 INFO     [postprocess.py:60] - Removing overlays of Bones from fat-muscle segmentation
+2022-03-25 18:16:58,874 INFO     [postprocess.py:64] - Removing overlays of Bones from Psoas segmentation
+2022-03-25 18:17:17,131 INFO     [postprocess.py:68] - Removing overlays of Psoas from fat-muscle segmentation
+2022-03-25 18:17:35,721 INFO     [postprocess.py:72] Post processing of segmented CT image done
+2022-03-25 18:17:35,721 INFO     [inferenceEngine.py:117] Merging all non-cerebral tissues segmented from CT...
+2022-03-25 18:18:02,780 INFO     [inferenceEngine.py:120] Non-cerebral tissues segmented and saved in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/MOOSE-Non-cerebral-tissues-CT-SAM.nii.gz
+2022-03-25 18:18:02,781 INFO     [run_moose.py:131] Aligning PET and CT data using diffeomorphic registration
+2022-03-25 18:18:02,781 INFO     [postprocess.py:83] Aligning PET and CT images...
+2022-03-25 18:18:02,781 INFO     [greedy.py:85]  
+2022-03-25 18:18:02,781 INFO     [greedy.py:86] Performing affine registration for initial global alignment
+2022-03-25 18:18:02,782 INFO     [greedy.py:59]  
+2022-03-25 18:18:02,782 INFO     [greedy.py:64] - Registration type: Affine
+2022-03-25 18:18:02,782 INFO     [greedy.py:65] - Reference image: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/PT/SAM_PET_WB_Summed_Corrected_20210716103713_8\.nii
+2022-03-25 18:18:02,782 INFO     [greedy.py:66] - Moving image: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/CT/SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3_0000\.nii\.gz
+2022-03-25 18:18:02,782 INFO     [greedy.py:67] - Cost function: NMI
+2022-03-25 18:18:02,782 INFO     [greedy.py:68] - Initial alignment: Image centers
+2022-03-25 18:18:02,782 INFO     [greedy.py:69] - Multi-resolution level iterations: 100x50x25
+2022-03-25 18:18:02,782 INFO     [greedy.py:70] - Transform file generated: affine.mat
+2022-03-25 18:18:02,782 INFO     [greedy.py:71]  
+2022-03-25 18:19:28,628 INFO     [greedy.py:91] Performing deformable registration for local alignment
+2022-03-25 18:19:28,628 INFO     [greedy.py:92] - Registration type: deformable
+2022-03-25 18:19:28,628 INFO     [greedy.py:93] - Reference image: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/PT/SAM_PET_WB_Summed_Corrected_20210716103713_8\.nii
+2022-03-25 18:19:28,628 INFO     [greedy.py:94] - Moving image: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/CT/SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3_0000\.nii\.gz
+2022-03-25 18:19:28,628 INFO     [greedy.py:95] - Cost function: NMI
+2022-03-25 18:19:28,628 INFO     [greedy.py:96] - Initial alignment: based on affine.mat
+2022-03-25 18:19:28,629 INFO     [greedy.py:97] - Multiresolution level iterations: 100x50x25
+2022-03-25 18:19:28,629 INFO     [greedy.py:98] - Deformation field generated: warp.nii.gz + inverse_warp.nii.gz
+2022-03-25 18:19:28,629 INFO     [greedy.py:99]  
+2022-03-25 18:23:00,908 INFO     [greedy.py:169] Resampling parameters:
+2022-03-25 18:23:00,909 INFO     [greedy.py:170] - Reference image: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/PT/SAM_PET_WB_Summed_Corrected_20210716103713_8\.nii
+2022-03-25 18:23:00,909 INFO     [greedy.py:171] - Moving image: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/CT/SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3_0000\.nii\.gz
+2022-03-25 18:23:00,909 INFO     [greedy.py:172] - Resampled moving image: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/CT/pet_aligned_SAM_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20210716103713_3_0000.nii.gz
+2022-03-25 18:23:00,909 INFO     [greedy.py:173] - Segmentation: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/MOOSE-Non-cerebral-tissues-CT-SAM.nii.gz
+2022-03-25 18:23:00,909 INFO     [greedy.py:174] - Resampled segmentation: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/pet_aligned_MOOSE-Non-cerebral-tissues-CT-SAM.nii.gz
+2022-03-25 18:23:00,909 INFO     [greedy.py:175] - Interpolation scheme for resampling: Nearest neighbor for images and segmentations
+2022-03-25 18:23:00,909 INFO     [greedy.py:176]  
+2022-03-25 18:23:00,909 INFO     [postprocess.py:90] Alignment of PET and CT images done and saved as /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/pet_aligned_MOOSE-Non-cerebral-tissues-CT-SAM.nii.gz
+2022-03-25 18:23:00,909 INFO     [run_moose.py:137] PET/CT alignment completed
+2022-03-25 18:23:00,910 INFO     [run_moose.py:139] Calculating SUV parameters for SUV extraction...
+2022-03-25 18:23:00,919 INFO     [run_moose.py:143] Converting PET image to SUV Image...
+2022-03-25 18:23:08,720 INFO     [run_moose.py:148] Brain found in field-of-view of PET/CT data...
+2022-03-25 18:23:08,720 INFO     [run_moose.py:150] Cropping brain from PET image using the aligned CT brain mask
+2022-03-25 18:23:09,470 INFO     [run_moose.py:157] Brain region cropped from PET...
+2022-03-25 18:23:09,470 INFO     [run_moose.py:159] Segmenting 83 tissue types of the Hammersmith atlas from the cropped PET brain
+2022-03-25 18:23:09,470 INFO     [inferenceEngine.py:132] PT image to be segmented: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/temp/cropped-brain-from-PET_0000.nii.gz
+2022-03-25 18:23:09,470 INFO     [inferenceEngine.py:133] Output directory: /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels
+2022-03-25 18:23:09,470 INFO     [inferenceEngine.py:134] Segmenting brain...
+2022-03-25 18:23:29,095 INFO     [inferenceEngine.py:144] Brain segmented and saved in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/Brain_cropped-brain-from-PET.nii.gz
+2022-03-25 18:23:29,096 INFO     [run_moose.py:161] 83 tissue types segmented from the cropped PET brain
+2022-03-25 18:23:29,096 INFO     [run_moose.py:163] Merging PET and CT segmentations to construct the entire atlas...
+2022-03-25 18:23:29,096 INFO     [postprocess.py:117] Removing whole-brain segmentation from CT segmentation to merge the 83 subregions from PET
+2022-03-25 18:23:32,456 INFO     [postprocess.py:122] Reslicing (to identity) PET segmentation, segmentations will be in pet voxel space...
+2022-03-25 18:23:34,558 INFO     [postprocess.py:32] Performing postprocessing of the PT segmentation results
+2022-03-25 18:23:34,559 INFO     [postprocess.py:33] Removing the overlays of PT brain segmentation results from the PT aligned non-cerebral CT segmentations
+2022-03-25 18:23:38,082 INFO     [postprocess.py:126] Merging PET and CT segmentations...
+2022-03-25 18:23:40,978 INFO     [postprocess.py:128] Merging PET and CT segmentations done
+2022-03-25 18:23:40,978 INFO     [run_moose.py:171] PET/CT segmentation completed and unified atlas constructed and stored in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/labels/MOOSE-unified-PET-CT-atlas.nii.gz
+2022-03-25 18:23:40,978 INFO     [run_moose.py:175] Extracting SUV values from the PET image using the MOOSE atlas...
+2022-03-25 18:23:42,679 INFO     [run_moose.py:179] SUV values extracted from the PET image using the MOOSE atlas...
+2022-03-25 18:23:42,679 INFO     [run_moose.py:180] SUV values stored in /home/kyloren/Documents/Projects/MOOSE/Test/Dummy/SAM/SAMSUV-values.csv

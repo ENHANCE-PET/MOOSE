@@ -17,9 +17,9 @@ import re
 import SimpleITK
 import numpy as np
 import pandas as pd
-import pydicom
 
 import constants as c
+import fileOp as fop
 
 
 def get_dimensions(nifti_file: str) -> int:
@@ -42,11 +42,12 @@ def get_pixel_id_type(nifti_file: str) -> str:
     return pixel_id_type
 
 
-def get_intensity_statistics(nifti_file: str, multi_label_file: str) -> object:
+def get_intensity_statistics(nifti_file: str, multi_label_file: str, out_csv: str) -> None:
     """
     Get the intensity statistics of a NIFTI image file
     :param nifti_file: NIFTI file to check
     :param multi_label_file: Multilabel file that is used to calculate the intensity statistics from nifti_file
+    :param out_csv: Path to the output csv file
     :return: stats_df, a dataframe with the intensity statistics (Mean, Standard Deviation, Min, Max)
     """
     nifti_img = SimpleITK.ReadImage(nifti_file)
@@ -56,9 +57,15 @@ def get_intensity_statistics(nifti_file: str, multi_label_file: str) -> object:
     stats_list = [(intensity_statistics.GetMean(i), intensity_statistics.GetStandardDeviation(i),
                    intensity_statistics.GetMedian(i), intensity_statistics.GetMaximum(i),
                    intensity_statistics.GetMinimum(i)) for i in intensity_statistics.GetLabels()]
-    columns = ['Mean', 'Standard Deviation', 'Median', 'Maximum', 'Minimum']
+    columns = ['Mean', 'Standard-Deviation', 'Median', 'Maximum', 'Minimum']
     stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
-    return stats_df
+    labels_present = stats_df.index.to_list()
+    regions_present = []
+    for label in labels_present:
+        if label in c.ORGAN_INDEX:
+            regions_present.append(c.ORGAN_INDEX[label])
+    stats_df.insert(0, 'Regions-Present', np.array(regions_present))
+    stats_df.to_csv(out_csv)
 
 
 def get_shape_parameters(label_image: str) -> object:
@@ -79,21 +86,19 @@ def get_shape_parameters(label_image: str) -> object:
     return shape_parameters_df
 
 
-def get_suv_parameters(dicom_file: str) -> dict:
+def get_suv_parameters(pet_json: str) -> dict:
     """
     Get SUV parameters from dicom tags using pydicom
-    :param dicom_file: Path to the Dicom file to get the SUV parameters from
+    :param pet_json: Path to the pet json file generated to get the SUV parameters from
     :return: suv_parameters, a dictionary with the SUV parameters (weight in kg, dose in mBq)
     """
-    ds = pydicom.dcmread(dicom_file)
-    suv_parameters = {'weight[kg]': ds.PatientWeight, 'total_dose[mBq]': (
-            float(ds.RadiopharmaceuticalInformationSequence[0].RadionuclideTotalDose)
-            / 1000000
-    )}
+
+    suv_parameters = {'weight[kg]': fop.read_json(pet_json)["PatientWeight"], 'total_dose[mBq]': (
+            float(fop.read_json(pet_json)["RadionuclideTotalDose"]) / 1000000)}
     return suv_parameters
 
 
-def convert_bq_to_suv(bq_image: str, out_suv_image: str, suv_parameters: dict) -> None:
+def convert_bq_to_suv(bq_image: str, out_suv_image: str, suv_parameters: dict) -> str:
     """
     Convert a becquerel PET image to SUV image
     :param bq_image: Path to a becquerel PET image to convert to SUV image (can be NRRD, NIFTI, ANALYZE
@@ -104,6 +109,7 @@ def convert_bq_to_suv(bq_image: str, out_suv_image: str, suv_parameters: dict) -
     suv_convertor = 1 / suv_denominator
     cmd_to_run = f"c3d {bq_image} -scale {suv_convertor} -o {out_suv_image}"
     os.system(cmd_to_run)
+    return out_suv_image
 
 
 def reslice_identity(reference_image: str, image_to_reslice: str, out_resliced_image: str, interpolation: str) -> None:

@@ -13,13 +13,28 @@
 # **********************************************************************************************************************
 
 import logging
+import os
 import pathlib
 
 import SimpleITK as sitk
-
 import fileOp as fop
 import greedy
 import imageOp
+import constants as c
+
+
+def pt_segmentation(label_dir: str) -> None:
+    """
+    This function performs processing of the PT segmentation results
+    :param label_dir: Path of the directory that contains the PT segmentation results
+    :return: None
+    """
+    logging.info("Performing postprocessing of the PT segmentation results")
+    logging.info("Removing the overlays of PT brain segmentation results from the PT aligned non-cerebral CT "
+                 "segmentations")
+    imageOp.remove_overlays(reference_image=fop.get_files(label_dir, 'Brain*')[0],
+                            image_to_remove_overlays=fop.get_files(label_dir, 'pet_aligned*')[0], out_image=
+                            fop.get_files(label_dir, 'pet_aligned*')[0])
 
 
 def ct_segmentation(label_dir: str) -> None:
@@ -29,17 +44,28 @@ def ct_segmentation(label_dir: str) -> None:
     :return:
     """
     logging.info(f"Post processing of the segmented CT image...")
+    logging.info(f"- Removing overlays of organs from Bone segmentation")
+    imageOp.remove_overlays(reference_image=fop.get_files(label_dir, 'Organs*')[0],
+                            image_to_remove_overlays=fop.get_files(label_dir, 'Bones*')[0],
+                            out_image=fop.get_files(label_dir, 'Bones*')[0])
     logging.info(f"- Removing overlays of organs from fat-muscle segmentation")
     imageOp.remove_overlays(reference_image=fop.get_files(label_dir, 'Organs*')[0],
                             image_to_remove_overlays=fop.get_files(label_dir, 'Fat-Muscle*')[0],
                             out_image=fop.get_files(label_dir, 'Fat-Muscle*')[0])
+    logging.info(f"- Removing overlays of organs from Psoas segmentation")
+    imageOp.remove_overlays(reference_image=fop.get_files(label_dir, 'Organs*')[0],
+                            image_to_remove_overlays=fop.get_files(label_dir, 'Psoas*')[0],
+                            out_image=fop.get_files(label_dir, 'Psoas*')[0])
 
     logging.info(f"- Removing overlays of Bones from fat-muscle segmentation")
     imageOp.remove_overlays(reference_image=fop.get_files(label_dir, 'Bones*')[0],
                             image_to_remove_overlays=fop.get_files(label_dir, 'Fat-Muscle*')[0],
                             out_image=fop.get_files(label_dir, 'Fat-Muscle*')[0])
+    logging.info(f"- Removing overlays of Bones from Psoas segmentation")
+    imageOp.remove_overlays(reference_image=fop.get_files(label_dir, 'Bones*')[0],
+                            image_to_remove_overlays=fop.get_files(label_dir, 'Psoas*')[0],
+                            out_image=fop.get_files(label_dir, 'Psoas*')[0])
     logging.info(f"- Removing overlays of Psoas from fat-muscle segmentation")
-
     imageOp.remove_overlays(reference_image=fop.get_files(label_dir, 'Psoas*')[0],
                             image_to_remove_overlays=fop.get_files(label_dir, 'Fat-Muscle*')[0],
                             out_image=fop.get_files(label_dir, 'Fat-Muscle*')[0])
@@ -55,11 +81,11 @@ def align_pet_ct(pet_img: str, ct_img: str, multilabel_seg: str) -> str:
     :return:
     """
     logging.info(f"Aligning PET and CT images...")
-    aligned_multilabel_seg = pathlib.Path(multilabel_seg).stem.split(".")[0] + '_pet_aligned.nii.gz'
+    aligned_multilabel_seg = fop.add_prefix(multilabel_seg, 'pet_aligned_')
     greedy.deformable(fixed_img=pet_img, moving_img=ct_img, cost_function='NMI',
                       multi_resolution_iterations='100x50x25')
-    greedy.resample(fixed_img=pet_img, moving_img=ct_img, resampled_moving_img=fop.add_prefix_rename(ct_img,
-                                                                                                     'resampled_'),
+    greedy.resample(fixed_img=pet_img, moving_img=ct_img, resampled_moving_img=fop.add_prefix(ct_img,
+                                                                                              'pet_aligned_'),
                     registration_type='deformable', segmentation=multilabel_seg, resampled_seg=aligned_multilabel_seg)
     logging.info(f"Alignment of PET and CT images done and saved as {aligned_multilabel_seg}")
     return aligned_multilabel_seg
@@ -78,3 +104,26 @@ def brain_exists(ct_label: str) -> bool:
     for label in stats.GetLabels():
         labels.append(label)
     return 4 in labels
+
+
+def merge_pet_ct_segmentations(pet_seg: str, ct_seg: str, out_seg: str) -> str:
+    """
+    Merge the pet and ct segmentation to one unified segmentation file. The returned file will be in PT space
+    :param pet_seg: Path of the PET segmentation file
+    :param ct_seg: Path of the CT segmentation file
+    :param out_seg: Path of the unified segmentation file
+    :return: Path of the unified segmentation file
+    """
+    logging.info('Removing whole-brain segmentation from CT segmentation to merge the 83 subregions from PET')
+    out_dir = str(pathlib.Path(out_seg).parents[0])
+    imageOp.retain_labels(image_to_retain_labels=ct_seg, labels_to_retain=[4], out_image=os.path.join(out_dir,
+                                                                                                      'whole_brain_ct_segmentation.nii.gz'))
+    imageOp.replace_intensity(image_to_replace=ct_seg, intensity=[4, 0], out_image=ct_seg)
+    logging.info("Reslicing (to identity) PET segmentation, segmentations will be in pet voxel space...")
+    imageOp.reslice_identity(reference_image=ct_seg, image_to_reslice=pet_seg, out_resliced_image=pet_seg,
+                             interpolation='NearestNeighbor')
+    pt_segmentation(label_dir=out_dir)
+    logging.info("Merging PET and CT segmentations...")
+    imageOp.sum_images(img_list=[pet_seg, ct_seg], out_img=out_seg)
+    logging.info("Merging PET and CT segmentations done")
+    return out_seg
