@@ -172,10 +172,10 @@ if __name__ == "__main__":
                 logging.info('Extracting SUV values from the PET image using the MOOSE atlas...')
                 print('Extracting SUV values from the PET image using the MOOSE atlas...')
                 iop.get_intensity_statistics(suv_image, merged_seg, os.path.join(subject_folder,
-                                                                                 processing_folder + 'SUV-values.csv'))
+                                                                                 processing_folder + '-SUV-values.csv'))
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
                 logging.info(
-                    'SUV values stored in ' + os.path.join(subject_folder, processing_folder + 'SUV-values.csv'))
+                    'SUV values stored in ' + os.path.join(subject_folder, processing_folder + '-SUV-values.csv'))
             else:
                 logging.info('No brain found in field-of-view of PET/CT data...')
                 print('No brain found in field-of-view of PET/CT data...')
@@ -187,10 +187,11 @@ if __name__ == "__main__":
                 logging.info('Extracting SUV values from the PET image using the MOOSE atlas...')
                 print('Extracting SUV values from the PET image using the MOOSE atlas...')
                 iop.get_intensity_statistics(suv_image, no_brain_seg, os.path.join(subject_folder,
-                                                                                   processing_folder + 'SUV-values.csv'))
+                                                                                   processing_folder +
+                                                                                   '-SUV-values.csv'))
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
                 logging.info(
-                    'SUV values stored in ' + os.path.join(subject_folder, processing_folder + 'SUV-values.csv'))
+                    'SUV values stored in ' + os.path.join(subject_folder, processing_folder + '-SUV-values.csv'))
 
         else:
             logging.error('No PET or CT data found in folder ' + subject_folder + ', MOOSE cannot proceed, '
