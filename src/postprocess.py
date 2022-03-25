@@ -17,10 +17,10 @@ import os
 import pathlib
 
 import SimpleITK as sitk
+
 import fileOp as fop
 import greedy
 import imageOp
-import constants as c
 
 
 def pt_segmentation(label_dir: str) -> None:
