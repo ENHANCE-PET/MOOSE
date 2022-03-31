@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# ***********************************************************************************************************************
+# **********************************************************************************************************************
 # File: imageOP.py
 # Project: MOOSE Version 1.0
 # Created: 22.03.2022
@@ -12,14 +12,15 @@
 # License: Apache 2.0
 # **********************************************************************************************************************
 import os
+import pathlib
 import re
 
 import SimpleITK
 import numpy as np
 import pandas as pd
+import pydicom
 
 import constants as c
-import fileOp as fop
 
 
 def get_dimensions(nifti_file: str) -> int:
@@ -64,11 +65,13 @@ def get_intensity_statistics(nifti_file: str, multi_label_file: str, out_csv: st
     for label in labels_present:
         if label in c.ORGAN_INDEX:
             regions_present.append(c.ORGAN_INDEX[label])
+        else:
+            continue
     stats_df.insert(0, 'Regions-Present', np.array(regions_present))
     stats_df.to_csv(out_csv)
 
 
-def get_shape_parameters(label_image: str) -> object:
+def get_shape_parameters(label_image: str) -> pd.DataFrame:
     """
     Get shape parameters of a label image
     :param label_image: Label image to get the shape parameters from
@@ -86,15 +89,17 @@ def get_shape_parameters(label_image: str) -> object:
     return shape_parameters_df
 
 
-def get_suv_parameters(pet_json: str) -> dict:
+def get_suv_parameters(dicom_file: str) -> dict:
     """
     Get SUV parameters from dicom tags using pydicom
-    :param pet_json: Path to the pet json file generated to get the SUV parameters from
+    :param dicom_file: Path to the Dicom file to get the SUV parameters from
     :return: suv_parameters, a dictionary with the SUV parameters (weight in kg, dose in mBq)
     """
-
-    suv_parameters = {'weight[kg]': fop.read_json(pet_json)["PatientWeight"], 'total_dose[mBq]': (
-            float(fop.read_json(pet_json)["RadionuclideTotalDose"]) / 1000000)}
+    ds = pydicom.dcmread(dicom_file)
+    suv_parameters = {'weight[kg]': ds.PatientWeight, 'total_dose[mBq]': (
+            float(ds.RadiopharmaceuticalInformationSequence[0].RadionuclideTotalDose)
+            / 1000000
+    )}
     return suv_parameters
 
 
@@ -162,6 +167,16 @@ def replace_intensity(image_to_replace: str, intensity: list, out_image: str) ->
     os.system(cmd_to_run)
 
 
+def binarize(label_img: str, out_img: str) -> None:
+    """
+    Binarize an image
+    :param label_img: Path to the image to binarize
+    :param out_img: Path to the binarized image
+    """
+    cmd_to_run = f"c3d {re.escape(label_img)} -binarize -o {re.escape(out_img)}"
+    os.system(cmd_to_run)
+
+
 def remove_overlays(reference_image: str, image_to_remove_overlays: str, out_image: str) -> None:
     """
     Remove overlays from an image
@@ -174,14 +189,15 @@ def remove_overlays(reference_image: str, image_to_remove_overlays: str, out_ima
     os.system(cmd_to_run)
 
 
-def sum_images(img_list: list, out_img: str) -> None:
+def sum_images(img_dir: str, wild_card: str, out_img: str) -> None:
     """
     Sum a list of images
-    :param img_list: List of images to sum
+    :param img_dir: Directory containing the list of images to sum
+    :param wild_card: Wildcard to use to find the images to sum
     :param out_img: Path to the summed image
     """
-    img_list_str = " ".join(re.escape(str(i)) for i in img_list)
-    cmd_to_run = f"c3d {img_list_str} -accum -add -endaccum -o {re.escape(out_img)}"
+    os.chdir(img_dir)
+    cmd_to_run = f"c3d {wild_card} -accum -add -endaccum -o {re.escape(out_img)}"
     os.system(cmd_to_run)
 
 
@@ -212,3 +228,32 @@ def crop_image_using_mask(image_to_crop: str, multilabel_mask: str, out_image: s
     cropped_img = SimpleITK.RegionOfInterest(img, new_size.astype("int").tolist(), (new_index.astype("int").tolist()))
     SimpleITK.WriteImage(cropped_img, out_image)
     return out_image
+
+
+def split_mask_to_left_right(binary_mask_path: str, out_dir: str) -> None:
+    """
+    Split a binary mask into left and right masks
+    :param binary_mask_path: Path to the binary mask
+    :param out_dir: Path to the output directory
+    """
+    binary_mask = pathlib.Path(binary_mask_path).stem.split(".")[0]
+    right_mask = 'R-' + binary_mask + '.nii.gz'
+    left_mask = 'L-' + binary_mask + '.nii.gz'
+    cmd_to_run = f"c3d {re.escape(binary_mask_path)} -as SEG -cmv -pop -pop  -thresh 50% inf 1 0 -as MASK -push SEG " \
+                 f"-times -o {re.escape(os.path.join(out_dir, left_mask))} -push MASK -replace 1 0 0 1 -push SEG " \
+                 f"-times -o {re.escape(os.path.join(out_dir, right_mask))}"
+    os.system(cmd_to_run)
+
+
+def scale_mask(mask_path: str, out_path: str, scale_factor: int) -> None:
+    """
+    Scale a mask with a particular scaling factor
+    :param mask_path: Path to the mask to scale
+    :param out_path: Path to the scaled mask
+    :param scale_factor: Scale factor
+    """
+    cmd_to_run = f"c3d {re.escape(mask_path)} -scale {scale_factor} -o {re.escape(out_path)}"
+    os.system(cmd_to_run)
+
+
+

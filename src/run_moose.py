@@ -17,7 +17,7 @@ import logging
 import os
 import pathlib
 import timeit
-
+import openpyxl
 import checkArgs
 import constants as c
 import fileOp as fop
@@ -25,6 +25,7 @@ import imageIO
 import imageOp as iop
 import inferenceEngine as ie
 import postprocess as pp
+import errorAnalysis as ea
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename='moose.log',
@@ -68,9 +69,12 @@ if __name__ == "__main__":
 
     for subject_folder in subject_folders:
         logging.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-        logging.info('Working folder: ' + subject_folder)
+        logging.info(f"- Working folder: {subject_folder}")
         processing_folder = str(pathlib.Path(subject_folder).stem)
-        logging.info('Processing subject: ' + processing_folder)
+        logging.info(f"- Processing subject:  {processing_folder}")
+        sub_folders = fop.get_folders(subject_folder)
+        logging.info(f"- Number of folders in subject {processing_folder}: {str(len(sub_folders))}")
+        logging.info(f"- Folder names: {sub_folders}")
         logging.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         logging.info(' ')
         imageIO.dcm2nii(subject_folder)
@@ -106,10 +110,14 @@ if __name__ == "__main__":
             logging.info('--------------------------------------------------------------------------------------------')
             print('Initiating CT segmentation protocols')
             out_dir = fop.make_dir(subject_folder, 'labels')
+            sim_space_dir = fop.make_dir(out_dir, 'sim_space')
             temp_dir = fop.make_dir(subject_folder, 'temp')
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
-            ie.segment_ct(ct_file[0], out_dir)
+            ct_atlas = ie.segment_ct(ct_file[0], out_dir)
             logging.info('CT segmentation completed')
+            ea.similarity_space(ct_atlas, sim_space_dir, os.path.join(subject_folder,
+                                                                      processing_folder
+                                                                      + '-Risk-of-segmentation-error.csv'))
         elif pet and ct:
             logging.info('Both PET and CT data found in folder ' + subject_folder + ', MOOSE will construct the '
                                                                                     'full tissue atlas (n=120) '
@@ -121,6 +129,7 @@ if __name__ == "__main__":
             print('Initiating PET/CT segmentation protocols')
             out_dir = fop.make_dir(subject_folder, 'labels')
             temp_dir = fop.make_dir(subject_folder, 'temp')
+            sim_space_dir = fop.make_dir(out_dir, 'sim_space')
             logging.info('Output folder: ' + out_dir)
             print('Output folder: ' + out_dir)
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
@@ -136,7 +145,9 @@ if __name__ == "__main__":
             logging.info('Calculating SUV parameters for SUV extraction...')
             pet_stem = pathlib.Path(pet_file[0]).stem
             pet_json = fop.get_files(subject_folder, pet_stem + '*json')[0]
-            suv_param = iop.get_suv_parameters(pet_json)
+            pet_folder = imageIO.return_dicomdir_modality(sub_folders, 'PT')
+            pet_dcm_files = fop.get_files(pet_folder, '*dcm')
+            suv_param = iop.get_suv_parameters(pet_dcm_files[round((len(pet_dcm_files) / 2))])
             logging.info('Converting PET image to SUV Image...')
             suv_image = iop.convert_bq_to_suv(bq_image=pet_file[0], out_suv_image=fop.add_prefix(pet_file[0],
                                                                                                  'SUV-'),
@@ -172,10 +183,13 @@ if __name__ == "__main__":
                 logging.info('Extracting SUV values from the PET image using the MOOSE atlas...')
                 print('Extracting SUV values from the PET image using the MOOSE atlas...')
                 iop.get_intensity_statistics(suv_image, merged_seg, os.path.join(subject_folder,
-                                                                                 processing_folder + '-SUV-values.csv'))
+                                                                                 processing_folder +
+                                                                                 '-SUV-values.csv'))
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
                 logging.info(
                     'SUV values stored in ' + os.path.join(subject_folder, processing_folder + '-SUV-values.csv'))
+                ea.similarity_space(merged_seg, sim_space_dir,
+                                    os.path.join(subject_folder, processing_folder + '-Risk-of-segmentation-error.csv'))
             else:
                 logging.info('No brain found in field-of-view of PET/CT data...')
                 print('No brain found in field-of-view of PET/CT data...')
@@ -192,6 +206,8 @@ if __name__ == "__main__":
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
                 logging.info(
                     'SUV values stored in ' + os.path.join(subject_folder, processing_folder + '-SUV-values.csv'))
+                ea.similarity_space(no_brain_seg, sim_space_dir, os.path.join(subject_folder, processing_folder +
+                                                                              '-Risk-of-segmentation-error.csv'))
 
         else:
             logging.error('No PET or CT data found in folder ' + subject_folder + ', MOOSE cannot proceed, '

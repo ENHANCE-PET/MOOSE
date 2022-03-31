@@ -82,11 +82,11 @@ def align_pet_ct(pet_img: str, ct_img: str, multilabel_seg: str) -> str:
     """
     logging.info(f"Aligning PET and CT images...")
     aligned_multilabel_seg = fop.add_prefix(multilabel_seg, 'pet_aligned_')
-    greedy.deformable(fixed_img=pet_img, moving_img=ct_img, cost_function='NMI',
-                      multi_resolution_iterations='100x50x25')
+    greedy.affine(fixed_img=pet_img, moving_img=ct_img, cost_function='NMI',
+                  multi_resolution_iterations='100x50x25')
     greedy.resample(fixed_img=pet_img, moving_img=ct_img, resampled_moving_img=fop.add_prefix(ct_img,
                                                                                               'pet_aligned_'),
-                    registration_type='deformable', segmentation=multilabel_seg, resampled_seg=aligned_multilabel_seg)
+                    registration_type='affine', segmentation=multilabel_seg, resampled_seg=aligned_multilabel_seg)
     logging.info(f"Alignment of PET and CT images done and saved as {aligned_multilabel_seg}")
     return aligned_multilabel_seg
 

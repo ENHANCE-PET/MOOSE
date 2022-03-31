@@ -7,3 +7,6 @@ argparse~=1.4.0
 imageio~=2.16.1
 nnunet~=1.7.0
 numpy~=1.22.3
+mpire~=2.3.3
+openpyxl~=3.0.9
+matplotlib~=3.1.3

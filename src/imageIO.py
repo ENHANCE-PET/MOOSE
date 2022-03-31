@@ -21,6 +21,7 @@ import pathlib
 import re
 
 import nibabel as nib
+import pydicom
 from halo import Halo
 
 import fileOp as fop
@@ -90,7 +91,7 @@ def dcm2nii(dicom_dir: str) -> None:
     """Convert DICOM images to NIFTI using dcm2niix
     :param dicom_dir: Directory containing the DICOM images
     """
-    cmd_to_run = f"dcm2niix -ba n {re.escape(dicom_dir)}" # -ba n: retains private tags (e.g patient weight)
+    cmd_to_run = f"dcm2niix -ba n {re.escape(dicom_dir)}"  # -ba n: retains private tags (e.g patient weight)
     logging.info(f"Converting DICOM images in {dicom_dir} to NIFTI")
     spinner = Halo(text=f"Running command: {cmd_to_run}", spinner='dots')
     spinner.start()
@@ -142,3 +143,26 @@ def copy_nifti_header(src_nifti_file: str, dest_nifti_file: str) -> None:
     logging.info(f"Copying nifti header information from {src_nifti_file} to {dest_nifti_file}")
 
 
+def return_dicomdir_modality(dicom_dirs: list, modality: str) -> str:
+    """
+    Check if the modality of the images in the given directory is the same as the given modality
+    :param dicom_dirs: List of directories containing the DICOM images
+    :param modality: Modality to check
+    :return: path of the dicom directory containing the images with the given modality
+    """
+    for dicom_dir in dicom_dirs:
+        dicom_files = fop.get_files(dicom_dir, wildcard='*')
+        if len(dicom_files) > 0:
+            dicom_file = dicom_files[round(len(dicom_files)/2)]
+            ds = pydicom.dcmread(dicom_file)
+            if ds.Modality == modality:
+                logging.info(f"Found {modality} images in {dicom_dir}")
+                return dicom_dir
+
+            else:
+                logging.info(f"{ds.Modality} != {modality}")
+                continue
+        else:
+            logging.warning(f"No DICOM files found in {dicom_dir}")
+            print(f"No DICOM files found in {dicom_dir}")
+            continue

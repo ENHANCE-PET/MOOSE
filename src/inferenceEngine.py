@@ -115,7 +115,7 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Psoas segmented and saved in {fop.get_files(out_dir, 'Psoas*')[0]}")
     postprocess.ct_segmentation(label_dir=out_dir)
     logging.info(f"Merging all non-cerebral tissues segmented from CT...")
-    imageOp.sum_images(img_list=fop.get_files(out_dir, '*nii.gz'), out_img=os.path.join(
+    imageOp.sum_images(out_dir, '*nii.gz', os.path.join(
         out_dir, 'MOOSE-Non-cerebral-tissues-CT-' + pathlib.Path(out_dir).parents[0].stem + '.nii.gz'))
     logging.info(f"Non-cerebral tissues segmented and saved in {fop.get_files(out_dir, 'MOOSE*CT*nii.gz')[0]}")
     return fop.get_files(out_dir, 'MOOSE*CT*nii.gz')[0]
@@ -133,13 +133,13 @@ def segment_pt(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Output directory: {out_dir}")
     logging.info(f"Segmenting brain...")
     segment_tissue(pt_file, out_dir, 'Brain')
-    out_label = fop.get_files(out_dir, c.CROPPED_BRAIN_FROM_PET[:13]+'*')[0]
+    out_label = fop.get_files(out_dir, c.CROPPED_BRAIN_FROM_PET[:13] + '*')[0]
     fop.add_prefix_rename(out_label, 'Brain')
     imageOp.shift_intensity(image_to_shift=fop.get_files(out_dir, 'Brain*')[0],
-                            shift_amount=c.NUM_OF_ORGANS+c.NUM_OF_BONES+c.NUM_OF_FAT_MUSCLE+c.NUM_OF_PSOAS,
+                            shift_amount=c.NUM_OF_ORGANS + c.NUM_OF_BONES + c.NUM_OF_FAT_MUSCLE + c.NUM_OF_PSOAS,
                             out_image=fop.get_files(out_dir, 'Brain*')[0])
     imageOp.replace_intensity(image_to_replace=fop.get_files(out_dir, 'Brain*')[0], intensity=[
-        c.NUM_OF_ORGANS+c.NUM_OF_BONES+c.NUM_OF_FAT_MUSCLE+c.NUM_OF_PSOAS, 0],
+        c.NUM_OF_ORGANS + c.NUM_OF_BONES + c.NUM_OF_FAT_MUSCLE + c.NUM_OF_PSOAS, 0],
                               out_image=fop.get_files(out_dir, 'Brain*')[0])
     logging.info(f"Brain segmented and saved in {fop.get_files(out_dir, 'Brain*')[0]}")
     return fop.get_files(out_dir, 'Brain*')[0]
