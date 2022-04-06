@@ -188,8 +188,7 @@ if __name__ == "__main__":
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
                 logging.info(
                     'SUV values stored in ' + os.path.join(subject_folder, processing_folder + '-SUV-values.csv'))
-                ea.similarity_space(merged_seg, sim_space_dir,
-                                    os.path.join(subject_folder, processing_folder + '-Risk-of-segmentation-error.csv'))
+
             else:
                 logging.info('No brain found in field-of-view of PET/CT data...')
                 print('No brain found in field-of-view of PET/CT data...')
@@ -206,8 +205,9 @@ if __name__ == "__main__":
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
                 logging.info(
                     'SUV values stored in ' + os.path.join(subject_folder, processing_folder + '-SUV-values.csv'))
-                ea.similarity_space(no_brain_seg, sim_space_dir, os.path.join(subject_folder, processing_folder +
-                                                                              '-Risk-of-segmentation-error.csv'))
+
+            ea.similarity_space(moose_ct_atlas, sim_space_dir,
+                                os.path.join(subject_folder, processing_folder + '-Risk-of-segmentation-error.csv'))
 
         else:
             logging.error('No PET or CT data found in folder ' + subject_folder + ', MOOSE cannot proceed, '
