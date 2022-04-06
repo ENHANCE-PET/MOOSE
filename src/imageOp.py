@@ -189,7 +189,7 @@ def remove_overlays(reference_image: str, image_to_remove_overlays: str, out_ima
     os.system(cmd_to_run)
 
 
-def sum_images(img_dir: str, wild_card: str, out_img: str) -> None:
+def sum_image_stack(img_dir: str, wild_card: str, out_img: str) -> None:
     """
     Sum a list of images
     :param img_dir: Directory containing the list of images to sum
@@ -198,6 +198,17 @@ def sum_images(img_dir: str, wild_card: str, out_img: str) -> None:
     """
     os.chdir(img_dir)
     cmd_to_run = f"c3d {wild_card} -accum -add -endaccum -o {re.escape(out_img)}"
+    os.system(cmd_to_run)
+
+
+def add_image(image_to_add: str, image_to_add_to: str, out_image: str) -> None:
+    """
+    Add two images together
+    :param image_to_add: Path to the image to add
+    :param image_to_add_to: Path to the image to add to
+    :param out_image: Path to the added image
+    """
+    cmd_to_run = f"c3d {re.escape(image_to_add)} {re.escape(image_to_add_to)} -add -o {re.escape(out_image)}"
     os.system(cmd_to_run)
 
 
@@ -254,6 +265,3 @@ def scale_mask(mask_path: str, out_path: str, scale_factor: int) -> None:
     """
     cmd_to_run = f"c3d {re.escape(mask_path)} -scale {scale_factor} -o {re.escape(out_path)}"
     os.system(cmd_to_run)
-
-
-

@@ -115,7 +115,7 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Psoas segmented and saved in {fop.get_files(out_dir, 'Psoas*')[0]}")
     postprocess.ct_segmentation(label_dir=out_dir)
     logging.info(f"Merging all non-cerebral tissues segmented from CT...")
-    imageOp.sum_images(out_dir, '*nii.gz', os.path.join(
+    imageOp.sum_image_stack(out_dir, '*nii.gz', os.path.join(
         out_dir, 'MOOSE-Non-cerebral-tissues-CT-' + pathlib.Path(out_dir).parents[0].stem + '.nii.gz'))
     logging.info(f"Non-cerebral tissues segmented and saved in {fop.get_files(out_dir, 'MOOSE*CT*nii.gz')[0]}")
     return fop.get_files(out_dir, 'MOOSE*CT*nii.gz')[0]

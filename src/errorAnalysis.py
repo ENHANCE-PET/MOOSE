@@ -148,7 +148,7 @@ def similarity_space(multi_label_img: str, out_dir: str, csv_out: str) -> None:
     assign_labels_after_split(sim_space_dir)
     logging.info(f"Summing the split masks to get the final mask and store it in {sim_space_dir}")
     split_atlas = os.path.join(sim_space_dir, 'MOOSE-Split-unified-PET-CT-atlas.nii.gz')
-    iop.sum_images(sim_space_dir, '*nii.gz', split_atlas)
+    iop.sum_image_stack(sim_space_dir, '*nii.gz', split_atlas)
     logging.info(f"Measuring shape parameters for {split_atlas}")
     shape_parameters = iop.get_shape_parameters(split_atlas)
     normative_shape_parameters = pd.read_excel(c.NORMDB_DIR, engine="openpyxl")

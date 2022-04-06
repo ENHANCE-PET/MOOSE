@@ -124,6 +124,6 @@ def merge_pet_ct_segmentations(pet_seg: str, ct_seg: str, out_seg: str) -> str:
                              interpolation='NearestNeighbor')
     pt_segmentation(label_dir=out_dir)
     logging.info("Merging PET and CT segmentations...")
-    imageOp.sum_images(img_list=[pet_seg, ct_seg], out_img=out_seg)
+    imageOp.add_image(pet_seg, ct_seg, out_seg)
     logging.info("Merging PET and CT segmentations done")
     return out_seg
