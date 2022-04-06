@@ -68,23 +68,6 @@ moose -f path_to_main_folder
 #example: 
 moose -f '/home/kyloren/Documents/main_folder'
 
-```
-- For notifying the program if the given 18F-FDG PET is static (-dp False) or dynamic (-dp True) and for switching on (-ea True) or off (-ea False) the error analysis error analysis in 'similarity space', use the following command with appropriate syntax.
-
-```bash
-#syntax:
-moose -f path_to_main_folder -ea False -dp True 
-
-#example for performing error analysis for a static PET/CT image: 
-moose -f '/home/kyloren/Documents/main_folder' -ea True -dp False
-
-#example for performing error analysis for a dynamic PET/CT image:
-moose -f '/home/kyloren/Documents/main_folder' -ea True -dp True
-
-#example for not performing error analysis:
-moose -f '/home/kyloren/Documents/main_folder' -ea False -dp False
-
-```
 
 ## 📈 Results
 
