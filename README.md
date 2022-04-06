@@ -47,8 +47,8 @@ Kindly copy the code below and paste it on your ubuntu terminal, the installer s
 
 ```bash
 
-git clone https://github.com/LalithShiyam/MOOSE.git
-cd MOOSE
+git clone https://github.com/LalithShiyam/MOOSE-V.1.0.git
+cd MOOSE-V.1.0
 source ./moose_installer.sh
 ```
 **NOTE: Do not forget to source the .bashrc file again**
