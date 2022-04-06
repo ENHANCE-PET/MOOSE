@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 echo '[1] Installing python packages for running moose...'
-pip install numpy natsort SimpleITK emoji pandas mpire openpyxl nnunet matplotlib batchgenerators xlrd
+pip install -r requirements.txt
 echo '[2] Downloading required files IBM cloud storage...'
 wget "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSE-files.zip"
 echo '[3] Unzipping moose files...'
