@@ -68,7 +68,7 @@ moose -f path_to_main_folder
 #example: 
 moose -f '/home/kyloren/Documents/main_folder'
 
-
+```
 ## 📈 Results
 
 - The multi-label atlas for each subject will be stored in the auto-generated ```labels``` folder under the subject's respective directory (refer folder structure). The label-index to region correspondence is stored in the excel sheet: ```MOOSE-Label-Index-Correspondene-Dual-organs-without-split.xlsx```, which can be found inside the ```~/MOOSE/MOOSE-files/similarity-space``` folder.
