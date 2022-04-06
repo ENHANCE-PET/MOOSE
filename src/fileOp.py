@@ -229,3 +229,19 @@ def add_prefix(file_path: str, prefix: str) -> str:
     :return: Path to the file with the prefix
     """
     return str(pathlib.Path(file_path).with_name("{}{}".format(prefix, pathlib.Path(file_path).name)))
+
+
+def move_contents(content_list: list, dest_dir: str) -> None:
+    """
+    Moves contents of a directory to another directory
+    :param content_list: List of contents to be moved
+    :param dest_dir: Destination directory
+    :return: None
+    """
+    if not os.path.isdir(dest_dir):
+        os.mkdir(dest_dir)
+    for content in content_list:
+        if os.path.exists(content) and os.path.isdir(content):
+            shutil.move(content, dest_dir)
+        elif os.path.exists(content) and os.path.isfile(content):
+            shutil.move(content, dest_dir)

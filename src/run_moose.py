@@ -215,6 +215,13 @@ if __name__ == "__main__":
             print(
                 'No PET or CT data found in folder ' + subject_folder + ', MOOSE cannot proceed, please check data')
             exit(1)
+        moose_dir = os.path.join(subject_folder, 'MOOSE' + '-' + processing_folder)
+        logging.info('Initiating cleanup of MOOSE output...')
+        contents = fop.get_folders(subject_folder)
+        contents_to_exclude = sub_folders
+        contents_to_move = [x for x in contents if x not in contents_to_exclude]
+        fop.move_contents(contents_to_move, moose_dir)
+        logging.info(f'MOOSE output cleaned up...and can be found in {moose_dir}')
     stop = timeit.default_timer()
     logging.info(' ')
     logging.info(f"Total time taken for MOOSE processing: {(stop - start) / 60:.2f} minutes")
