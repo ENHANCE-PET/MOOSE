@@ -13,7 +13,7 @@ moose_dir=`pwd`/'MOOSE-files'
 moose_bin=$moose_dir/'bin'
 root_path='/usr/local/bin'
 nnUNet_dir=$moose_dir/'moose-models'
-sim_space_dir=$moose_dir/'similarity-space'
+sim_space_dir=$moose_dir/'similarity-space/Norm_DB.xlsx'
 moose_src=$main_dir/'src'/'run_moose.py'
 
 echo '[5] Setting up nnUNet environment variables in the .bashrc'
