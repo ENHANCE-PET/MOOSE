@@ -146,7 +146,7 @@ if __name__ == "__main__":
             pet_stem = pathlib.Path(pet_file[0]).stem
             pet_json = fop.get_files(subject_folder, pet_stem + '*json')[0]
             pet_folder = imageIO.return_dicomdir_modality(sub_folders, 'PT')
-            pet_dcm_files = fop.get_files(pet_folder, '*dcm')
+            pet_dcm_files = fop.get_files(pet_folder, '*')
             suv_param = iop.get_suv_parameters(pet_dcm_files[round((len(pet_dcm_files) / 2))])
             logging.info('Converting PET image to SUV Image...')
             suv_image = iop.convert_bq_to_suv(bq_image=pet_file[0], out_suv_image=fop.add_prefix(pet_file[0],
