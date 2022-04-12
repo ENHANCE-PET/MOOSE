@@ -100,10 +100,7 @@ def brain_exists(ct_label: str) -> bool:
     ct_mask = sitk.ReadImage(ct_label, sitk.sitkInt32)
     stats = sitk.LabelIntensityStatisticsImageFilter()
     stats.Execute(ct_mask, ct_mask)
-    labels = []
-    for label in stats.GetLabels():
-        labels.append(label)
-    return 4 in labels
+    return 4 in stats.GetLabels()
 
 
 def merge_pet_ct_segmentations(pet_seg: str, ct_seg: str, out_seg: str) -> str:
