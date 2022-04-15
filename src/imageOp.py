@@ -112,7 +112,7 @@ def convert_bq_to_suv(bq_image: str, out_suv_image: str, suv_parameters: dict) -
     """
     suv_denominator = (suv_parameters["total_dose[mBq]"] / suv_parameters["weight[kg]"]) * 1000  # Units in kBq/mL
     suv_convertor = 1 / suv_denominator
-    cmd_to_run = f"c3d {bq_image} -scale {suv_convertor} -o {out_suv_image}"
+    cmd_to_run = f"c3d {re.escape(bq_image)} -scale {suv_convertor} -o {re.escape(out_suv_image)}"
     os.system(cmd_to_run)
     return out_suv_image
 
