@@ -26,9 +26,10 @@ import imageOp as iop
 import inferenceEngine as ie
 import postprocess as pp
 import errorAnalysis as ea
+from datetime import datetime
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                    filename='moose.log',
+                    filename=datetime.now().strftime('moose-%H-%M-%d-%m-%Y.log'),
                     filemode='w')
 
 if __name__ == "__main__":

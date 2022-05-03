@@ -153,27 +153,30 @@ def similarity_space(multi_label_img: str, out_dir: str, csv_out: str) -> None:
     shape_parameters = iop.get_shape_parameters(split_atlas)
     normative_shape_parameters = pd.read_excel(c.NORMDB_DIR, engine="openpyxl")
     risk_score_df = pd.DataFrame(columns=['Labels', "Tissues", "Z-score", "Risk-of-segmentation-error"])
-    organ_list = normative_shape_parameters["Labels"].values.tolist()
-    available_organs = shape_parameters.index.values.tolist()
+    overall_labels = normative_shape_parameters["Labels"].values.tolist()
+    available_labels = shape_parameters.index.values.tolist()
+    print(f"Available labels: {available_labels}")
+    print(f"Overall labels: {overall_labels}")
     existing_labels = []
     existing_organs = []
     z_score = []
     risk = []
-    for organ in organ_list:
-        if organ not in available_organs:
-            continue
-        else:
-            existing_labels.append(organ)
+    for label in available_labels:
+        if label in overall_labels:
+            print(f"{label} is in the overall labels")
+            existing_labels.append(label)
             existing_organs.append(normative_shape_parameters["Tissues"][normative_shape_parameters["Labels"] ==
-                                                                         organ].tolist()[0])
-            deviation = (shape_parameters["Elongation"][organ] - normative_shape_parameters["Mean"][
-                normative_shape_parameters["Labels"] == organ].tolist()[0]) / (normative_shape_parameters["STD"][
-                normative_shape_parameters["Labels"] == organ].tolist()[0])
-            z_score.append(deviation)
-            if -1.5 <= deviation <= 1.5:
-                risk.append("Low")
+                                                                         label].tolist()[0])
+            z_deviation = (shape_parameters["Elongation"][label] - normative_shape_parameters["Mean"][
+                normative_shape_parameters["Labels"] == label]).tolist()[0] / normative_shape_parameters["STD"][
+                normative_shape_parameters["Labels"] == label].tolist()[0]
+            z_score.append(z_deviation)
+            if -1.5 <= z_deviation <= 1.5:
+                risk.append('Low')
             else:
-                risk.append("High")
+                risk.append('High')
+        else:
+            continue
 
     risk_score_df["Labels"] = existing_labels
     risk_score_df["Tissues"] = existing_organs
