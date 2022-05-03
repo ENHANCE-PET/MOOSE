@@ -29,7 +29,7 @@ def display_logo():
     :return:
     """
     print("\n")
-    result = pyfiglet.figlet_format("MOOSE v0.1", font="smisome1")
+    result = pyfiglet.figlet_format("MOOSE v0.1", font="slant")
     print(result)
 
 
