@@ -19,6 +19,7 @@ import logging
 import os
 import pathlib
 import re
+import subprocess
 
 import nibabel as nib
 import pydicom
@@ -91,13 +92,13 @@ def dcm2nii(dicom_dir: str) -> None:
     """Convert DICOM images to NIFTI using dcm2niix
     :param dicom_dir: Directory containing the DICOM images
     """
-    cmd_to_run = f"dcm2niix -ba n {re.escape(dicom_dir)}"  # -ba n: retains private tags (e.g patient weight)
+    cmd_to_run = f"dcm2niix {re.escape(dicom_dir)}"
     logging.info(f"Converting DICOM images in {dicom_dir} to NIFTI")
-    spinner = Halo(text=f"Running command: {cmd_to_run}", spinner='dots')
+    spinner = Halo(text=f"Converting DICOM images in {dicom_dir} to NIFTI", spinner='dots')
     spinner.start()
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     spinner.succeed()
-    logging.info("Conversion from DICOM to NIFTI done")
+    logging.info("Done")
 
 
 def split4d(nifti_file: str) -> None:
@@ -153,7 +154,7 @@ def return_dicomdir_modality(dicom_dirs: list, modality: str) -> str:
     for dicom_dir in dicom_dirs:
         dicom_files = fop.get_files(dicom_dir, wildcard='*')
         if len(dicom_files) > 0:
-            dicom_file = dicom_files[round(len(dicom_files)/2)]
+            dicom_file = dicom_files[round(len(dicom_files) / 2)]
             ds = pydicom.dcmread(dicom_file)
             if ds.Modality == modality:
                 logging.info(f"Found {modality} images in {dicom_dir}")
