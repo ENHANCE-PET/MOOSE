@@ -56,7 +56,7 @@ git clone https://github.com/LalithShiyam/MOOSE-V.1.0.git
 cd MOOSE-V.1.0
 source ./moose_installer.sh
 ```
-**NOTE: Do not forget to source the .bashrc file again**
+**‼️ NOTE: Do not forget to source the .bashrc file again**
 
 ```bash
 source ~/.bashrc
