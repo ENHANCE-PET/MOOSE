@@ -17,6 +17,8 @@ import logging
 import os
 import pathlib
 import timeit
+
+import numpy as np
 import openpyxl
 import checkArgs
 import constants as c
@@ -119,6 +121,19 @@ if __name__ == "__main__":
             ea.similarity_space(ct_atlas, sim_space_dir, os.path.join(subject_folder,
                                                                       processing_folder
                                                                       + '-Risk-of-segmentation-error.csv'))
+            shape_parameters = iop.get_shape_parameters(label_image=ct_atlas)
+            labels_present = shape_parameters.index.to_list()
+            regions_present = []
+            for label in labels_present:
+                if label in c.ORGAN_INDEX:
+                    regions_present.append(c.ORGAN_INDEX[label])
+                else:
+                    continue
+            shape_parameters.insert(0, 'Regions-Present', np.array(regions_present))
+            shape_parameters.to_csv(os.path.join(subject_folder,
+                                                 processing_folder
+                                                 + '-volume-stats.csv'))
+
         elif pet and ct:
             logging.info('Both PET and CT data found in folder ' + subject_folder + ', MOOSE will construct the '
                                                                                     'full tissue atlas (n=120) '
@@ -135,6 +150,18 @@ if __name__ == "__main__":
             print('Output folder: ' + out_dir)
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
             moose_ct_atlas = ie.segment_ct(ct_file[0], out_dir)
+            shape_parameters = iop.get_shape_parameters(label_image=moose_ct_atlas)
+            labels_present = shape_parameters.index.to_list()
+            regions_present = []
+            for label in labels_present:
+                if label in c.ORGAN_INDEX:
+                    regions_present.append(c.ORGAN_INDEX[label])
+                else:
+                    continue
+            shape_parameters.insert(0, 'Regions-Present', np.array(regions_present))
+            shape_parameters.to_csv(os.path.join(subject_folder,
+                                                 processing_folder
+                                                 + '-volume-stats.csv'))
             logging.info('Aligning PET and CT data using diffeomorphic registration')
             print('Aligning PET and CT data using diffeomorphic registration')
             pet_file = fop.get_files(os.path.join(subject_folder, 'PT'), '*nii')
