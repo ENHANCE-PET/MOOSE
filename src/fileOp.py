@@ -42,7 +42,7 @@ def get_folders(dir_path: str) -> list:
     # Get a list of folders inside a directory using glob
     folders = glob.glob(os.path.join(dir_path, "*"))
     # Sort the list of folders by name
-    folders.sort(key=lambda x: os.path.basename(x))
+    folders = natsort.natsorted(folders)
     return folders
 
 
@@ -56,7 +56,7 @@ def get_files(dir_path: str, wildcard: str) -> list:
     # Get a list of files inside a directory using glob
     files = glob.glob(os.path.join(dir_path, wildcard))
     # Sort the list of files by name
-    files.sort(key=lambda x: os.path.basename(x))
+    files = natsort.natsorted(files)
     return files
 
 
