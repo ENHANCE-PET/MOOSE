@@ -49,8 +49,8 @@ def get_intensity_statistics(nifti_file: str, multi_label_file: str, out_csv: st
     :param nifti_file: NIFTI file to check
     :param multi_label_file: Multilabel file that is used to calculate the intensity statistics from nifti_file
     :param out_csv: Path to the output csv file
-    :return: stats_df, a dataframe with the intensity statistics (Mean, Standard Deviation, Min, Max)
-    """
+    :return None
+     """
     nifti_img = SimpleITK.ReadImage(nifti_file)
     multi_label_img = SimpleITK.ReadImage(multi_label_file, SimpleITK.sitkInt32)
     intensity_statistics = SimpleITK.LabelIntensityStatisticsImageFilter()
