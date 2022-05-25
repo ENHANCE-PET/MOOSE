@@ -115,6 +115,7 @@ if __name__ == "__main__":
             out_dir = fop.make_dir(subject_folder, 'labels')
             sim_space_dir = fop.make_dir(out_dir, 'sim_space')
             temp_dir = fop.make_dir(subject_folder, 'temp')
+            stats_dir = fop.make_dir(subject_folder, 'stats')
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
             ct_atlas = ie.segment_ct(ct_file[0], out_dir)
             logging.info('CT segmentation completed')
@@ -122,6 +123,8 @@ if __name__ == "__main__":
                                                                       processing_folder
                                                                       + '-Risk-of-segmentation-error.csv'))
             shape_parameters = iop.get_shape_parameters(label_image=ct_atlas)
+            iop.get_intensity_statistics(ct_file[0], ct_atlas, os.path.join(stats_dir,
+                                                                            processing_folder + '-ct-hu-values.csv'))
             labels_present = shape_parameters.index.to_list()
             regions_present = []
             for label in labels_present:
@@ -130,9 +133,9 @@ if __name__ == "__main__":
                 else:
                     continue
             shape_parameters.insert(0, 'Regions-Present', np.array(regions_present))
-            shape_parameters.to_csv(os.path.join(subject_folder,
+            shape_parameters.to_csv(os.path.join(stats_dir,
                                                  processing_folder
-                                                 + '-volume-stats.csv'))
+                                                 + '-ct-volume-stats.csv'))
 
         elif pet and ct:
             logging.info('Both PET and CT data found in folder ' + subject_folder + ', MOOSE will construct the '
@@ -146,10 +149,14 @@ if __name__ == "__main__":
             out_dir = fop.make_dir(subject_folder, 'labels')
             temp_dir = fop.make_dir(subject_folder, 'temp')
             sim_space_dir = fop.make_dir(out_dir, 'sim_space')
+            stats_dir = fop.make_dir(subject_folder, 'stats')
             logging.info('Output folder: ' + out_dir)
             print('Output folder: ' + out_dir)
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
             moose_ct_atlas = ie.segment_ct(ct_file[0], out_dir)
+            iop.get_intensity_statistics(ct_file[0], moose_ct_atlas, os.path.join(stats_dir,
+                                                                                  processing_folder + '-ct-hu-values'
+                                                                                                      '.csv'))
             shape_parameters = iop.get_shape_parameters(label_image=moose_ct_atlas)
             labels_present = shape_parameters.index.to_list()
             regions_present = []
@@ -159,9 +166,9 @@ if __name__ == "__main__":
                 else:
                     continue
             shape_parameters.insert(0, 'Regions-Present', np.array(regions_present))
-            shape_parameters.to_csv(os.path.join(subject_folder,
+            shape_parameters.to_csv(os.path.join(stats_dir,
                                                  processing_folder
-                                                 + '-volume-stats.csv'))
+                                                 + '-ct-volume-stats.csv'))
             logging.info('Aligning PET and CT data using diffeomorphic registration')
             print('Aligning PET and CT data using diffeomorphic registration')
             pet_file = fop.get_files(os.path.join(subject_folder, 'PT'), '*nii')
@@ -210,7 +217,7 @@ if __name__ == "__main__":
                       f'{os.path.join(out_dir, "MOOSE-unified-PET-CT-atlas.nii.gz")}')
                 logging.info('Extracting SUV values from the PET image using the MOOSE atlas...')
                 print('Extracting SUV values from the PET image using the MOOSE atlas...')
-                iop.get_intensity_statistics(suv_image, merged_seg, os.path.join(subject_folder,
+                iop.get_intensity_statistics(suv_image, merged_seg, os.path.join(stats_dir,
                                                                                  processing_folder +
                                                                                  '-SUV-values.csv'))
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
@@ -227,7 +234,7 @@ if __name__ == "__main__":
                 print(f'MOOSE atlas stored in {no_brain_seg}')
                 logging.info('Extracting SUV values from the PET image using the MOOSE atlas...')
                 print('Extracting SUV values from the PET image using the MOOSE atlas...')
-                iop.get_intensity_statistics(suv_image, no_brain_seg, os.path.join(subject_folder,
+                iop.get_intensity_statistics(suv_image, no_brain_seg, os.path.join(stats_dir,
                                                                                    processing_folder +
                                                                                    '-SUV-values.csv'))
                 logging.info('SUV values extracted from the PET image using the MOOSE atlas...')
