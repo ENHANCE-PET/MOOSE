@@ -123,8 +123,9 @@ if __name__ == "__main__":
                                                                       processing_folder
                                                                       + '-Risk-of-segmentation-error.csv'))
             shape_parameters = iop.get_shape_parameters(label_image=ct_atlas)
-            iop.get_intensity_statistics(ct_file[0], ct_atlas, os.path.join(stats_dir,
-                                                                            processing_folder + '-ct-hu-values.csv'))
+
+            iop.get_intensity_statistics(fop.get_files(os.path.join(subject_folder, 'CT'), '*gz')[0], ct_atlas,
+                                         os.path.join(stats_dir, processing_folder + '-ct-hu-values.csv'))
             labels_present = shape_parameters.index.to_list()
             regions_present = []
             for label in labels_present:
@@ -154,9 +155,8 @@ if __name__ == "__main__":
             print('Output folder: ' + out_dir)
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
             moose_ct_atlas = ie.segment_ct(ct_file[0], out_dir)
-            iop.get_intensity_statistics(ct_file[0], moose_ct_atlas, os.path.join(stats_dir,
-                                                                                  processing_folder + '-ct-hu-values'
-                                                                                                      '.csv'))
+            iop.get_intensity_statistics(fop.get_files(os.path.join(subject_folder, 'CT'), '*gz')[0], moose_ct_atlas,
+                                         os.path.join(stats_dir, processing_folder + '-ct-hu-values.csv'))
             shape_parameters = iop.get_shape_parameters(label_image=moose_ct_atlas)
             labels_present = shape_parameters.index.to_list()
             regions_present = []
