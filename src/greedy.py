@@ -19,6 +19,7 @@ import logging
 import os
 import pathlib
 import re
+import subprocess
 import sys
 
 
@@ -43,7 +44,7 @@ def rigid(fixed_img: str, moving_img: str, cost_function: str, multi_resolution_
     logging.info(f"Multi-resolution level iterations: {multi_resolution_iterations}")
     logging.info(f"Transform file generated: rigid.mat")
     logging.info(" ")
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     print("Rigid registration complete")
 
 
@@ -69,7 +70,7 @@ def affine(fixed_img: str, moving_img: str, cost_function: str, multi_resolution
     logging.info(f"- Multi-resolution level iterations: {multi_resolution_iterations}")
     logging.info(f"- Transform file generated: affine.mat")
     logging.info(" ")
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     print("Affine registration complete")
 
 
@@ -97,7 +98,7 @@ def deformable(fixed_img: str, moving_img: str, cost_function: str, multi_resolu
     logging.info(f"- Multiresolution level iterations: {multi_resolution_iterations}")
     logging.info(f"- Deformation field generated: warp.nii.gz + inverse_warp.nii.gz")
     logging.info(' ')
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     print("Deformable registration complete")
 
 
@@ -165,7 +166,7 @@ def resample(fixed_img: str, moving_img: str, resampled_moving_img: str, registr
                          f"affine.mat"
     else:
         sys.exit("Registration type not supported!")
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     logging.info(f"Resampling parameters:")
     logging.info(f"- Reference image: {re.escape(fixed_img)}")
     logging.info(f"- Moving image: {re.escape(moving_img)}")

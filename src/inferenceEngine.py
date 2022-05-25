@@ -15,7 +15,7 @@ import logging
 import os
 import pathlib
 import re
-
+import subprocess
 import constants as c
 import fileOp as fop
 import imageOp
@@ -51,10 +51,9 @@ def segment_tissue(nifti_img: str, out_dir: str, tissue_type: str) -> None:
     :return: None
     """
     model = str(model_number(tissue_type))
-    os.system(f"nnUNet_predict -i "
-              f"{re.escape(str(pathlib.Path(nifti_img).parents[0]))} -o {re.escape(out_dir)} -t {model} -m 3d_fullres "
-              f"--fold "
-              f"all")
+    cmd_to_run = f"nnUNet_predict -i {re.escape(str(pathlib.Path(nifti_img).parents[0]))} -o {re.escape(out_dir)} -t " \
+                 f"{model} -m 3d_fullres --fold all "
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def segment_ct(nifti_img: str, out_dir: str) -> str:

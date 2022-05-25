@@ -14,6 +14,7 @@
 import os
 import pathlib
 import re
+import subprocess
 
 import SimpleITK
 import numpy as np
@@ -113,7 +114,7 @@ def convert_bq_to_suv(bq_image: str, out_suv_image: str, suv_parameters: dict) -
     suv_denominator = (suv_parameters["total_dose[mBq]"] / suv_parameters["weight[kg]"]) * 1000  # Units in kBq/mL
     suv_convertor = 1 / suv_denominator
     cmd_to_run = f"c3d {re.escape(bq_image)} -scale {suv_convertor} -o {re.escape(out_suv_image)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     return out_suv_image
 
 
@@ -128,7 +129,7 @@ def reslice_identity(reference_image: str, image_to_reslice: str, out_resliced_i
     """
     cmd_to_run = f"c3d {reference_image} {image_to_reslice} -interpolation {interpolation} -reslice-identity -o" \
                  f" {out_resliced_image}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def retain_labels(image_to_retain_labels: str, labels_to_retain: list, out_image: str) -> None:
@@ -140,7 +141,7 @@ def retain_labels(image_to_retain_labels: str, labels_to_retain: list, out_image
     """
     labels = " ".join(str(i) for i in labels_to_retain)
     cmd_to_run = f"c3d {re.escape(image_to_retain_labels)} -retain-labels {labels} -o {re.escape(out_image)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def shift_intensity(image_to_shift: str, shift_amount: int, out_image: str) -> None:
@@ -151,7 +152,7 @@ def shift_intensity(image_to_shift: str, shift_amount: int, out_image: str) -> N
     :param out_image: Path to the shifted image
     """
     cmd_to_run = f"c3d {re.escape(image_to_shift)} -shift {str(shift_amount)} -o {re.escape(out_image)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def replace_intensity(image_to_replace: str, intensity: list, out_image: str) -> None:
@@ -164,7 +165,7 @@ def replace_intensity(image_to_replace: str, intensity: list, out_image: str) ->
     """
     replace_intensity_str = " ".join(str(i) for i in intensity)
     cmd_to_run = f"c3d {re.escape(image_to_replace)} -replace {replace_intensity_str} -o {re.escape(out_image)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def binarize(label_img: str, out_img: str) -> None:
@@ -174,7 +175,7 @@ def binarize(label_img: str, out_img: str) -> None:
     :param out_img: Path to the binarized image
     """
     cmd_to_run = f"c3d {re.escape(label_img)} -binarize -o {re.escape(out_img)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def remove_overlays(reference_image: str, image_to_remove_overlays: str, out_image: str) -> None:
@@ -186,7 +187,7 @@ def remove_overlays(reference_image: str, image_to_remove_overlays: str, out_ima
     """
     cmd_to_run = f"c3d {re.escape(reference_image)} -binarize -popas BIN -push BIN -replace 1 0 0 1 -popas INVBIN " \
                  f"-push INVBIN {re.escape(image_to_remove_overlays)} -multiply -o {re.escape(out_image)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def sum_image_stack(img_dir: str, wild_card: str, out_img: str) -> None:
@@ -198,7 +199,7 @@ def sum_image_stack(img_dir: str, wild_card: str, out_img: str) -> None:
     """
     os.chdir(img_dir)
     cmd_to_run = f"c3d {wild_card} -accum -add -endaccum -o {re.escape(out_img)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def add_image(image_to_add: str, image_to_add_to: str, out_image: str) -> None:
@@ -209,7 +210,7 @@ def add_image(image_to_add: str, image_to_add_to: str, out_image: str) -> None:
     :param out_image: Path to the added image
     """
     cmd_to_run = f"c3d {re.escape(image_to_add)} {re.escape(image_to_add_to)} -add -o {re.escape(out_image)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def crop_image_using_mask(image_to_crop: str, multilabel_mask: str, out_image: str, label_intensity=int) -> str:
@@ -253,7 +254,7 @@ def split_mask_to_left_right(binary_mask_path: str, out_dir: str) -> None:
     cmd_to_run = f"c3d {re.escape(binary_mask_path)} -as SEG -cmv -pop -pop  -thresh 50% inf 1 0 -as MASK -push SEG " \
                  f"-times -o {re.escape(os.path.join(out_dir, left_mask))} -push MASK -replace 1 0 0 1 -push SEG " \
                  f"-times -o {re.escape(os.path.join(out_dir, right_mask))}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
 
 def scale_mask(mask_path: str, out_path: str, scale_factor: int) -> None:
@@ -264,4 +265,4 @@ def scale_mask(mask_path: str, out_path: str, scale_factor: int) -> None:
     :param scale_factor: Scale factor
     """
     cmd_to_run = f"c3d {re.escape(mask_path)} -scale {scale_factor} -o {re.escape(out_path)}"
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
