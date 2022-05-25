@@ -83,7 +83,7 @@ def nondcm2nii(medimg_dir: str, file_extension: str, new_dir: str) -> None:
         logging.info(f"Converting {file} to {nifti_file}")
         spinner = Halo(text=f"Running command: {cmd_to_run}", spinner='dots')
         spinner.start()
-        os.system(cmd_to_run)
+        subprocess.run(cmd_to_run, shell=True, capture_output=True)
         spinner.succeed()
         logging.info("Done")
 
@@ -111,7 +111,7 @@ def split4d(nifti_file: str) -> None:
     spinner = Halo(text=f"Running command: {cmd_to_run}", spinner='dots')
     spinner.start()
     os.chdir(pathlib.Path(nifti_file).parent)
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     spinner.succeed()
     logging.info("Done")
 
@@ -128,7 +128,7 @@ def merge3d(nifti_dir: str, wild_card: str, nifti_outfile: str) -> None:
     logging.info(f"Merging 3D nifti files in {nifti_dir} with wildcard {wild_card}")
     logging.info(f"Running command: {cmd_to_run}")
     os.chdir(nifti_dir)
-    os.system(cmd_to_run)
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     logging.info("Done")
 
 
