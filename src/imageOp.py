@@ -266,3 +266,17 @@ def scale_mask(mask_path: str, out_path: str, scale_factor: int) -> None:
     """
     cmd_to_run = f"c3d {re.escape(mask_path)} -scale {scale_factor} -o {re.escape(out_path)}"
     subprocess.run(cmd_to_run, shell=True, capture_output=True)
+
+
+def extract_central_slice_as_png(image_path: str, out_path: str) -> str:
+    """
+    Extract the central slice of an image as a png
+    :param image_path: Path to the image
+    :param out_path: Path to the output png
+    :return: Path to the output png
+    """
+    cmd_to_run = f"c3d {re.escape(image_path)} -slice y 50% -flip y -type uchar -stretch 0.001% 99.999% 5 255 -o " \
+                 f"{re.escape(out_path)} "
+    subprocess.run(cmd_to_run, shell=True, capture_output=True)
+    return out_path
+

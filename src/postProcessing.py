@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # **********************************************************************************************************************
-# File: postprocess.py
+# File: postProcessing.py
 # Project: MOOSE Version 1.0
 # Created: 23.03.2022
 # Author: Lalith Kumar Shiyam Sundar
@@ -15,12 +15,20 @@
 import logging
 import os
 import pathlib
+import sys
 
+from PIL import Image
+
+sys.path.append('../../')
+
+from fastai.data.external import *
+from fastai.vision.all import *
 import SimpleITK as sitk
 
 import fileOp as fop
 import greedy
 import imageOp
+import constants as c
 
 
 def pt_segmentation(label_dir: str) -> None:
@@ -91,21 +99,32 @@ def align_pet_ct(pet_img: str, ct_img: str, multilabel_seg: str) -> str:
     return aligned_multilabel_seg
 
 
-def brain_exists(ct_label: str) -> bool:
+def brain_exists(pt_image: str) -> bool:
     """
-    This function checks if the brain exists in the CT image.
-    :param ct_label: Path of the ct multilabel image.
+    This function checks if the brain exists in a given PT image.
+    :param pt_image: Path of the nifti pt image.
     :return: True if the brain exists in the CT image.
     """
-    ct_mask = sitk.ReadImage(ct_label, sitk.sitkInt32)
-    stats = sitk.LabelIntensityStatisticsImageFilter()
-    stats.Execute(ct_mask, ct_mask)
-    return 4 in stats.GetLabels()
+    print(c.BRAIN_DETECTOR_MODEL)
+    logging.info(f"Checking if brain exists in {pt_image}")
+    pet_dir = pathlib.Path(pt_image).parent
+    pet_as_png = os.path.join(pet_dir, pathlib.Path(pt_image).stem.split(".")[0] + ".png")
+    imageOp.extract_central_slice_as_png(pt_image, pet_as_png)
+    learner = load_learner(c.BRAIN_DETECTOR_MODEL)
+    logging.info(f'Brain detector model loaded')
+    img_to_predict = PILImage.create(pet_as_png)
+    pred_class, pred_idx, outputs = learner.predict(img_to_predict)
+    if pred_class == "with-brain":
+        logging.info(f"Brain exists in {pt_image}")
+        return True
+    else:
+        logging.info(f"Brain does not exist in {pt_image}")
+        return False
 
 
 def merge_pet_ct_segmentations(pet_seg: str, ct_seg: str, out_seg: str) -> str:
     """
-    Merge the pet and ct segmentation to one unified segmentation file. The returned file will be in PT space
+     Merge the pet and ct segmentation to one unified segmentation file. The returned file will be in PT space
     :param pet_seg: Path of the PET segmentation file
     :param ct_seg: Path of the CT segmentation file
     :param out_seg: Path of the unified segmentation file

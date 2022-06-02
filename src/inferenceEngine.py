@@ -19,7 +19,7 @@ import subprocess
 import constants as c
 import fileOp as fop
 import imageOp
-import postprocess
+import postProcessing
 from halo import Halo
 
 
@@ -125,7 +125,7 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
                                                                                                c.NUM_OF_FAT_MUSCLE, 0],
                               out_image=fop.get_files(out_dir, 'Psoas*')[0])
     logging.info(f"Psoas segmented and saved in {fop.get_files(out_dir, 'Psoas*')[0]}")
-    postprocess.ct_segmentation(label_dir=out_dir)
+    postProcessing.ct_segmentation(label_dir=out_dir)
     logging.info(f"Merging all non-cerebral tissues segmented from CT...")
     imageOp.sum_image_stack(out_dir, '*nii.gz', os.path.join(
         out_dir, 'MOOSE-Non-cerebral-tissues-CT-' + pathlib.Path(out_dir).parents[0].stem + '.nii.gz'))

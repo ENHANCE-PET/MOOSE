@@ -26,7 +26,7 @@ import fileOp as fop
 import imageIO
 import imageOp as iop
 import inferenceEngine as ie
-import postprocess as pp
+import postProcessing as pp
 import errorAnalysis as ea
 from datetime import datetime
 
@@ -187,7 +187,7 @@ if __name__ == "__main__":
             suv_image = iop.convert_bq_to_suv(bq_image=pet_file[0], out_suv_image=fop.add_prefix(pet_file[0],
                                                                                                  'SUV-'),
                                               suv_parameters=suv_param)
-            if pp.brain_exists(moose_ct_atlas):
+            if pp.brain_exists(pet_file[0]):
                 logging.info('Brain found in field-of-view of PET/CT data...')
                 print('Brain found in field-of-view of PET/CT data...')
                 logging.info('Cropping brain from PET image using the aligned CT brain mask')

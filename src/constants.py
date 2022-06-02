@@ -14,6 +14,7 @@
 import os
 
 NORMDB_DIR = os.getenv('SIM_SPACE_DIR')
+BRAIN_DETECTOR_MODEL = os.getenv('BRAIN_DETECTOR_DIR')
 CROPPED_BRAIN_FROM_PET = "cropped-brain-from-PET_0000.nii.gz"
 CROPPED_PADDING = 15  # in mm
 CROPPED_SPINE_FROM_CT = "cropped-spine-from-ct_0000.nii.gz"
