@@ -105,7 +105,6 @@ def brain_exists(pt_image: str) -> bool:
     :param pt_image: Path of the nifti pt image.
     :return: True if the brain exists in the CT image.
     """
-    print(c.BRAIN_DETECTOR_MODEL)
     logging.info(f"Checking if brain exists in {pt_image}")
     pet_dir = pathlib.Path(pt_image).parent
     pet_as_png = os.path.join(pet_dir, pathlib.Path(pt_image).stem.split(".")[0] + ".png")
