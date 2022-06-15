@@ -71,7 +71,6 @@ def affine(fixed_img: str, moving_img: str, cost_function: str, multi_resolution
     logging.info(f"- Transform file generated: affine.mat")
     logging.info(" ")
     subprocess.run(cmd_to_run, shell=True, capture_output=True)
-    print("Affine registration complete")
 
 
 def deformable(fixed_img: str, moving_img: str, cost_function: str, multi_resolution_iterations: str) -> None:

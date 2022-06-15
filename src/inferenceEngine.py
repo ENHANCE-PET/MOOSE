@@ -65,8 +65,8 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     """
     nifti_img_ext = fop.add_suffix_rename(nifti_img, '0000')
     ct_file = fop.compress_file(nifti_img_ext)
-    print(ct_file)
     logging.info(f"CT image to be segmented: {re.escape(ct_file)}")
+    print(f'- CT image to be segmented: {re.escape(ct_file)}')
     logging.info(f"Output directory: {re.escape(out_dir)}")
 
     logging.info(f"Segmenting abdominal organs...")

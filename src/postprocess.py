@@ -114,7 +114,7 @@ def merge_pet_ct_segmentations(pet_seg: str, ct_seg: str, out_seg: str) -> str:
     logging.info('Removing whole-brain segmentation from CT segmentation to merge the 83 subregions from PET')
     out_dir = str(pathlib.Path(out_seg).parents[0])
     imageOp.retain_labels(image_to_retain_labels=ct_seg, labels_to_retain=[4], out_image=os.path.join(out_dir,
-                                                                                                      'whole_brain_ct_segmentation.nii.gz'))
+                                                                                'whole_brain_ct_segmentation.nii.gz'))
     imageOp.replace_intensity(image_to_replace=ct_seg, intensity=[4, 0], out_image=ct_seg)
     logging.info("Reslicing (to identity) PET segmentation, segmentations will be in pet voxel space...")
     imageOp.reslice_identity(reference_image=ct_seg, image_to_reslice=pet_seg, out_resliced_image=pet_seg,
