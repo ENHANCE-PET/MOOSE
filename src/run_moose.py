@@ -26,7 +26,7 @@ import fileOp as fop
 import imageIO
 import imageOp as iop
 import inferenceEngine as ie
-import postprocess as pp
+import postProcessing as pp
 import errorAnalysis as ea
 from datetime import datetime
 
@@ -123,8 +123,9 @@ if __name__ == "__main__":
                                                                       processing_folder
                                                                       + '-Risk-of-segmentation-error.csv'))
             shape_parameters = iop.get_shape_parameters(label_image=ct_atlas)
-            iop.get_intensity_statistics(ct_file[0], ct_atlas, os.path.join(stats_dir,
-                                                                            processing_folder + '-ct-hu-values.csv'))
+
+            iop.get_intensity_statistics(fop.get_files(os.path.join(subject_folder, 'CT'), '*gz')[0], ct_atlas,
+                                         os.path.join(stats_dir, processing_folder + '-ct-hu-values.csv'))
             labels_present = shape_parameters.index.to_list()
             regions_present = []
             for label in labels_present:
@@ -154,9 +155,8 @@ if __name__ == "__main__":
             print('Output folder: ' + out_dir)
             ct_file = fop.get_files(os.path.join(subject_folder, 'CT'), '*nii')
             moose_ct_atlas = ie.segment_ct(ct_file[0], out_dir)
-            iop.get_intensity_statistics(ct_file[0], moose_ct_atlas, os.path.join(stats_dir,
-                                                                                  processing_folder + '-ct-hu-values'
-                                                                                                      '.csv'))
+            iop.get_intensity_statistics(fop.get_files(os.path.join(subject_folder, 'CT'), '*gz')[0], moose_ct_atlas,
+                                         os.path.join(stats_dir, processing_folder + '-ct-hu-values.csv'))
             shape_parameters = iop.get_shape_parameters(label_image=moose_ct_atlas)
             labels_present = shape_parameters.index.to_list()
             regions_present = []
@@ -187,7 +187,7 @@ if __name__ == "__main__":
             suv_image = iop.convert_bq_to_suv(bq_image=pet_file[0], out_suv_image=fop.add_prefix(pet_file[0],
                                                                                                  'SUV-'),
                                               suv_parameters=suv_param)
-            if pp.brain_exists(moose_ct_atlas):
+            if pp.brain_exists(pet_file[0]):
                 logging.info('Brain found in field-of-view of PET/CT data...')
                 print('Brain found in field-of-view of PET/CT data...')
                 logging.info('Cropping brain from PET image using the aligned CT brain mask')

@@ -15,12 +15,15 @@ root_path='/usr/local/bin'
 nnUNet_dir=$moose_dir/'moose-models'
 sim_space_dir=$moose_dir/'similarity-space/Norm_DB.xlsx'
 moose_src=$main_dir/'src'/'run_moose.py'
+brain_detector_dir=$nnUNet_dir/'brain_detector.pkl'
 
 echo '[5] Setting up nnUNet environment variables in the .bashrc'
 echo "export nnUNet_raw_data_base="${nnUNet_dir}"/nnUNet_raw" >> ~/.bashrc
 echo "export nnUNet_preprocessed="${nnUNet_dir}"/nnUNet_preprocessed" >> ~/.bashrc
 echo "export RESULTS_FOLDER="${nnUNet_dir}"/nnUNet_trained_models" >> ~/.bashrc
 echo "export SIM_SPACE_DIR="${sim_space_dir}"" >> ~/.bashrc
+echo "export BRAIN_DETECTOR_DIR="${brain_detector_dir}"" >> ~/.bashrc
+
 echo '[6] Check later if environment variables for nnUNet are set in .bashrc'
 echo '[7] Setting up symlinks for dependencies...'
 sudo ln -s $moose_bin/'c3d' $root_path/'c3d'

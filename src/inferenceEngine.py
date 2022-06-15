@@ -19,7 +19,8 @@ import subprocess
 import constants as c
 import fileOp as fop
 import imageOp
-import postprocess
+import postProcessing
+from halo import Halo
 
 
 def model_number(tissue_type: str) -> int:
@@ -70,7 +71,10 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Output directory: {re.escape(out_dir)}")
 
     logging.info(f"Segmenting abdominal organs...")
+    spinner = Halo(text=f"Segmenting abdominal organs from {ct_file}", spinner='dots')
+    spinner.start()
     segment_tissue(ct_file, out_dir, 'Organs')
+    spinner.succeed(text=f"Segmented abdominal organs from {ct_file}")
     out_label = fop.get_files(out_dir, pathlib.Path(nifti_img).stem + '*')[0]
     fop.add_prefix_rename(out_label, 'Organs')
     logging.info(f"Initiating post processing of abdominal organs...")
@@ -81,7 +85,10 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Abdominal organs segmented and saved in {fop.get_files(out_dir, 'Organs*')[0]}")
 
     logging.info(f"Segmenting Bones...")
+    spinner = Halo(text=f"Segmenting Bones from {ct_file}", spinner='dots')
+    spinner.start()
     segment_tissue(ct_file, out_dir, 'Bones')
+    spinner.succeed(text=f"Segmented Bones from {ct_file}")
     fop.add_prefix_rename(out_label, 'Bones')
     imageOp.shift_intensity(image_to_shift=fop.get_files(out_dir, 'Bones*')[0],
                             shift_amount=c.NUM_OF_ORGANS,
@@ -91,7 +98,10 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Bones segmented and saved in {fop.get_files(out_dir, 'Bones*')[0]}")
 
     logging.info(f"Segmenting skeletal muscle, subcutaneous and visceral fat...")
+    spinner = Halo(text=f"Segmenting skeletal muscle, subcutaneous and visceral fat from {ct_file}", spinner='dots')
+    spinner.start()
     segment_tissue(ct_file, out_dir, 'Fat-Muscle')
+    spinner.succeed(text=f"Segmented skeletal muscle, subcutaneous and visceral fat from {ct_file}")
     fop.add_prefix_rename(out_label, 'Fat-Muscle')
     imageOp.shift_intensity(image_to_shift=fop.get_files(out_dir, 'Fat-Muscle*')[0],
                             shift_amount=c.NUM_OF_ORGANS + c.NUM_OF_BONES,
@@ -102,7 +112,10 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     logging.info(f"Fat-Muscle segmented and saved in {fop.get_files(out_dir, 'Fat-Muscle*')[0]}")
 
     logging.info(f"Segmenting psoas and assigning the right label intensity...")
+    spinner = Halo(text=f"Segmenting psoas from {ct_file}", spinner='dots')
+    spinner.start()
     segment_tissue(ct_file, out_dir, 'Psoas')
+    spinner.succeed(text=f"Segmented psoas from {ct_file}")
     fop.add_prefix_rename(out_label, 'Psoas')
     imageOp.shift_intensity(image_to_shift=fop.get_files(out_dir, 'Psoas*')[0],
                             shift_amount=c.NUM_OF_ORGANS + c.NUM_OF_BONES + c.NUM_OF_FAT_MUSCLE,
@@ -112,7 +125,7 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
                                                                                                c.NUM_OF_FAT_MUSCLE, 0],
                               out_image=fop.get_files(out_dir, 'Psoas*')[0])
     logging.info(f"Psoas segmented and saved in {fop.get_files(out_dir, 'Psoas*')[0]}")
-    postprocess.ct_segmentation(label_dir=out_dir)
+    postProcessing.ct_segmentation(label_dir=out_dir)
     logging.info(f"Merging all non-cerebral tissues segmented from CT...")
     imageOp.sum_image_stack(out_dir, '*nii.gz', os.path.join(
         out_dir, 'MOOSE-Non-cerebral-tissues-CT-' + pathlib.Path(out_dir).parents[0].stem + '.nii.gz'))
@@ -131,7 +144,10 @@ def segment_pt(nifti_img: str, out_dir: str) -> str:
     logging.info(f"PT image to be segmented: {pt_file}")
     logging.info(f"Output directory: {out_dir}")
     logging.info(f"Segmenting brain...")
+    spinner = Halo(text=f"Segmenting brain from {pt_file}", spinner='dots')
+    spinner.start()
     segment_tissue(pt_file, out_dir, 'Brain')
+    spinner.succeed(text=f"Segmented brain from {pt_file}")
     out_label = fop.get_files(out_dir, c.CROPPED_BRAIN_FROM_PET[:13] + '*')[0]
     fop.add_prefix_rename(out_label, 'Brain')
     imageOp.shift_intensity(image_to_shift=fop.get_files(out_dir, 'Brain*')[0],
