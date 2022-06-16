@@ -97,7 +97,7 @@ def dcm2nii(dicom_dir: str) -> None:
     spinner = Halo(text=f"Converting DICOM images in {dicom_dir} to NIFTI", spinner='dots')
     spinner.start()
     subprocess.run(cmd_to_run, shell=True, capture_output=True)
-    spinner.succeed()
+    spinner.succeed(text=f"Converted DICOM images in {dicom_dir} to NIFTI")
     logging.info("Done")
 
 

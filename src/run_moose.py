@@ -65,22 +65,30 @@ if __name__ == "__main__":
     logging.info('- Main folder: ' + main_folder)
     logging.info('- Error analysis: ' + str(args.error_analysis) + '[1 = True, 0 = False]')
     logging.info('- Total number of subjects to MOOSE: ' + str(len(fop.get_folders(main_folder))))
-    logging.info(' ')
 
     # --------------------------------------Processing individual subjects------------------------------------------
 
     subject_folders = fop.get_folders(main_folder)
 
     for subject_folder in subject_folders:
+        logging.info(' ')
+        print(' ')
         logging.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+        print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         logging.info(f"- Working folder: {subject_folder}")
+        print(f"- Working folder: {subject_folder}")
         processing_folder = str(pathlib.Path(subject_folder).stem)
         logging.info(f"- Processing subject:  {processing_folder}")
+        print(f"- Processing subject:  {processing_folder}")
         sub_folders = fop.get_folders(subject_folder)
         logging.info(f"- Number of folders in subject {processing_folder}: {str(len(sub_folders))}")
+        print(f"- Number of folders in subject {processing_folder}: {str(len(sub_folders))}")
         logging.info(f"- Folder names: {sub_folders}")
+        print(f"- Folder names: {sub_folders}")
+        print("::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         logging.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
         logging.info(' ')
+        print(" ")
         imageIO.dcm2nii(subject_folder)
         dicom_jsons = fop.get_files(subject_folder, '*json')
         if len(dicom_jsons) == 0:
@@ -122,7 +130,7 @@ if __name__ == "__main__":
             logging.info('CT segmentation completed')
             logging.info(f'Conducting automatic error analysis in similarity space for: {ct_atlas}')
             print(f'- Conducting automatic error analysis in similarity space for: {ct_atlas}')
-            segmentation_error_stats = os.path.join(subject_folder, processing_folder,
+            segmentation_error_stats = os.path.join(subject_folder, processing_folder +
                                                     '-Risk-of-segmentation-error.csv')
             ea.similarity_space(ct_atlas, sim_space_dir, segmentation_error_stats)
             logging.info(f'Error analysis completed for: {ct_atlas}, segmentation error stats saved in '
