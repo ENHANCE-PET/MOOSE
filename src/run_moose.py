@@ -59,7 +59,6 @@ if __name__ == "__main__":
     logging.info('****************************************************************************************************')
     start = timeit.default_timer()
     fop.display_logo()
-    print(' ')
     fop.display_citation()
     logging.info(' ')
     logging.info('INPUT ARGUMENTS')
