@@ -31,11 +31,11 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo rm -rf "$moose_dir"
     echo "[6] Removing environment variables for moose..."
     # shellcheck disable=SC2154
-    unset "$nnUNet_raw_data_base"
+    unset "nnUNet_raw_data_base"
     # shellcheck disable=SC2154
-    unset "$nnUNet_preprocessed"
-    unset "$RESULTS_FOLDER"
-    unset "$SIM_SPACE_DIR"
-    unset "$BRAIN_DETECTOR_DIR"
+    unset "nnUNet_preprocessed"
+    unset "RESULTS_FOLDER"
+    unset "SIM_SPACE_DIR"
+    unset "BRAIN_DETECTOR_DIR"
 
 fi
