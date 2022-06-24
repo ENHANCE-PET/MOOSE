@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# **********************************************************************************************************************
+# File: moose_installer.sh
+# Project: moose-v0.1.0
+# Created: 24.06.2022
+# Author: Lalith Kumar Shiyam Sundar
+# Email: lalith.shiyamsundar@meduniwien.ac.at
+# Institute: Quantitative Imaging and Medical Physics, Medical University of Vienna
+# Description: moose_installer.sh has been particularly created for making the installation process of moose easier
+# in linux.
+# License: Apache 2.0
+# **********************************************************************************************************************
+
 echo '[1] Installing python packages for running moose...'
 pip install -r requirements.txt
 echo '[2] Downloading required files IBM cloud storage...'
