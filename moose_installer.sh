@@ -49,13 +49,10 @@ cd dcm2niix
 # shellcheck disable=SC2164
 mkdir build && cd build
 cmake -DZLIB_IMPLEMENTATION=Cloudflare -DUSE_JPEGLS=ON -DUSE_OPENJPEG=ON ..
-sudo make install 
-sudo apt install python2
-echo '[9] Installing fsl, please answer the required questions via the terminal...'
-python2 "$moose_bin"/fslinstaller.py
-echo '[10] Installing pytorch...'
+sudo make install
+echo '[09] Installing pytorch...'
 pip install torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-echo '[11] Installing pigz parallel compression library...'
+echo '[10] Installing pigz parallel compression library...'
 sudo apt-get update -y
 sudo apt-get install -y pigz
 sudo chmod +x "$moose_src"
