@@ -10,7 +10,7 @@ MOOSE (Multi-organ objective segmentation) a data-centric AI solution that gener
 
 ## 🗂 Required folder structure 
 
-MOOSE inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, MOOSE performs the analysis sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated". Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
+`MOOSE` inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, MOOSE performs the analysis sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated". Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
 
 ```bash
 
