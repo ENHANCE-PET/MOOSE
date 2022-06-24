@@ -34,9 +34,9 @@ brain_detector_dir=$nnUNet_dir/'brain_detector.pkl'
 echo '[5] Setting up nnUNet environment variables in the .bashrc'
 # shellcheck disable=SC2129
 # shellcheck disable=SC2027
-echo "export nnUNet_raw_data_base=""${nnUNet_dir}""/nnUNet_raw" >> ~/.bashrc
+echo "export nnUNet_raw_data_base="${nnUNet_dir}"/nnUNet_raw" >> ~/.bashrc
 # shellcheck disable=SC2027
-echo "export nnUNet_preprocessed=""${nnUNet_dir}""/nnUNet_preprocessed" >> ~/.bashrc
+echo "export nnUNet_preprocessed="${nnUNet_dir}"/nnUNet_preprocessed" >> ~/.bashrc
 # shellcheck disable=SC2027
 # shellcheck disable=SC2086
 echo "export RESULTS_FOLDER="${nnUNet_dir}"/nnUNet_trained_models" >> ~/.bashrc
