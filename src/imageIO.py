@@ -101,34 +101,34 @@ def dcm2nii(dicom_dir: str) -> None:
     logging.info("Done")
 
 
-def split4d(nifti_file: str) -> None:
-    """Split a 4D NIFTI file into 3D NIFTI files using fslsplit
+def split4d(nifti_file: str, out_dir: str) -> None:
+    """Split a 4D NIFTI file into 3D NIFTI files using nibabel
     :param nifti_file: 4D NIFTI file to split
+    :param out_dir: Directory to save the split NIFTI files
     """
-    nifti_file_escaped = re.escape(nifti_file)
-    cmd_to_run = f"fslsplit {nifti_file_escaped}"
     logging.info(f"Splitting {nifti_file} into 3D nifti files")
-    spinner = Halo(text=f"Running command: {cmd_to_run}", spinner='dots')
+    spinner = Halo(text=f"Splitting {nifti_file} into 3D nifti files", spinner='dots')
     spinner.start()
-    os.chdir(pathlib.Path(nifti_file).parent)
-    subprocess.run(cmd_to_run, shell=True, capture_output=True)
+    split_nifti_files = nib.funcs.four_to_three(nib.funcs.squeeze_image(nib.load(nifti_file)))
+    i = 0
+    for file in split_nifti_files:
+        nib.save(file, os.path.join(out_dir, 'vol' + str(i).zfill(4) + '.nii.gz'))
+        i += 1
+    logging.info(f"Splitting done and split files are saved in {out_dir}")
     spinner.succeed()
-    logging.info("Done")
 
 
 def merge3d(nifti_dir: str, wild_card: str, nifti_outfile: str) -> None:
     """
-    Merge 3D NIFTI files into a 4D NIFTI file using fslmerge
+    Merge 3D NIFTI files into a 4D NIFTI file using nibabel
     :param nifti_dir: Directory containing the 3D NIFTI files
     :param wild_card: Wildcard to use to find the 3D NIFTI files
     :param nifti_outfile: User-defined output file name for the 4D NIFTI file
     """
-    os.chdir(nifti_dir)
-    cmd_to_run = f"fslmerge -t {nifti_outfile} {wild_card}"
     logging.info(f"Merging 3D nifti files in {nifti_dir} with wildcard {wild_card}")
-    logging.info(f"Running command: {cmd_to_run}")
+    files_to_merge = fop.get_files(nifti_dir, wild_card)
+    nib.save(nib.funcs.concat_images(files_to_merge, False), nifti_outfile)
     os.chdir(nifti_dir)
-    subprocess.run(cmd_to_run, shell=True, capture_output=True)
     logging.info("Done")
 
 
