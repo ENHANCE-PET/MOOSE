@@ -22,7 +22,6 @@ from pathlib import Path
 import natsort
 import pyfiglet
 
-
 def display_logo():
     """
     Display MOOSE logo
@@ -31,6 +30,14 @@ def display_logo():
     print("\n")
     result = pyfiglet.figlet_format("MOOSE v0.1", font="slant")
     print(result)
+
+def display_citation():
+    """
+    Display manuscript citation
+    :return:
+    """
+    print("\n")
+    print(" L. K. Shiyam Sundar et al. “Fully-automated, semantic segmentation of whole-body [18F]FDG PET/CT images based on data-centric artificial intelligence”. Accepted: Journal of Nuclear Medicine (2022).")
 
 
 def get_folders(dir_path: str) -> list:
