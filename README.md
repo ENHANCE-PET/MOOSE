@@ -39,7 +39,7 @@ We are testing different configurations now, but the RAM (256 GB) seems to be a 
 
 ## ⚙️ Installation
 
-Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. Also pay attention to the installation process as the FSL installation requires you to answer some questions. A fresh install would approximately take 30 minutes.
+Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes.
 
 ```bash
 
