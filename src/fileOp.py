@@ -36,7 +36,6 @@ def display_citation():
     Display manuscript citation
     :return:
     """
-    print("\n")
     print(" L. K. Shiyam Sundar et al. “Fully-automated, semantic segmentation of whole-body [18F]FDG PET/CT images based on data-centric artificial intelligence”. Accepted: Journal of Nuclear Medicine (2022).")
 
 
