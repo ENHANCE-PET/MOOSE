@@ -183,8 +183,8 @@ if __name__ == "__main__":
             shape_parameters.to_csv(os.path.join(stats_dir,
                                                  processing_folder
                                                  + '-ct-volume-stats.csv'))
-            logging.info('Aligning PET and CT data using diffeomorphic registration')
-            spinner = Halo(text='Aligning PET and CT data using diffeomorphic registration', spinner='dots')
+            logging.info('Aligning PET and CT data using affine registration')
+            spinner = Halo(text='Aligning PET and CT data using affine registration', spinner='dots')
             spinner.start()
             pet_file = fop.get_files(os.path.join(subject_folder, 'PT'), '*nii')
             aligned_moose_ct_atlas = pp.align_pet_ct(pet_file[0], fop.get_files(os.path.join(subject_folder, 'CT'),
