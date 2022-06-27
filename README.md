@@ -28,14 +28,14 @@ If you have already installed `moose` before. You need to uninstall `moose` befo
 sudo git config --global url."https://".insteadOf git://
 git clone https://github.com/LalithShiyam/MOOSE-V.1.0.git
 cd MOOSE-V.1.0
-source ./moose_uninstaller.sh
+sudo source ./moose_uninstaller.sh
 ```
 Once these steps are done, follow the steps below to do a fresh install of `moose`.
 
 #### Step: 2
 
 ```bash
-source ./moose_installer.sh
+sudo source ./moose_installer.sh
 ```
 #### Step: 3
 
@@ -56,7 +56,7 @@ Kindly copy the code below and paste it on your ubuntu terminal, the installer s
 sudo git config --global url."https://".insteadOf git://
 git clone https://github.com/LalithShiyam/MOOSE-V.1.0.git
 cd MOOSE-V.1.0
-source ./moose_installer.sh
+sudo source ./moose_installer.sh
 ```
 
 #### Step: 2
