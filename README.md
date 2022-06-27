@@ -131,4 +131,5 @@ This research is supported through an IBM University Cloud Award (https://www.re
 
  *Unfortunately the current version accepts only DICOM formats. In the future, we will try to enable non-DICOM formats for processing as well.*
 
-
+To do: 
+[] Create a working `moose_uninstaller.sh `
