@@ -37,6 +37,13 @@ Once these steps are done, follow the steps below to do a fresh install of `moos
 ```bash
 source ./moose_installer.sh
 ```
+#### Step: 3
+
+‼️ Source the .bashrc file again**
+
+```bash
+source ~/.bashrc
+```
 
 ### 📀 Fresh install 
 
