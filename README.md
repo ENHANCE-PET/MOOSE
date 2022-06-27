@@ -54,7 +54,7 @@ Kindly copy the code below and paste it on your ubuntu terminal, the installer s
 
 ```bash
 
-git config --global url."https://".insteadOf git://
+sudo git config --global url."https://".insteadOf git://
 git clone https://github.com/LalithShiyam/MOOSE-V.1.0.git
 cd MOOSE-V.1.0
 source ./moose_installer.sh
