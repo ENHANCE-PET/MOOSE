@@ -36,9 +36,9 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     BRAIN_DIR="BRAIN_DETECTOR_DIR"
     MOOSE_DIR="MOOSE_DIR"
     BASH_RC_PATH="$HOME/.bashrc"
-    sed "/${NNUNET_DIR}/d" ${BASH_RC_PATH}
-    sed "/${RESULTS_DIR}/d" ${BASH_RC_PATH}
-    sed "/${SIM_SPACE_DIR}/d" ${BASH_RC_PATH}
-    sed "/${BRAIN_DIR}/d" ${BASH_RC_PATH}
-    sed "/${MOOSE_DIR}/d" ${BASH_RC_PATH}
+    sed "/${NNUNET_DIR}/d" "${BASH_RC_PATH}"
+    sed "/${RESULTS_DIR}/d" "${BASH_RC_PATH}"
+    sed "/${SIM_SPACE_DIR}/d" "${BASH_RC_PATH}"
+    sed "/${BRAIN_DIR}/d" "${BASH_RC_PATH}"
+    sed "/${MOOSE_DIR}/d" "${BASH_RC_PATH}"
 fi
