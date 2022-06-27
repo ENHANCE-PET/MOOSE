@@ -20,12 +20,23 @@ We are testing different configurations now, but the RAM (256 GB) seems to be a 
 
 ### ‼️ ⚠️ NOTE: For people who already have the alpha version of moose in their servers ‼️
 
-If you have already installed `moose` before. You need to manually remove the environment variables from the `.bashrc` file and source it again. The following variables should be removed before you start the installation process. `nnUNet_raw_data_base`, `nnUNet_preprocessed`, `RESULTS_FOLDER`, `SIM_SPACE_DIR`. In the next release, the moose_uninstaller.sh should do this for you. Once you remove all the environment variables mentioned above, source the `.bashrc` file and also remove the old version of moose from your system, by typing the command below in your terminal. 
+If you have already installed `moose` before. You need to uninstall `moose` before installing the current version. This can be easily done by using the command below
+
+#### Step: 1
 
 ```bash
-sudo rm -rf /usr/local/bin/moose
+sudo git config --global url."https://".insteadOf git://
+git clone https://github.com/LalithShiyam/MOOSE-V.1.0.git
+cd MOOSE-V.1.0
+source ./moose_uninstaller.sh
 ```
 Once these steps are done, follow the steps below to do a fresh install of `moose`.
+
+#### Step: 2
+
+```bash
+source ./moose_installer.sh
+```
 
 ### 📀 Fresh install 
 
