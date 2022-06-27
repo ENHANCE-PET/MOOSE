@@ -8,27 +8,6 @@
 
 MOOSE (Multi-organ objective segmentation) a data-centric AI solution that generates multilabel organ segmentations to facilitate systemic TB whole-person research.The pipeline is based on nn-UNet and has the capability to segment 120 unique tissue classes from a whole-body 18F-FDG PET/CT image.
 
-## 🗂 Required folder structure 
-
-`moose` inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, MOOSE performs the analysis sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated" (refer results section). Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
-
-```bash
-
-main_folder/                         # The mother folder that holds all the patient folders (folder name can be anything)
-├── SUB01                            # Individual patient folder (folder name can be anything)  
-│   ├── AC_CT                        # Required: The CT folder name can be named anything as long as the files inside this folder is DICOM 
-│   └── PET_WB                       # Required: The PT folder name can be named anything as long as the files inside this folder is DICOM          
-└── SUB02
-│   ├── AC_CT_1.2.752.37.47.345051852996.20220311.1441.5.430761
-│   └── PET_WB_CORRECTED_1.2.752.37.47.345051852996.20220311.1441.5.430763
-└── .
-└── .
-└── .
-└── SUB0N
-    ├── AC_CT_1.2.752.37.47.345051852996.20220311.1441.5.430761
-    └── PET_WB_CORRECTED_1.2.752.37.47.345051852996.20220311.1441.5.430763    
-```
-
 ## ⛔️ Hard requirements 
 
 The entire script has been *ONLY* tested on **Ubuntu linux OS**, with the following hardware capabilities:
@@ -64,6 +43,28 @@ source ./moose_installer.sh
 ```bash
 source ~/.bashrc
 ```
+
+## 🗂 Required folder structure 
+
+`moose` inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, MOOSE performs the analysis sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated" (refer results section). Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
+
+```bash
+
+main_folder/                         # The mother folder that holds all the patient folders (folder name can be anything)
+├── SUB01                            # Individual patient folder (folder name can be anything)  
+│   ├── AC_CT                        # Required: The CT folder name can be named anything as long as the files inside this folder is DICOM 
+│   └── PET_WB                       # Required: The PT folder name can be named anything as long as the files inside this folder is DICOM          
+└── SUB02
+│   ├── AC_CT_1.2.752.37.47.345051852996.20220311.1441.5.430761
+│   └── PET_WB_CORRECTED_1.2.752.37.47.345051852996.20220311.1441.5.430763
+└── .
+└── .
+└── .
+└── SUB0N
+    ├── AC_CT_1.2.752.37.47.345051852996.20220311.1441.5.430761
+    └── PET_WB_CORRECTED_1.2.752.37.47.345051852996.20220311.1441.5.430763    
+```
+
 ## 🖥 Usage
 
 - For running the moose directly from the command-line terminal using the default options - please use the following command. In general, MOOSE performs the error analysis (refer paper) in similarity space and assumes that the given (if given) PET image is static.

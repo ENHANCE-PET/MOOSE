@@ -30,12 +30,9 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "[5] Removing moose folder from $moose_dir..."
     sudo rm -rf "$moose_dir"
     echo "[6] Removing environment variables for moose..."
-    # shellcheck disable=SC2154
-    unset nnUNet_raw_data_base
-    # shellcheck disable=SC2154
-    unset nnUNet_preprocessed
-    unset RESULTS_FOLDER
-    unset IM_SPACE_DIR
-    unset BRAIN_DETECTOR_DIR
-
+    sed '/nnUNet_/d' ~/.bashrc
+    sed '/RESULTS_FOLDER/d' ~/.bashrc
+    sed '/SIM_SPACE_DIR/d' ~/.bashrc
+    sed '/BRAIN_DETECTOR_DIR/d' ~/.bashrc
+    sed '/MOOSE_DIR/d' ~/.bashrc
 fi
