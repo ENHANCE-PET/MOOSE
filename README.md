@@ -42,6 +42,8 @@ source ./moose_installer.sh
 
 Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes.
 
+#### Step: 1
+
 ```bash
 
 sudo git config --global url."https://".insteadOf git://
@@ -49,7 +51,10 @@ git clone https://github.com/LalithShiyam/MOOSE-V.1.0.git
 cd MOOSE-V.1.0
 source ./moose_installer.sh
 ```
-**‼️ NOTE: Do not forget to source the .bashrc file again**
+
+#### Step: 2
+
+‼️ Source the .bashrc file again**
 
 ```bash
 source ~/.bashrc
