@@ -10,7 +10,7 @@ MOOSE (Multi-organ objective segmentation) a data-centric AI solution that gener
 
 ## ⛔️ Hard requirements 
 
-The entire script has been *ONLY* tested on **Ubuntu linux OS**, with the following hardware capabilities:
+`MOOSE` has been *ONLY* tested on **Ubuntu linux OS**, with the following hardware capabilities:
 - Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz 
 - 256 GB of RAM (Very important for total-body datasets)
 - 1 x Nvidia GeForce RTX 3090 Ti (or similar)
