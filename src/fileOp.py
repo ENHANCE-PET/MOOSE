@@ -30,6 +30,8 @@ def display_logo():
     print("\n")
     result = pyfiglet.figlet_format("MOOSE v0.1", font="slant")
     print(result)
+    print(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
+
 
 def display_citation():
     """
@@ -37,7 +39,6 @@ def display_citation():
     :return:
     """
     print(" L. K. Shiyam Sundar et al. “Fully-automated, semantic segmentation of whole-body [18F]FDG PET/CT images based on data-centric artificial intelligence”. Accepted: Journal of Nuclear Medicine (2022).")
-
 
 def get_folders(dir_path: str) -> list:
     """
