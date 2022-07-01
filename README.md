@@ -36,7 +36,7 @@ Once these steps are done, follow the steps below to do a fresh install of `moos
 #### Step: 2
 
 ```bash
-sudo bash moose_installer.sh
+bash moose_installer.sh
 ```
 #### Step: 3
 
