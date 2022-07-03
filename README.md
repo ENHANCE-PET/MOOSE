@@ -58,7 +58,7 @@ sudo su
 git config --global url."https://".insteadOf git://
 git clone https://github.com/QIMP-Team/MOOSE-v0.1.0.git
 cd MOOSE-v0.1.0
-bash ./moose_installer.sh
+bash moose_installer.sh
 ```
 
 #### Step: 2
