@@ -39,10 +39,7 @@ def display_citation():
     """
     print(" CITATION:")
     print(" ")
-    print(" Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT images based on data-centric artificial intelligence")
-    print(" Lalith Kumar Shiyam Sundar, Josef Yu, Otto Muzik, Oana Kulterer, Barbara J Fueger, Daria Kifjak, Thomas Nakuz, Hiyung Min Shin, Annika Katharina Sima, Daniela Kitzmantl, Ramsey Derek Badawi, Lorenzo Nardo, Simon R. Cherry, Benjamin A. Spencer, Marcus Hacker, Thomas Beyer")
-    print(" Journal of Nuclear Medicine Jun 2022, jnumed.122.264063; DOI: 10.2967/jnumed.122.264063")
-    print(" ")
+    print(" Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT images based on data-centric artificial intelligence. J Nucl Med. June 2022.")
     print(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 def get_folders(dir_path: str) -> list:
