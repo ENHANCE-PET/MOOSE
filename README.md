@@ -18,7 +18,7 @@ We are testing different configurations now, but the RAM (256 GB) seems to be a 
 
 ## ⚙️ Installation
 
-### ‼️ ⚠️ NOTE: For people who already have the alpha version of moose in their servers ‼️
+### ‼️ ⚠️ NOTE: For people who already have the alpha version of moose in their servers 
 
 If you have already installed `moose` before. You need to uninstall `moose` before installing the current version. This can be easily done by using the command below
 
