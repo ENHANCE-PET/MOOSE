@@ -133,17 +133,26 @@ main_folder/                         # The mother folder that holds all the pati
 ```
 The generated labels are currently in `nifti` format and for each subject `SUB0XX', the labels will be stored in `MOOSE-SUB0XX/labels'.
 
-*Legends for the generated nifti labels:* 
+**Legends for the generated nifti labels:** 
 
 Unified labels: 
 - MOOSE-Non-cerebral-tissues-CT-SUB0XX-XXXX.nii.gz: Multilabel non-cerebral CT segmentations from the subject's CT.
-- MOOSE-unified-PET-CT-atlas.nii.gz: Multilabel MOOSE atlas which should ideally contain all the cerebral (from PT) and non-cerebral tissues )from CT)
+- MOOSE-unified-PET-CT-atlas.nii.gz: Multilabel MOOSE atlas which should ideally contain all the cerebral (from PT) and non-cerebral tissues (from CT)
+
 Compartmental labels:
 - Bones_XXXXX.nii.gz: Multilabel bone segmentations from the subject's CT.
 - Fat-Muscle_XXXXX.nii.gz: Multilabel fat-muscle (skeletal muscle, subcutaneous and visceral fat) segmentations from the subject's CT.
 - Organs_XXXXX.nii.gz: Multilabel abdominal organ segmentations from the subject's CT.
 - Psoas_XXXXX.nii.gz: Psoas muscle segmentations from the subject's CT.
 - Brain_XXXXX.nii.gz: Multilabel hammersmith atlas segmentations from the subject's PT.
+
+** Statistical measures **
+
+`MOOSE` also derives statistical measures (Mean, Median, Standard-deviation, Maximum and Minimum) based on the segmentations and they are stored in `MOOSE-SUB0XX/stats` as `.csv` files.
+
+- XXXXX-ct-hu-values.csv: Hounsfield values of the regions derived from CT 
+- XXXXX-ct-volume-stats.csv: Volume of the regions derived from CT
+- XXXXX-SUV-values.csv: SUV values of the regions derived from PT
 
 ## 📖 Citations
 
