@@ -135,7 +135,7 @@ main_folder/                         # The mother folder that holds all the pati
 ## 📖 Citations
 
 - Software citation: Shiyam Sundar, L. K. (2022). MOOSE-120 (Version 0.9.0) [Computer software]. https://doi.org/10.5281/zenodo.5829597
-- L. K. Shiyam Sundar et al. “Fully-automated, semantic segmentation of whole-body [18F]FDG PET/CT images based on data-centric artificial intelligence”. Accepted: Journal of Nuclear Medicine (2022).
+- Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT images based on data-centric artificial intelligence. J Nucl Med. June 2022.
 
 ## 🙏 Acknowledgement
 
