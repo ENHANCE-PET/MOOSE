@@ -12,16 +12,16 @@
 # License: Apache 2.0
 # **********************************************************************************************************************
 
-echo "[-] Uninstalling Falcon v0.1.0"
+echo "[-] Uninstalling MOOSE v0.1.0"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    echo "[2] Linux detected..."
-    echo "[3] Removing moose from /usr/local/bin..."
+    echo "[1] Linux detected..."
+    echo "[2] Removing moose from /usr/local/bin..."
     sudo rm /usr/local/bin/moose
-    echo "[4] Removing supporting binaries..."
+    echo "[3] Removing supporting binaries..."
     sudo rm /usr/local/bin/c3d
     sudo rm /usr/local/bin/greedy
-    echo "[5] Removing python dependencies"
+    echo "[4] Removing python dependencies"
     pip uninstall -r requirements.txt
     # shellcheck disable=SC2006
     # shellcheck disable=SC2034
