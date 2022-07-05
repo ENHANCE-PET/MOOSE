@@ -189,3 +189,4 @@ This research is supported through an IBM University Cloud Award (https://www.re
 ## 🛠 To do
 - [x] Create a working `moose_uninstaller.sh `
 - [ ] Create a docker image for the current version of moose v0.1.0
+- [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)
