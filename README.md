@@ -8,6 +8,8 @@
 
 MOOSE (Multi-organ objective segmentation) a data-centric AI solution that generates multilabel organ segmentations to facilitate systemic TB whole-person research.The pipeline is based on nn-UNet and has the capability to segment 120 unique tissue classes from a whole-body 18F-FDG PET/CT image.
 
+![Alt Text](https://github.com/QIMP-Team/MOOSE-v0.1.0/blob/main/Images/MOOSE-results.gif)
+
 ## ⛔️ Hard requirements 
 
 `MOOSE` has been *ONLY* tested on **Ubuntu linux OS**, with the following hardware capabilities:
