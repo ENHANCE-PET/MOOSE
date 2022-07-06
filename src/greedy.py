@@ -4,7 +4,7 @@
 
 # ***********************************************************************************************************************
 # File: greedy.py
-# Project: MOOSE Version 1.0
+# Project: MOOSE Version 0.1.0
 # Created: 21.03.2022
 # Author: Lalith Kumar Shiyam Sundar
 # Email: Lalith.Shiyamsundar@meduniwien.ac.at
@@ -54,7 +54,6 @@ def affine(fixed_img: str, moving_img: str, cost_function: str, multi_resolution
     :param moving_img: Moving image
     :param cost_function: Cost function
     :param multi_resolution_iterations: Amount of iterations for each resolution level
-
     :return none
     """
     logging.info(" ")
@@ -72,33 +71,6 @@ def affine(fixed_img: str, moving_img: str, cost_function: str, multi_resolution
     logging.info(" ")
     subprocess.run(cmd_to_run, shell=True, capture_output=True)
 
-
-def deformable(fixed_img: str, moving_img: str, cost_function: str, multi_resolution_iterations: str) -> None:
-    """
-    Performs deformable registration between a fixed and moving image using the greedy registration toolkit.
-    :param fixed_img: Reference image
-    :param moving_img: Moving image
-    :param cost_function: Cost function
-    :param multi_resolution_iterations: Amount of iterations for each resolution level
-    :return:
-    """
-    logging.info(" ")
-    logging.info("Performing affine registration for initial global alignment")
-    affine(fixed_img, moving_img, cost_function, multi_resolution_iterations)
-    cmd_to_run = f"greedy -d 3 -m {cost_function} -i {re.escape(fixed_img)} {re.escape(moving_img)} -it affine.mat -o " \
-                 f"warp.nii.gz -oinv " \
-                 f"inverse_warp.nii.gz -n {multi_resolution_iterations}"
-    logging.info("Performing deformable registration for local alignment")
-    logging.info(f"- Registration type: deformable")
-    logging.info(f"- Reference image: {re.escape(fixed_img)}")
-    logging.info(f"- Moving image: {re.escape(moving_img)}")
-    logging.info(f"- Cost function: {cost_function}")
-    logging.info(f"- Initial alignment: based on affine.mat")
-    logging.info(f"- Multiresolution level iterations: {multi_resolution_iterations}")
-    logging.info(f"- Deformation field generated: warp.nii.gz + inverse_warp.nii.gz")
-    logging.info(' ')
-    subprocess.run(cmd_to_run, shell=True, capture_output=True)
-    print("Deformable registration complete")
 
 
 def registration(fixed_img: str, moving_img: str, registration_type: str, multi_resolution_iterations: str) -> None:
@@ -119,9 +91,6 @@ def registration(fixed_img: str, moving_img: str, registration_type: str, multi_
         rigid(fixed_img, moving_img, cost_function='NMI', multi_resolution_iterations=multi_resolution_iterations)
     elif registration_type == 'affine':
         affine(fixed_img, moving_img, cost_function='NMI', multi_resolution_iterations=multi_resolution_iterations)
-    elif registration_type == 'deformable':
-        deformable(fixed_img, moving_img, cost_function='NCC 2x2x2',
-                   multi_resolution_iterations=multi_resolution_iterations)
     else:
         sys.exit("Registration type not supported!")
 

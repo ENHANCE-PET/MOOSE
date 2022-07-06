@@ -3,7 +3,7 @@
 
 # ***********************************************************************************************************************
 # File: inferenceEngine.py
-# Project: MOOSE Version 1.0
+# Project: MOOSE Version 0.1.0
 # Created: 23.03.2022
 # Author: Lalith Kumar Shiyam Sundar
 # Email: Lalith.Shiyamsundar@meduniwien.ac.at

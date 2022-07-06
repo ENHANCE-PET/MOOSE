@@ -3,7 +3,7 @@
 
 # ***********************************************************************************************************************
 # File: errorAnalysis.py
-# Project: MOOSE Version 1.0
+# Project: MOOSE Version 0.1.0
 # Created: 28.03.2022
 # Author: Lalith Kumar Shiyam Sundar
 # Email: lalith.shiyamsundar@meduniwien.ac.at
