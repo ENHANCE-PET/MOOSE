@@ -6,9 +6,12 @@
   <img alt="Shows an illustrated storyboard in light color mode and an inverted storyboard in dark color mode." src="https://github.com/LalithShiyam/MOOSE-V.1.0/blob/main/Images/MOOSE_storyboard_dark.gif" width="500" height="500">
 </p>
 
+
 MOOSE (Multi-organ objective segmentation) a data-centric AI solution that generates multilabel organ segmentations to facilitate systemic TB whole-person research.The pipeline is based on nn-UNet and has the capability to segment 120 unique tissue classes from a whole-body 18F-FDG PET/CT image. The input can be an 18F-FDG PET/CT image or a CT only image (but never a PET only image) and the segmentation of the tissues is done automatically based on the provided input.
 
+
 ![Alt Text](https://github.com/QIMP-Team/MOOSE-v0.1.0/blob/main/Images/MOOSE-results.gif)
+
 
 ## ⛔️ Hard requirements 
 
