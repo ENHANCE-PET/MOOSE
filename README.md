@@ -30,18 +30,17 @@ If you have already installed `moose` before. You need to uninstall `moose` befo
 #### Step: 1
 
 ```bash
-sudo su
-git config --global url."https://".insteadOf git://
+sudo git config --global url."https://".insteadOf git://
 git clone https://github.com/QIMP-Team/MOOSE-v0.1.0.git
 cd MOOSE-v0.1.0
-bash moose_uninstaller.sh
+sudo bash moose_uninstaller.sh
 ```
 Once these steps are done, follow the steps below to do a fresh install of `moose`.
 
 #### Step: 2
 
 ```bash
-bash moose_installer.sh
+sudo bash moose_installer.sh
 ```
 #### Step: 3
 
@@ -58,12 +57,10 @@ Kindly copy the code below and paste it on your ubuntu terminal, the installer s
 #### Step: 1
 
 ```bash
-
-sudo su 
-git config --global url."https://".insteadOf git://
+sudo git config --global url."https://".insteadOf git://
 git clone https://github.com/QIMP-Team/MOOSE-v0.1.0.git
 cd MOOSE-v0.1.0
-bash moose_installer.sh
+sudo bash moose_installer.sh
 ```
 
 #### Step: 2
