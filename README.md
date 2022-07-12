@@ -168,10 +168,10 @@ All individual labels can be found inside `SUB0XX/MOOSE-SUB0XX/labels/sim_space/
 
 ## 📖 Citations
 
-```bash
+```
 Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT images based on data-centric artificial intelligence. J Nucl Med. June 2022.
 ```
-```bash
+```
 Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2020). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nature Methods, 1-9.
 ```
 ## 🙏 Acknowledgement
