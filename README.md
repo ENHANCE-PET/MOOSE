@@ -19,7 +19,7 @@ MOOSE (Multi-organ objective segmentation) a data-centric AI solution that gener
 - Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz 
 - 256 GB of RAM (Very important for total-body datasets)
 - 1 x Nvidia GeForce RTX 3090 Ti (or similar)
-We are testing different configurations now, but the RAM (256 GB) seems to be a hard requirement. 
+We are testing different configurations now, but the RAM (256 GB) seems to be a hard requirement if you are using whole-body CT datasets with high resolution. 
 
 ## ⚙️ Installation
 
