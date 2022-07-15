@@ -207,7 +207,7 @@ This research is supported through an IBM University Cloud Award (https://www.re
 
 ## 🛠 To do 
 
-October release candidate
+MOOSEv0.2.0: October release candidate
 
 - [x] Create a working `moose_uninstaller.sh `
 - [ ] Create a docker image for the current version of moose v0.1.0
