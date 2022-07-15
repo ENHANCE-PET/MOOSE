@@ -167,11 +167,23 @@ All individual labels can be found inside `SUB0XX/MOOSE-SUB0XX/labels/sim_space/
 
 ## 📖 Citations
 
+`MOOSE` is built on top of some amazing open-source libraries, please consider citing them as well as a token of appreciation.
+
+`Citation for MOOSE`
 ```
 Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT images based on data-centric artificial intelligence. J Nucl Med. June 2022.
 ```
+`Citation for nnUNet`
 ```
 Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2020). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nature Methods, 1-9.
+```
+`Citation for dcm2niix`
+```
+Li X, Morgan PS, Ashburner J, Smith J, Rorden C. (2016) The first step for neuroimaging data analysis: DICOM to NIfTI conversion. J Neurosci Methods. 264:47-56.
+```
+`Citation for SimpleITK`
+```
+Z. Yaniv, B. C. Lowekamp, H. J. Johnson, R. Beare, “SimpleITK Image-Analysis Notebooks: a Collaborative Environment for Education and Reproducible Research”, J Digit Imaging., doi: 10.1007/s10278-017-0037-8, 31(3): 290-303, 2018.
 ```
 ## 🙏 Acknowledgement
 
