@@ -9,7 +9,9 @@
   <img alt="Shows an illustrated storyboard in light color mode and an inverted storyboard in dark color mode." src="https://github.com/LalithShiyam/MOOSE-V.1.0/blob/main/Images/MOOSE_storyboard_dark.gif" width="500" height="500">
 </p>
 
-MOOSE (Multi-organ objective segmentation) a data-centric AI solution that generates multilabel organ segmentations to facilitate systemic TB whole-person research.The pipeline is based on nn-UNet and has the capability to segment 120 unique tissue classes from a whole-body 18F-FDG PET/CT image. The input can be an 18F-FDG PET/CT image or a CT only image (but never a PET only image) and the segmentation of the tissues is done automatically based on the provided input.
+MOOSE (Multi-organ objective segmentation) a [data-centric AI solution](https://datacentricai.org) that generates multilabel organ segmentations to facilitate systemic TB whole-person research. The pipeline is based on [nn-UNet]( and has the capability to segment 120 unique tissue classes from a whole-body 18F-FDG PET/CT image. The input can be an 18F-FDG PET/CT image or a CT only image (but never a PET only image) and the segmentation of the tissues is done automatically based on the provided input. 
+
+As mentioned earlier, MOOSE is built on [data-centric AI principles](https://snorkel.ai/principles-of-data-centric-ai-development/) where the state-of-the-art architecture (`nnUNet`)is fixed and the training data is selectively augmented to ensure peak segmentation performance. The segmentation performance is continously monitored in a systemic manner using the concept of similarity space (refer [paper](https://jnm.snmjournals.org/content/early/2022/06/30/jnumed.122.264063.abstract)). Data that causes a decrease in the performance is identified automatically and included to the initial training dataset for maintaining peak performance.
 
 
 ![Alt Text](https://github.com/QIMP-Team/MOOSE-v0.1.0/blob/main/Images/MOOSE-results.gif)
