@@ -200,5 +200,6 @@ This research is supported through an IBM University Cloud Award (https://www.re
 - [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)
 - [ ] Prune/Compress the models for faster inference. (PRs welcome)
 - [ ] Choose a faster resampling scheme for faster inference. (PRs welcome)
+- [ ] Reduce memory requirement for MOOSE during inference.
 
 
