@@ -56,7 +56,7 @@ source ~/.bashrc
 
 ### 📀 Fresh install 
 
-Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes.
+Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. Include `sudo` as shown below, in case you don't have write access. If you use `sudo`, make sure you type `sudo su` before you run `moose`, check [usage](https://github.com/QIMP-Team/MOOSE#-usage)!
 
 #### Step: 1
 
