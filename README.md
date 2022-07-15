@@ -34,18 +34,17 @@ If you have already installed `moose` before. You need to uninstall `moose` befo
 #### Step: 1
 
 ```bash
-sudo su
-git config --global url."https://".insteadOf git://
-git clone https://github.com/QIMP-Team/MOOSE.git
+sudo git config --global url."https://".insteadOf git://
+sudo git clone https://github.com/QIMP-Team/MOOSE.git
 cd MOOSE
-bash moose_uninstaller.sh
+sudo bash moose_uninstaller.sh
 ```
 Once these steps are done, follow the steps below to do a fresh install of `moose`.
 
 #### Step: 2
 
 ```bash
-bash moose_installer.sh
+sudo bash moose_installer.sh
 ```
 #### Step: 3
 
@@ -62,11 +61,10 @@ Kindly copy the code below and paste it on your ubuntu terminal, the installer s
 #### Step: 1
 
 ```bash
-sudo su
-git config --global url."https://".insteadOf git://
-git clone https://github.com/QIMP-Team/MOOSE.git
+sudo git config --global url."https://".insteadOf git://
+sudo git clone https://github.com/QIMP-Team/MOOSE.git
 cd MOOSE
-bash moose_installer.sh
+sudo bash moose_installer.sh
 ```
 
 #### Step: 2
@@ -103,6 +101,7 @@ main_folder/                         # The mother folder that holds all the pati
 - For running the moose directly from the command-line terminal using the default options - please use the following command. In general, MOOSE performs the error analysis (refer paper) in similarity space and assumes that the given (if given) PET image is static.
 
 ```bash
+sudo su # In your terminal before you run moose, if you installed earlier with sudo.
 
 #syntax:
 moose -f path_to_main_folder 
