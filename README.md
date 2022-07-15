@@ -197,5 +197,8 @@ This research is supported through an IBM University Cloud Award (https://www.re
 - [x] Create a working `moose_uninstaller.sh `
 - [ ] Create a docker image for the current version of moose v0.1.0
 - [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)
+- [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)
+- [ ] Prune/Compress the models for faster inference. (PRs welcome)
+- [ ] Choose a faster resampling scheme for faster inference. (PRs welcome)
 
 
