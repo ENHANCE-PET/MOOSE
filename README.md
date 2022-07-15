@@ -187,9 +187,6 @@ Li X, Morgan PS, Ashburner J, Smith J, Rorden C. (2016) The first step for neuro
 ```
 Z. Yaniv, B. C. Lowekamp, H. J. Johnson, R. Beare, “SimpleITK Image-Analysis Notebooks: a Collaborative Environment for Education and Reproducible Research”, J Digit Imaging., doi: 10.1007/s10278-017-0037-8, 31(3): 290-303, 2018.
 ```
-## 🙏 Acknowledgement
-
-This research is supported through an IBM University Cloud Award (https://www.research.ibm.com/university/)
 
 ## 🙋 FAQ
 
@@ -207,9 +204,15 @@ This research is supported through an IBM University Cloud Award (https://www.re
 
  *Unfortunately the current version accepts only DICOM formats. In the future, we will try to enable non-DICOM formats for processing as well.*
 
+
+## 🙏 Acknowledgement
+
+This research is supported through an IBM University Cloud Award (https://www.research.ibm.com/university/)
+
+
 ## 🛠 To do 
 
-MOOSEv0.2.0: October release candidate
+**MOOSEv0.2.0: October release candidate**
 
 - [x] Create a working `moose_uninstaller.sh `
 - [ ] Create a docker image for the current version of moose v0.1.0
