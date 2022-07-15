@@ -207,7 +207,7 @@ Z. Yaniv, B. C. Lowekamp, H. J. Johnson, R. Beare, “SimpleITK Image-Analysis N
 
 ## 🙏 Acknowledgement
 
-This research is supported through an IBM University Cloud Award (https://www.research.ibm.com/university/)
+This research is supported through an [IBM University Cloud Award](https://www.research.ibm.com/university/)
 
 
 ## 🛠 To do 
