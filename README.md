@@ -139,6 +139,8 @@ The generated labels are currently in `nifti` format and for each subject `SUB0X
 
 **🤔 Legends for the generated nifti labels** 
 
+The labels to region correspondence can be found [here](https://github.com/QIMP-Team/MOOSE/blob/main/labels-to-regions.md)!
+
 [1] Unified labels: 
 - `MOOSE-Non-cerebral-tissues-CT-SUB0XX-XXXX.nii.gz:` Multilabel non-cerebral CT segmentations from the subject's CT.
 - `MOOSE-unified-PET-CT-atlas.nii.gz:` Multilabel MOOSE atlas which should ideally contain all the cerebral (from PT) and non-cerebral tissues (from CT)
