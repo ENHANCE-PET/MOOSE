@@ -245,8 +245,8 @@ This research was supported by:
 
 **MOOSEv0.1.0: July release candidate**
 
-- [x] Create a working `moose_uninstaller.sh ` [@LalithShiyam](https://github.com/LalithShiyam)
-- [x] Create a docker image for the current version of moose v0.1.0 [@LalithShiyam](https://github.com/LalithShiyam)
+- [x] Create a working `moose_uninstaller.sh` [@LalithShiyam](https://github.com/LalithShiyam)
+- [x] Create a docker image (`moose_16072022.tar`) for the current version of moose v0.1.0 [@LalithShiyam](https://github.com/LalithShiyam)
 
 **MOOSEv0.2.0: October release candidate**
 
