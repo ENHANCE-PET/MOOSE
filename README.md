@@ -139,7 +139,7 @@ moose -f path_to_main_folder
 
 ```bash
 
-sudo su # In your terminal before you run moose, if you installed earlier with sudo in your local machine (you DON'T need to do this for docker).
+sudo su # In your terminal before you run moose, if you installed earlier with sudo in your local machine.
 
 #example: 
 moose -f /home/kyloren/Documents/main_folder # input can be absolute path
