@@ -27,11 +27,18 @@ We are testing different configurations now, but the RAM (256 GB) seems to be a 
 
 ## ⚙️ Installation
 
-### ‼️ ⚠️ NOTE: For people who already have the alpha version of moose in their servers 
+We offer two flavors of installation: (1) Installing in your local machine and (2) Installing in your shared server (e.g. DGX) via docker. I personally recommend the docker as you have a fully functional, ready-to-go solution. But honestly, depends on what you like!
 
-If you have already installed `moose` before. You need to uninstall `moose` before installing the current version. This can be easily done by using the command below
+### 🖥️ Local machine 
 
-#### Step: 1
+*Include `sudo` as shown below, in case you don't have write access. If you use `sudo`, make sure you type `sudo su` before you run `moose`, check [usage](https://github.com/QIMP-Team/MOOSE#-usage)!*
+
+#### ⚠️ NOTE: For people who already have the alpha version of moose in their machines 
+
+
+If you have already installed `moose` before. You need to uninstall `moose` before installing the current version. This can be easily done by using the command below. 
+
+##### Step: 1
 
 ```bash
 sudo git config --global url."https://".insteadOf git://
@@ -41,12 +48,12 @@ sudo bash moose_uninstaller.sh
 ```
 Once these steps are done, follow the steps below to do a fresh install of `moose`.
 
-#### Step: 2
+##### Step: 2
 
 ```bash
 sudo bash moose_installer.sh
 ```
-#### Step: 3
+##### Step: 3
 
 ‼️ Source the .bashrc file again**
 
@@ -54,11 +61,11 @@ sudo bash moose_installer.sh
 source ~/.bashrc
 ```
 
-### 📀 Fresh install 
+#### 📀 Fresh install 
 
-Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. Include `sudo` as shown below, in case you don't have write access. If you use `sudo`, make sure you type `sudo su` before you run `moose`, check [usage](https://github.com/QIMP-Team/MOOSE#-usage)!
+Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. 
 
-#### Step: 1
+##### Step: 1
 
 ```bash
 sudo git config --global url."https://".insteadOf git://
@@ -67,17 +74,37 @@ cd MOOSE
 sudo bash moose_installer.sh
 ```
 
-#### Step: 2
+##### Step: 2
 
 ‼️ Source the .bashrc file again**
 
 ```bash
 source ~/.bashrc
 ```
+### 🐋 Installing using Docker 
+
+We have already created the `docker` image for you, all you need to do is load it. We assume that you have already installed docker in your system (solutions to common 'image loading' issues in docker can be found [here](https://github.com/NVIDIA/nvidia-docker/issues/1243#issuecomment-694981577)). Make sure you replace the `path_to_mount_without_the_quotes` in the last command with your own local path, which needs to be mounted to the container.
+
+##### Step: 1
+
+```bash
+wget "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/moose_16072022.tar"
+docker load < moose_img.tar
+docker run --gpus all --name moose -it --ipc=host -v 'path_to_mount_without_the_quotes':/data moose_img /bin/bash
+```
+After this step, a docker container with the name 'moose' will be created. In case you exited the ```moose``` container, you can start and run the container using the following commands
+
+##### Step: 2
+
+```bash
+docker start moose
+docker attach moose
+```
+You will now be inside the moose container after the execution of the ```docker attach moose``` command. Kindly refer the [usage](https://github.com/QIMP-Team/MOOSE#-usage) section for running ```moose``` on your datasets. You don't need to `sudo su` before you run `moose`, if you are using it via `docker`!
 
 ## 🗂 Required folder structure 
 
-`moose` inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, MOOSE performs the analysis sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated" (refer results section). Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
+`MOOSE` inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, the analysis is performed sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated" (refer results section). Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
 
 ```bash
 
@@ -101,7 +128,7 @@ main_folder/                         # The mother folder that holds all the pati
 - For running the moose directly from the command-line terminal using the default options - please use the following command. In general, MOOSE performs the error analysis (refer paper) in similarity space and assumes that the given (if given) PET image is static.
 
 ```bash
-sudo su # In your terminal before you run moose, if you installed earlier with sudo.
+sudo su # In your terminal before you run moose, if you installed earlier with sudo in your local machine (you DON'T need to do this for docker).
 
 #syntax:
 moose -f path_to_main_folder 
@@ -216,12 +243,15 @@ This research was supported through:
 
 ## 🛠 To do 
 
+**MOOSEv0.1.0: July release candidate**
+
+- [x] Create a working `moose_uninstaller.sh ` [@LalithShiyam](https://github.com/LalithShiyam)
+- [x] Create a docker image for the current version of moose v0.1.0 [@LalithShiyam](https://github.com/LalithShiyam)
+
 **MOOSEv0.2.0: October release candidate**
 
-- [x] Create a working `moose_uninstaller.sh `
-- [ ] Create a docker image for the current version of moose v0.1.0
-- [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)
-- [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)
+- [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)[@LalithShiyam](https://github.com/LalithShiyam)
+- [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)[@LalithShiyam](https://github.com/LalithShiyam)
 - [ ] Prune/Compress the models for faster inference: (PRs welcome)[@davidiommi](https://github.com/davidiommi) 
 - [ ] Reduce memory requirement for MOOSE during inference: (PRs welcome) [@davidiommi](https://github.com/davidiommi)
 
