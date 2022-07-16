@@ -83,7 +83,7 @@ source ~/.bashrc
 ```
 ### 🐋 Installing using Docker 
 
-We have already created the `docker` image for you, all you need to do is load it. We assume that you have already installed docker in your system (solutions to common 'image loading and installation' issues in docker can be found [here](https://github.com/NVIDIA/nvidia-docker/issues/1243#issuecomment-694981577)). Make sure you replace the `path_to_mount_without_the_quotes` in the last command with your own local path (e.g. `/home/Documents/data-to-moose`) , which needs to be mounted to the container (in the path `/data').
+We have already created the `docker` image for you, all you need to do is load it. We assume that you have already installed docker in your system (solutions to common 'image loading and installation' issues in docker can be found [here](https://github.com/NVIDIA/nvidia-docker/issues/1243#issuecomment-694981577)). Make sure you replace the `path_to_mount_without_the_quotes` in the last command with your own local path (e.g. `/home/Documents/data-to-moose`) , which needs to be mounted to the container (now your mounted data will be in the container at `/data`).
 
 ##### Step: 1
 
