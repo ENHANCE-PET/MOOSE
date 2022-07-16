@@ -89,8 +89,8 @@ We have already created the `docker` image for you, all you need to do is load i
 
 ```bash
 wget "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/moose_16072022.tar"
-docker load < moose_img.tar
-docker run --gpus all --name moose -it --ipc=host -v 'path_to_mount_without_the_quotes':/data moose_img /bin/bash
+docker load < moose_16072022.tar
+docker run --gpus all --name moose -it --ipc=host -v 'path_to_mount_without_the_quotes':/data moose:latest /bin/bash
 ```
 After this step, a docker container with the name 'moose' will be created. In case you exited the ```moose``` container, you can start and run the container using the following commands
 
