@@ -127,16 +127,34 @@ main_folder/                         # The mother folder that holds all the pati
 
 ## 🖥 Usage
 
-- For running the moose directly from the command-line terminal using the default options - please use the following command. In general, MOOSE performs the error analysis (refer paper) in similarity space and assumes that the given (if given) PET image is static.
+For running the moose directly from the command-line terminal using the default options - please use the following command. In general, MOOSE performs the error analysis (refer paper) in similarity space and assumes that the given (if given) PET image is static.
 
 ```bash
-sudo su # In your terminal before you run moose, if you installed earlier with sudo in your local machine (you DON'T need to do this for docker).
 
 #syntax:
 moose -f path_to_main_folder 
 
+```
+#### Local machine
+
+```bash
+
+sudo su # In your terminal before you run moose, if you installed earlier with sudo in your local machine (you DON'T need to do this for docker).
+
 #example: 
-moose -f '/home/kyloren/Documents/main_folder'
+moose -f /home/kyloren/Documents/main_folder # input can be absolute path
+                    or 
+moose -f /main_folder # or relative path
+
+```
+#### Usage via docker
+
+After you start the `moose` docker container, you can use the command below.
+
+```bash
+
+#example:
+moose -f '/data/main_folder' # always absolute path
 
 ```
 ## 📈 Results
