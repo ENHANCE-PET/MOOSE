@@ -104,6 +104,8 @@ docker attach moose
 ```
 You will now be inside the moose container after the execution of the ```docker attach moose``` command. Kindly refer the [usage](https://github.com/QIMP-Team/MOOSE#-usage) section for running ```moose``` on your datasets. You don't need to `sudo su` before you run `moose`, if you are using it via `docker`!
 
+If you have troubles with the installation, you can reach us via discord (click the discord badge above)!
+
 ## 🗂 Required folder structure 
 
 `MOOSE` inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, the analysis is performed sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated" (refer results section). Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
