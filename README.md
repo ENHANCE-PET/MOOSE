@@ -261,8 +261,8 @@ This research was supported by:
 - [IBM University Cloud Award](https://www.research.ibm.com/university/)
 - [National Center for High-performance Computing, Taiwan](https://www.nchc.org.tw/Page?itemid=58&mid=109)
 
-## Sponsors
-![HMS-logo](Images/HMS_RGB_Blue.svg)
+## 💌 Sponsors
+ <img src="https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg" width="300">
 
 ## 🛠 To do 
 
