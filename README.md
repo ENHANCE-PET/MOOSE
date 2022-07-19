@@ -261,6 +261,9 @@ This research was supported by:
 - [IBM University Cloud Award](https://www.research.ibm.com/university/)
 - [National Center for High-performance Computing, Taiwan](https://www.nchc.org.tw/Page?itemid=58&mid=109)
 
+## Sponsors
+![HMS-logo](Images/HMS_RGB_Blue.svg)
+
 ## 🛠 To do 
 
 **MOOSEv0.1.0: July release candidate**
