@@ -6,6 +6,7 @@
 
 <p align="center">
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/LalithShiyam/MOOSE-V.1.0/blob/main/Images/MOOSE_storyboard_dark.gif" width="500" height="500">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/LalithShiyam/MOOSE-V.1.0/blob/main/Images/MOOSE_storyboard_light.gif" width="500" height="500">
   <img alt="Shows an illustrated storyboard in light color mode and an inverted storyboard in dark color mode." src="https://github.com/LalithShiyam/MOOSE-V.1.0/blob/main/Images/MOOSE_storyboard_dark.gif" width="500" height="500">
 </p>
 
