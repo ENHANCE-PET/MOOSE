@@ -268,7 +268,13 @@ This research was supported by:
 - [National Center for High-performance Computing, Taiwan](https://www.nchc.org.tw/Page?itemid=58&mid=109)
 
 ## 💌 GitHub Sponsors
- <img src="https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg" width="300">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_White.svg width="300">
+  <source media="(prefers-color-scheme: light)" srcset=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
+  <img alt="Shows an HMS logo according to gh theme." src=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
+</picture>
+
 
 ## 🛠 To do 
 
