@@ -108,7 +108,7 @@ docker attach moose
 ```
 You will now be inside the moose container after the execution of the ```docker attach moose``` command. Kindly refer the [usage](https://github.com/QIMP-Team/MOOSE#-usage) section for running ```moose``` on your datasets. You don't need to `sudo su` before you run `moose`, if you are using it via `docker`!
 
-If you have troubles with the installation, you can reach us via discord (click the discord badge above)!
+If you have troubles with the installation, you can reach us via [discord](https://discord.gg/m3pjREWQ)!
 
 ## 🗂 Required folder structure 
 
