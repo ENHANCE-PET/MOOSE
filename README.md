@@ -67,7 +67,7 @@ source ~/.bashrc
 
 #### 📀 Fresh install 
 
-Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. 
+Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. We have also made a [video](https://youtu.be/ALqb-i6JaH0) of how to perform a fresh install of `moose`
 
 ##### Step: 1
 
@@ -280,6 +280,12 @@ This research was supported by:
   <img alt="Shows an HMS logo according to gh theme." src=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
 </picture>
 
+##🎦 Videos
+
+**MOOSE installation/uninstallation:**
+
+- [Local installation](https://youtu.be/ALqb-i6JaH0)
+- [Local uninstallation](https://youtu.be/pQUFZwmVxEE)
 
 ## 🛠 To do 
 
