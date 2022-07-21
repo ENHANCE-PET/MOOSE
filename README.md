@@ -280,7 +280,7 @@ This research was supported by:
   <img alt="Shows an HMS logo according to gh theme." src=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
 </picture>
 
-##🎦 Videos
+## 🎦 Videos
 
 **MOOSE installation/uninstallation:**
 
