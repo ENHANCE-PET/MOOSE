@@ -35,7 +35,7 @@ We offer two flavors of installation: (1) Installing in your local machine and (
 
 ### 🖥️ Local machine 
 
-*Include `sudo` as shown below, in case you don't have write access. If you use `sudo`, make sure you type `sudo su` before you run `moose`, check [usage](https://github.com/QIMP-Team/MOOSE#-usage)!*
+*Include `sudo` as shown below, in case you don't have write access. If you use `sudo`, make sure you type `sudo su` before you run `moose`, check [usage](https://github.com/QIMP-Team/MOOSE#-usage)! If you do have write access, meaning its really your personal server, feel free to ignore the `sudo` part*
 
 #### ⚠️ NOTE: For people who already have the alpha version of moose in their machines 
 
