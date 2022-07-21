@@ -37,8 +37,32 @@ We offer two flavors of installation: (1) Installing in your local machine and (
 
 *Include `sudo` as shown below, in case you don't have write access. If you use `sudo`, make sure you type `sudo su` before you run `moose`, check [usage](https://github.com/QIMP-Team/MOOSE#-usage)! If you do have write access, meaning its really your personal server, feel free to ignore the `sudo` part*
 
-#### ⚠️ NOTE: For people who already have the alpha version of moose in their machines 
+#### 📀 Fresh install 
 
+Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. We have also made a [video](https://youtu.be/ALqb-i6JaH0) of how to perform a fresh install of `moose`
+
+##### Step: 1
+
+```bash
+sudo git config --global url."https://".insteadOf git://
+sudo git clone https://github.com/QIMP-Team/MOOSE.git
+cd MOOSE
+sudo bash moose_installer.sh
+```
+
+##### Step: 2
+
+‼️ Source the .bashrc file again**
+
+```bash
+source ~/.bashrc
+```
+
+#### 📀 Uninstalling MOOSE
+
+You can uninstall MOOSE by following the steps [here](https://github.com/QIMP-Team/MOOSE/edit/main/README.md#step-1) and also there is a [video](https://www.youtube.com/watch?v=pQUFZwmVxEE) which shows how to perform the uninstallation!
+
+#### ⚠️ NOTE: For people who already have the alpha version of moose in their machines 
 
 If you have already installed `moose` before. You need to uninstall `moose` before installing the current version. This can be easily done by using the command below. 
 
@@ -65,30 +89,6 @@ sudo bash moose_installer.sh
 source ~/.bashrc
 ```
 
-#### 📀 Fresh install 
-
-Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. We have also made a [video](https://youtu.be/ALqb-i6JaH0) of how to perform a fresh install of `moose`
-
-##### Step: 1
-
-```bash
-sudo git config --global url."https://".insteadOf git://
-sudo git clone https://github.com/QIMP-Team/MOOSE.git
-cd MOOSE
-sudo bash moose_installer.sh
-```
-
-##### Step: 2
-
-‼️ Source the .bashrc file again**
-
-```bash
-source ~/.bashrc
-```
-
-#### 📀 Uninstalling MOOSE
-
-You can uninstall MOOSE by following the steps [here](https://github.com/QIMP-Team/MOOSE/edit/main/README.md#step-1) and also there is a [video](https://www.youtube.com/watch?v=pQUFZwmVxEE) which shows how to perform the uninstallation!
 
 ### 🐋 Installing using Docker 
 
