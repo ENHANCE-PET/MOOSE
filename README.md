@@ -85,6 +85,11 @@ sudo bash moose_installer.sh
 ```bash
 source ~/.bashrc
 ```
+
+#### 📀 Uninstalling MOOSE
+
+You can uninstall MOOSE by following the steps [here](https://github.com/QIMP-Team/MOOSE/edit/main/README.md#step-1) and also there is a [video](https://www.youtube.com/watch?v=pQUFZwmVxEE) which shows how to perform the uninstallation!
+
 ### 🐋 Installing using Docker 
 
 We have already created the `docker` image for you, all you need to do is load it. We assume that you have already installed docker in your system (solutions to common 'image loading and installation' issues in docker can be found [here](https://github.com/NVIDIA/nvidia-docker/issues/1243#issuecomment-694981577)). Make sure you replace the `path_to_mount_without_the_quotes` in the last command with your own local path (e.g. `/home/Documents/data-to-moose`) , which needs to be mounted to the container (now your mounted data will be in the container at `/data`).
