@@ -46,8 +46,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    #main_folder = os.path.abspath(args.main_folder)
-    main_folder = args.main_folder
+    main_folder = os.path.abspath(args.main_folder)
+    
     if not checkArgs.dir_exists(main_folder):
         logging.error("The main folder does not exist")
         print("The main folder does not exist")
