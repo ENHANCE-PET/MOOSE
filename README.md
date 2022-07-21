@@ -284,8 +284,8 @@ This research was supported by:
 
 **MOOSE installation/uninstallation:**
 
-- [Local installation](https://youtu.be/ALqb-i6JaH0)
-- [Local uninstallation](https://youtu.be/pQUFZwmVxEE)
+- [Installation in your local workstation](https://youtu.be/ALqb-i6JaH0)
+- [Uninstallation in your local workstation](https://youtu.be/pQUFZwmVxEE)
 
 ## 🛠 To do 
 
