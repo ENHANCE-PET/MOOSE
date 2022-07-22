@@ -198,25 +198,25 @@ main_folder/                         # The mother folder that holds all the pati
 ```
 The generated labels are currently in `nifti` format and for each subject `SUB0XX`, the labels will be stored in `SUB0XX/MOOSE-SUB0XX/labels`.
 
-**🤔 Legends for the generated nifti labels** 
+#### 🤔 Legends for the generated nifti labels
 
 The label to region correspondence can be found [here](https://github.com/QIMP-Team/MOOSE/blob/main/labels-to-regions.md)!
 
-[1] Unified labels: 
-- `MOOSE-Non-cerebral-tissues-CT-SUB0XX-XXXX.nii.gz:` Multilabel non-cerebral CT segmentations from the subject's CT.
-- `MOOSE-unified-PET-CT-atlas.nii.gz:` Multilabel MOOSE atlas which should ideally contain all the cerebral (from PT) and non-cerebral tissues (from CT)
+- Unified labels: 
+  - `MOOSE-Non-cerebral-tissues-CT-SUB0XX-XXXX.nii.gz:` Multilabel non-cerebral CT segmentations from the subject's CT.
+  - `MOOSE-unified-PET-CT-atlas.nii.gz:` Multilabel MOOSE atlas which should ideally contain all the cerebral (from PT) and non-cerebral tissues (from CT)
 
-[2] Compartmental labels:
-- `Bones_XXXXX.nii.gz:` Multilabel bone segmentations from the subject's CT.
-- `Fat-Muscle_XXXXX.nii.gz:` Multilabel fat-muscle (skeletal muscle, subcutaneous and visceral fat) segmentations from the subject's CT.
-- `Organs_XXXXX.nii.gz:` Multilabel abdominal organ segmentations from the subject's CT.
-- `Psoas_XXXXX.nii.gz:` Psoas muscle segmentations from the subject's CT.
-- `Brain_XXXXX.nii.gz:` Multilabel hammersmith atlas segmentations from the subject's PT.
+- Compartmental labels:
+  - `Bones_XXXXX.nii.gz:` Multilabel bone segmentations from the subject's CT.
+  - `Fat-Muscle_XXXXX.nii.gz:` Multilabel fat-muscle (skeletal muscle, subcutaneous and visceral fat) segmentations from the subject's CT.
+  - `Organs_XXXXX.nii.gz:` Multilabel abdominal organ segmentations from the subject's CT.
+  - `Psoas_XXXXX.nii.gz:` Psoas muscle segmentations from the subject's CT.
+  - `Brain_XXXXX.nii.gz:` Multilabel hammersmith atlas segmentations from the subject's PT.
 
-[3] Individual labels: 
-All individual labels can be found inside `SUB0XX/MOOSE-SUB0XX/labels/sim_space/similarity-space/`. Each label is a binary mask with their actual region name. E.g. 'Aorta' would be named as `Aorta.nii.gz`.
+- Individual labels: 
+  All individual labels can be found inside `SUB0XX/MOOSE-SUB0XX/labels/sim_space/similarity-space/`. Each label is a binary mask with their actual region    name. E.g. 'Aorta' would be named as `Aorta.nii.gz`.
 
-**🤔 Statistical measures**
+#### 🤔 Statistical measures
 
 `MOOSE` also derives statistical measures (Mean, Median, Standard-deviation, Maximum and Minimum) based on the segmentations and they are stored in `MOOSE-SUB0XX/stats` as `.csv` files.
 
@@ -224,7 +224,7 @@ All individual labels can be found inside `SUB0XX/MOOSE-SUB0XX/labels/sim_space/
 - `XXXXX-ct-volume-stats.csv:` Volume of the regions derived from CT
 - `XXXXX-SUV-values.csv:` SUV values of the regions derived from PT
 
-**🤔 Segmentation accuracy report**
+#### 🤔 Segmentation accuracy report
 
 - `XXXXX-Risk-of-Segmentation-error.csv:` An automatically generated report, which highlights the risk of the segmentation errors for each region with the tag `high` or `low`. High indicates that the chance of the segmentation being erroenous is high and low indicates vice-versa.
 
