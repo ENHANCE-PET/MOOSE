@@ -60,7 +60,7 @@ source ~/.bashrc
 
 #### 📀 Uninstalling MOOSE
 
-You can uninstall MOOSE by following the steps [here](https://github.com/QIMP-Team/MOOSE/edit/main/README.md#step-1) and also there is a [video](https://www.youtube.com/watch?v=pQUFZwmVxEE) which shows how to perform the uninstallation!
+You can uninstall MOOSE by following the steps [here](https://github.com/QIMP-Team/MOOSE/edit/main/README.md#step-1) and also there is a [video](https://youtu.be/zYiIWhDHabs) which shows how to perform the uninstallation!
 
 #### ⚠️ NOTE: For people who already have the alpha version of moose in their machines 
 
@@ -285,7 +285,7 @@ This research was supported by:
 **MOOSE installation/uninstallation:**
 
 - [Installation in your local workstation](https://youtu.be/ALqb-i6JaH0)
-- [Uninstallation in your local workstation](https://youtu.be/pQUFZwmVxEE)
+- [Uninstallation in your local workstation](https://youtu.be/zYiIWhDHabs)
 - [Installation via docker image](https://youtu.be/DUg3RLcP25U)
 
 ## 🛠 To do 
