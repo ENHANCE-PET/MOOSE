@@ -92,7 +92,7 @@ source ~/.bashrc
 
 ### 🐋 Installing using Docker 
 
-We have already created the `docker` image for you, all you need to do is load it. We assume that you have already installed docker in your system (solutions to common 'image loading and installation' issues in docker can be found [here](https://github.com/NVIDIA/nvidia-docker/issues/1243#issuecomment-694981577)). Make sure you replace the `path_to_mount_without_the_quotes` in the last command with your own local path (e.g. `/home/Documents/data-to-moose`) , which needs to be mounted to the container (now your mounted data will be in the container at `/data`).
+We have already created the `docker` image for you, all you need to do is load it. We assume that you have already installed docker in your system (solutions to common 'installation and image-loading' issues in docker can be found [here](https://github.com/NVIDIA/nvidia-docker/issues/1243#issuecomment-694981577)). Make sure you replace the `path_to_mount_without_the_quotes` in the last command with your own local path (e.g. `/home/Documents/data-to-moose`) , which needs to be mounted to the container (now your mounted data will be in the container at `/data`). We have made a video regarding the moose docker installation [here](https://youtu.be/DUg3RLcP25U), to give an overview of how it is done.
 
 ##### Step: 1
 
@@ -286,6 +286,7 @@ This research was supported by:
 
 - [Installation in your local workstation](https://youtu.be/ALqb-i6JaH0)
 - [Uninstallation in your local workstation](https://youtu.be/pQUFZwmVxEE)
+- [Installation via docker image](https://youtu.be/DUg3RLcP25U)
 
 ## 🛠 To do 
 
