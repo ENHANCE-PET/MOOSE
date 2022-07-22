@@ -248,6 +248,29 @@ Li X, Morgan PS, Ashburner J, Smith J, Rorden C. (2016) The first step for neuro
 ```
 Z. Yaniv, B. C. Lowekamp, H. J. Johnson, R. Beare, “SimpleITK Image-Analysis Notebooks: a Collaborative Environment for Education and Reproducible Research”, J Digit Imaging., doi: 10.1007/s10278-017-0037-8, 31(3): 290-303, 2018.
 ```
+## 🎦 Videos
+
+**MOOSE installation/uninstallation:**
+
+- [Installation in your local workstation](https://youtu.be/L448q47Psfc)
+- [Uninstallation in your local workstation](https://youtu.be/zYiIWhDHabs)
+- [Installation via docker image](https://youtu.be/DUg3RLcP25U)
+
+
+## 🙏 Acknowledgement
+
+This research was supported by:
+- [IBM University Cloud Award](https://www.research.ibm.com/university/)
+- [National Center for High-performance Computing, Taiwan](https://www.nchc.org.tw/Page?itemid=58&mid=109)
+
+## <img src="https://github.com/QIMP-Team/MOOSE/blob/main/Images/github.png" width="35"> GitHub Sponsors
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_White.svg width="300">
+  <source media="(prefers-color-scheme: light)" srcset=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
+  <img alt="Shows an HMS logo according to gh theme." src=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
+</picture>
+
 
 ## 🙋 FAQ
 
@@ -265,28 +288,6 @@ Z. Yaniv, B. C. Lowekamp, H. J. Johnson, R. Beare, “SimpleITK Image-Analysis N
 
  *Unfortunately the current version accepts only DICOM formats. In the future, we will try to enable non-DICOM formats for processing as well.*
 
-
-## 🙏 Acknowledgement
-
-This research was supported by:
-- [IBM University Cloud Award](https://www.research.ibm.com/university/)
-- [National Center for High-performance Computing, Taiwan](https://www.nchc.org.tw/Page?itemid=58&mid=109)
-
-## <img src="https://github.com/QIMP-Team/MOOSE/blob/main/Images/github.png" width="35"> GitHub Sponsors
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_White.svg width="300">
-  <source media="(prefers-color-scheme: light)" srcset=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
-  <img alt="Shows an HMS logo according to gh theme." src=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_Blue.svg width="300">
-</picture>
-
-## 🎦 Videos
-
-**MOOSE installation/uninstallation:**
-
-- [Installation in your local workstation](https://youtu.be/L448q47Psfc)
-- [Uninstallation in your local workstation](https://youtu.be/zYiIWhDHabs)
-- [Installation via docker image](https://youtu.be/DUg3RLcP25U)
 
 ## 🛠 To do 
 
