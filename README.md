@@ -43,7 +43,7 @@ I personally recommend the docker as you have a fully functional, ready-to-go so
 
 #### 📀 Fresh install 
 
-Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. We have also made a [video](https://youtu.be/L448q47Psfc) of how to perform a fresh install of `moose`
+Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 5-10 minutes. We have also made a [video](https://youtu.be/L448q47Psfc) of how to perform a fresh install of `moose`
 
 ##### Step: 1
 
