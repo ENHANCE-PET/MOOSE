@@ -39,7 +39,7 @@ We offer two flavors of installation: (1) Installing in your local machine and (
 
 #### 📀 Fresh install 
 
-Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. We have also made a [video](https://youtu.be/ALqb-i6JaH0) of how to perform a fresh install of `moose`
+Kindly copy the code below and paste it on your ubuntu terminal, the installer should ideally take care of the rest. A fresh install would approximately take 10 minutes. We have also made a [video](https://youtu.be/L448q47Psfc) of how to perform a fresh install of `moose`
 
 ##### Step: 1
 
@@ -284,7 +284,7 @@ This research was supported by:
 
 **MOOSE installation/uninstallation:**
 
-- [Installation in your local workstation](https://youtu.be/ALqb-i6JaH0)
+- [Installation in your local workstation](https://youtu.be/L448q47Psfc)
 - [Uninstallation in your local workstation](https://youtu.be/zYiIWhDHabs)
 - [Installation via docker image](https://youtu.be/DUg3RLcP25U)
 
