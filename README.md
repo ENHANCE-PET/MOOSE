@@ -31,7 +31,11 @@ We are testing different configurations now, but the RAM (256 GB) seems to be a 
 
 ## ⚙️ Installation
 
-We offer two flavors of installation: (1) Installing in your local machine and (2) Installing in your shared server (e.g. DGX) via docker. I personally recommend the docker as you have a fully functional, ready-to-go solution. But honestly, depends on what you like!
+We offer two flavors of installation: 
+- Installing in your local machine and 
+- Installing in your shared server (e.g. DGX) via docker. 
+
+I personally recommend the docker as you have a fully functional, ready-to-go solution. But honestly, depends on what you like!
 
 ### 🖥️ Local machine 
 
