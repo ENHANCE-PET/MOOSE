@@ -280,7 +280,7 @@ This research was supported by:
 
 **[1]** Will MOOSE only work on whole-body 18F-FDG PET/CT datasets?
 
-  *MOOSE ideally works on whole-body (head to toe) PET/CT datasets, but also works on semi whole-body PET/CT datasets (head to pelvis). Unfortunately, we haven't tested other field-of-views. We will post the evaluations soon.*
+  *MOOSE ideally works on whole-body (head to toe) PET/CT datasets, but also works on semi whole-body PET/CT datasets (head to pelvis). We have also tested it on abdominal CT as well as thorax/chest CT. MOOSE will ideally work, if the test datasets have sufficient quality and not too different from the training datasets.
 
 
 **[2]** Will MOOSE only work on multimodal 18F-FDG PET/CT datasets or can it also be applied to CT only? or PET only?
