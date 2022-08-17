@@ -305,5 +305,5 @@ This research was supported by:
 - [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)[@LalithShiyam](https://github.com/LalithShiyam)
 - [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)[@LalithShiyam](https://github.com/LalithShiyam)
 - [ ] Prune/Compress the models for faster inference: (PRs welcome)[@davidiommi](https://github.com/davidiommi) 
-- [ ] Reduce memory requirement for MOOSE during inference: (PRs welcome) [@davidiommi](https://github.com/davidiommi)
+- [ ] Reduce memory requirement (No more 256 GB, ideally 16 GB) for MOOSE during inference: (PRs welcome) [@davidiommi](https://github.com/davidiommi)
 
