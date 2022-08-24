@@ -320,14 +320,14 @@ def get_resize_factor(img: np.ndarray, spacing: list, target_spacing: list) -> n
     return resize_factor
 
 
-def resample_image(nifti_file: str, target_spacing: list, order: int) -> SimpleITK.Image:
+def resample_image(nifti_file: str, target_spacing: list, interp_order: int) -> SimpleITK.Image:
     """Resample image to the target spacing
 
     :param nifti_file: NIFTI filepath
     :type nifti_file: str
     :param target_spacing: Target spacing (the new spacing I want, can be either int or float)
     :type target_spacing: list
-    :param order: Order of spline interpolation (0: Nearest-neighbor, 3: Bi-cubic). Use 0 for binary segmentation mask and 3 for images.
+    :param interp_order: Order of spline interpolation (0: Nearest-neighbor, 3: Bi-cubic). Use 0 for binary segmentation mask and 3 for images.
     :type order: int
     :return: SimpleITK image.
     :rtype: SimpleITK.Image
@@ -360,7 +360,7 @@ def resample_image(nifti_file: str, target_spacing: list, order: int) -> SimpleI
     img = cp.asarray(img)
 
     # Resize image
-    resampled_img = resize(img, output_shape=new_shape, order=order, mode="edge", anti_aliasing=False)
+    resampled_img = resize(img, output_shape=new_shape, order=interp_order, mode="edge", anti_aliasing=False)
 
     # Get back npy array
     resampled_img = cp.asnumpy(resampled_img)  # Alternative: img_arr = cp.float32(resampled_img.get())
