@@ -23,6 +23,11 @@ import pydicom
 
 import constants as c
 
+import cupy as cp
+from cucim.skimage.transform import resize
+
+from time import perf_counter
+
 
 def get_dimensions(nifti_file: str) -> int:
     """
@@ -280,3 +285,102 @@ def extract_central_slice_as_png(image_path: str, out_path: str) -> str:
     subprocess.run(cmd_to_run, shell=True, capture_output=True)
     return out_path
 
+
+def get_resize_factor(img: np.ndarray, spacing: list, target_spacing: list) -> np.ndarray:
+    """
+    Get the resize factor of an image. The resize factor determines the new size of an image
+    with a certain spacing. The resize factor is the ratio of the current spacing and the target spacing.
+
+    :param img: Input image. Can be n-dimensional.
+    :type img: np.ndarray
+    :param spacing: Spacing of the input image.
+    :type spacing: list
+    :param target_spacing: Target spacing.
+    :type target_spacing: list
+    :return: Resize factor
+    :rtype: np.ndarray
+    """
+    # As npy arrays
+    old_spacing = np.asarray(spacing)
+    new_spacing = np.asarray(target_spacing)
+
+    # Calculate resize factor
+    resize_factor = old_spacing/new_spacing
+
+    # Calculate new shape
+    new_shape = img.shape * resize_factor
+
+    # Round, because new_shape could be not an integer
+    new_shape = np.round(new_shape)
+
+    # Based on rounded new_shape, recalculate the resize_factor for this
+    # particular rounded shape
+    resize_factor = new_shape / img.shape
+
+    return resize_factor
+
+
+def resample_image(nifti_file: str, target_spacing: list, order: int) -> SimpleITK.Image:
+    """Resample image to the target spacing
+
+    :param nifti_file: NIFTI filepath
+    :type nifti_file: str
+    :param target_spacing: Target spacing (the new spacing I want, can be either int or float)
+    :type target_spacing: list
+    :param order: Order of spline interpolation (0: Nearest-neighbor, 3: Bi-cubic). Use 0 for binary segmentation mask and 3 for images.
+    :type order: int
+    :return: SimpleITK image.
+    :rtype: SimpleITK.Image
+    """
+    # Start counter
+    start_time = perf_counter()
+
+    # Read sitk image
+    sitk_img = SimpleITK.ReadImage(nifti_file)
+    # Get npy array
+    img = SimpleITK.GetArrayFromImage(sitk_img)
+    # Transpose: (z, x, y) -> (x, y, z)
+    img = np.transpose(img)
+    # Get spacing of input image
+    spacing = sitk_img.GetSpacing()
+    # Get resize factor
+    resize_factor = get_resize_factor(img, spacing, target_spacing)
+    # Calculate target shape
+    new_shape = resize_factor * img.shape
+    new_shape = [int(x) for x in new_shape]
+
+    # Print statements
+    print(nifti_file)
+    print(f"spacing: {spacing}")
+    print(f"shape: {img.shape}")
+    print(f"new spacing: {target_spacing}")
+    print(f"new shape: {new_shape}")
+
+    # Create cupy array
+    img = cp.asarray(img)
+
+    # Resize image
+    resampled_img = resize(img, output_shape=new_shape, order=order, mode="edge", anti_aliasing=False)
+
+    # Get back npy array
+    resampled_img = cp.asnumpy(resampled_img)  # Alternative: img_arr = cp.float32(resampled_img.get())
+
+    # --------------------------
+    # Convert back to sitk image
+    # --------------------------
+    # Transpose back (x, y, z) -> (z, x, y)
+    resampled_img = np.transpose(resampled_img)
+    # Create sitk image
+    sitk_out = SimpleITK.GetImageFromArray(resampled_img)
+    # Copy sitk metadata
+    sitk_out.SetOrigin(sitk_img.GetOrigin())
+    sitk_out.SetDirection(sitk_img.GetDirection())
+    sitk_out.SetSpacing(target_spacing)
+
+    # End counter
+    end_time = perf_counter()
+    # Report resampling time
+    delta_time = end_time - start_time
+    print(f"Resampling took {delta_time:.2f} seconds")
+
+    return sitk_out
