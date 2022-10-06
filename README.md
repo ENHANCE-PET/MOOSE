@@ -269,7 +269,7 @@ This research was supported by:
 
 ## <img src="https://github.com/QIMP-Team/MOOSE/blob/main/Images/github.png" width="35"> GitHub Sponsors
 
-[HermesMedicalSolutions](https://github.com/HermesMedicalSolutions)
+### [Hermes Medical Solutions](https://github.com/HermesMedicalSolutions)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=https://github.com/QIMP-Team/MOOSE/blob/main/Images/HMS_RGB_White.svg width="300">
