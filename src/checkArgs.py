@@ -23,6 +23,13 @@ def dir_exists(dir_path: str) -> bool:
     return os.path.exists(dir_path)
 
 
+def check_env_vars() -> bool:
+    """
+    Checks if the environment variables needed for MOOSE are set or not
+    :return: True if all the environment variables are set, False otherwise
+    """
+
+
 def has_numbers(string: str) -> bool:
     """
     Checks if a string contains number

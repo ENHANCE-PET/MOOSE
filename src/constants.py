@@ -13,6 +13,9 @@
 # Hard-coded variables
 import os
 
+MOOSE_MODELS = os.getenv('RESULTS_FOLDER')
+NNUNET_PREPROC = os.getenv('nnUNet_preprocessed')
+NNUNET_RAW = os.getenv('nnUNet_raw_data_base')
 NORMDB_DIR = os.getenv('SIM_SPACE_DIR')
 BRAIN_DETECTOR_MODEL = os.getenv('BRAIN_DETECTOR_DIR')
 CROPPED_BRAIN_FROM_PET = "cropped-brain-from-PET_0000.nii.gz"
