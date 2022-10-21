@@ -12,6 +12,7 @@
 # License: Apache 2.0
 # **********************************************************************************************************************
 import os
+import sys
 
 
 def dir_exists(dir_path: str) -> bool:
@@ -23,11 +24,30 @@ def dir_exists(dir_path: str) -> bool:
     return os.path.exists(dir_path)
 
 
-def check_env_vars() -> bool:
+# Function to check if all the environment variables are set
+def check_env_vars() -> None:
     """
-    Checks if the environment variables needed for MOOSE are set or not
-    :return: True if all the environment variables are set, False otherwise
+    Checks if all the environment variables are set
     """
+    # Check if all the environment variables are set
+    if os.environ.get('RESULTS_FOLDER') is None:
+        print("RESULTS_FOLDER environment variable is not set")
+        sys.exit("Please set the RESULTS_FOLDER environment variable in .bashrc file")
+    elif os.environ.get('nnUNet_preprocessed') is None:
+        print("nnUNet_preprocessed environment variable is not set")
+        sys.exit("Please set the nnUNet_preprocessed environment variable in .bashrc file")
+    elif os.environ.get('nnUNet_raw_data_base') is None:
+        print("nnUNet_raw_data_base environment variable is not set")
+        sys.exit("Please set the nnUNet_raw_data_base environment variable in .bashrc file")
+    elif os.environ.get('SIM_SPACE_DIR') is None:
+        print("SIM_SPACE_DIR environment variable is not set")
+        sys.exit("Please set the SIM_SPACE_DIR environment variable in .bashrc file")
+    elif os.environ.get('BRAIN_DETECTOR_DIR') is None:
+        print("BRAIN_DETECTOR_DIR environment variable is not set")
+        sys.exit("Please set the BRAIN_DETECTOR_DIR environment variable in .bashrc file")
+    else:
+        print("All the MOOSE environment variables are set! Proceeding with the execution of the program")
+
 
 
 def has_numbers(string: str) -> bool:
