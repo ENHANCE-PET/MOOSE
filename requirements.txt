@@ -16,5 +16,4 @@ natsort~=8.1.0
 Pillow~=9.0.1
 fastai~=2.6.3
 
-#cucim~=22.8.0
-#cupy-cuda11x~=11.0.0
+
