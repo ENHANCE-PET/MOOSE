@@ -23,8 +23,8 @@ import pydicom
 
 import constants as c
 
-import cupy as cp
-from cucim.skimage.transform import resize
+#import cupy as cp
+#from cucim.skimage.transform import resize
 
 from time import perf_counter
 
@@ -319,7 +319,7 @@ def get_resize_factor(img: np.ndarray, spacing: list, target_spacing: list) -> n
 
     return resize_factor
 
-
+"""
 def resample_image(nifti_file: str, target_spacing: list, interp_order: int) -> SimpleITK.Image:
     """Resample image to the target spacing
 
@@ -384,3 +384,4 @@ def resample_image(nifti_file: str, target_spacing: list, interp_order: int) -> 
     print(f"Resampling took {delta_time:.2f} seconds")
 
     return sitk_out
+"""
