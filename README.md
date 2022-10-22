@@ -311,4 +311,4 @@ This research was supported by:
 
 ## 🖲 Current stable version 
 
-moose
+[MOOSE version 0.1.4] (https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4)
