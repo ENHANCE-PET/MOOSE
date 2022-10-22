@@ -4,7 +4,7 @@
 
 ## 🖲 Current stable version 
 
-[MOOSE version 0.1.4: Oct 22, 2022](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4)
+[October 22, 2022: MOOSE version 0.1.4](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4)
 
 ## 🦌 About MOOSE 
 
