@@ -44,7 +44,7 @@ echo '[6] Setting up moose environment variables in the .bashrc'
 echo "export SIM_SPACE_DIR="${sim_space_dir}"" >> ~/.bashrc
 echo "export BRAIN_DETECTOR_DIR="${brain_detector_dir}"" >> ~/.bashrc
 echo "export MOOSE_DIR="${moose_dir}"" >> ~/.bashrc
-echo "export GIT_MOOSE="${main_dr}"" >> ~/.bashrc
+echo "export GIT_MOOSE="${main_dir}"" >> ~/.bashrc
 
 echo '[7] Check later if environment variables for nnUNet are set in .bashrc'
 echo '[8] Setting up symlinks for dependencies...'
