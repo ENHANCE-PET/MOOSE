@@ -29,6 +29,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # shellcheck disable=SC2154
     echo "[5] Removing moose folder from $moose_dir..."
     sudo rm -rf "$moose_dir"
+    sudo rm -rf "$GIT_MOOSE"
     echo "[6] Removing environment variables for moose..."
     NNUNET_DIR="nnUNet_"
     RESULTS_DIR="RESULTS_FOLDER"
