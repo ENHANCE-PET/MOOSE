@@ -16,6 +16,7 @@ pip install -r requirements.txt
 git clone https://github.com/MIC-DKFZ/nnUNet.git
 cd nnUNet
 pip install -e .
+cd .. 
 echo '[2] Downloading required files IBM cloud storage...'
 wget "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSE-files-24062022.zip"
 echo '[3] Unzipping moose files...'
