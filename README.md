@@ -2,7 +2,6 @@
 
 ![](https://komarev.com/ghpvc/?username=QIMP-Team&color=blueviolet&style=for-the-badge)[![image](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PLZQERorVWrbcG4AMkDQ9KrL_Rr77D1-6k) [![image](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/9uTHYhWCA5) [![image](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/qimp/) [![Share on Twitter](https://img.shields.io/badge/Twitter-share%20on%20twitter-blue?logo=twitter&style=for-the-badge)](https://twitter.com/intent/tweet?text=Check%20out%20MOOSE%20(Multi-organ%20objective%20segmentation%20:https://github.com/QIMP-Team/MOOSE)%20a%20data-centric%20AI%20solution%20that%20generates%20multilabel%20organ%20segmentations%20to%20facilitate%20systemic%20TB%20whole-person%20research.) 
 
-⭐️ us if you like our work!
 
 ## 🦌 About MOOSE 
 
@@ -17,7 +16,7 @@
 
 MOOSE (Multi-organ objective segmentation) a [data-centric AI solution](https://datacentricai.org) that generates multilabel organ segmentations to facilitate systemic TB whole-person research. The pipeline is based on [nn-UNet](https://github.com/MIC-DKFZ/nnUNet) and has the capability to segment 120 unique tissue classes from a whole-body 18F-FDG PET/CT image. The input can be an 18F-FDG PET/CT image or a CT only image (but never a PET only image) and the segmentation of the tissues is done automatically based on the provided `DICOM` input. 
 
-As mentioned earlier, MOOSE is built on [data-centric AI principles](https://snorkel.ai/principles-of-data-centric-ai-development/) where the state-of-the-art architecture (`nnUNet` in our case) is fixed and the training data is selectively augmented to ensure peak segmentation performance. The segmentation performance is continously monitored in a systemic manner using the concept of similarity space (refer [manuscript](https://jnm.snmjournals.org/content/early/2022/06/30/jnumed.122.264063.abstract)). Data that causes a decrease in the performance is automatically identified and included to the initial training dataset for maintaining peak performance.
+As mentioned earlier, MOOSE is built on [data-centric AI principles](https://snorkel.ai/principles-of-data-centric-ai-development/) where the state-of-the-art architecture (`nnUNet` in our case) is fixed and the training data is selectively augmented to ensure peak segmentation performance. The segmentation performance is continously monitored in a systemic manner using the concept of similarity space (refer [manuscript](https://jnm.snmjournals.org/content/early/2022/06/30/jnumed.122.264063.abstract)). Data that causes a decrease in the performance is automatically identified and included to the initial training dataset for maintaining peak performance. ⭐️ us if you like our work!
 
 
 ![Alt Text](https://github.com/QIMP-Team/MOOSE-v0.1.0/blob/main/Images/MOOSE-results.gif)
