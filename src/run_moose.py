@@ -54,8 +54,9 @@ if __name__ == "__main__":
         exit(1)
 
     error_analysis = args.error_analysis
+    print(' ')
     checkArgs.check_env_vars()
-
+    print(' ')
     logging.info('****************************************************************************************************')
     logging.info('                                     STARTING MOOSE V.1.0                                           ')
     logging.info('****************************************************************************************************')
