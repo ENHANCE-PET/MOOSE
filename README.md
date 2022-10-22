@@ -2,6 +2,9 @@
 
 ![](https://komarev.com/ghpvc/?username=QIMP-Team&color=blueviolet&style=for-the-badge)[![image](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PLZQERorVWrbcG4AMkDQ9KrL_Rr77D1-6k) [![image](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/9uTHYhWCA5) [![image](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/qimp/) [![Share on Twitter](https://img.shields.io/badge/Twitter-share%20on%20twitter-blue?logo=twitter&style=for-the-badge)](https://twitter.com/intent/tweet?text=Check%20out%20MOOSE%20(Multi-organ%20objective%20segmentation%20:https://github.com/QIMP-Team/MOOSE)%20a%20data-centric%20AI%20solution%20that%20generates%20multilabel%20organ%20segmentations%20to%20facilitate%20systemic%20TB%20whole-person%20research.) 
 
+## 🖲 Current stable version 
+
+[MOOSE version 0.1.4: Oct 22, 2022](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4)
 
 ## 🦌 About MOOSE 
 
@@ -309,6 +312,3 @@ This research was supported by:
 - [ ] Prune/Compress the models for faster inference: (PRs welcome)[@davidiommi](https://github.com/davidiommi) 
 - [ ] Reduce memory requirement (No more 256 GB, ideally 32 GB) for MOOSE during inference: (PRs welcome) [@dhaberl](https://github.com/dhaberl)[@Keyn34](https://github.com/Keyn34)
 
-## 🖲 Current stable version 
-
-[MOOSE version 0.1.4](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4)
