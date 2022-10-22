@@ -309,3 +309,6 @@ This research was supported by:
 - [ ] Prune/Compress the models for faster inference: (PRs welcome)[@davidiommi](https://github.com/davidiommi) 
 - [ ] Reduce memory requirement (No more 256 GB, ideally 32 GB) for MOOSE during inference: (PRs welcome) [@dhaberl](https://github.com/dhaberl)[@Keyn34](https://github.com/Keyn34)
 
+## 🖲 Current stable version 
+
+moose
