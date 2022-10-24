@@ -4,7 +4,7 @@
 
 ## 🚀 Current stable version 
 
-[October 22, 2022: MOOSE version 0.1.4](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4): If your previous MOOSE installation suddenly stopped working or if you downloaded MOOSE recently (Oct 1-22) and it doesn't work, reinstall MOOSE with the latest version (MOOSE v0.1.4).
+[October 22, 2022: MOOSE version 0.1.4](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4): If your previous MOOSE installation suddenly stopped working or if you downloaded MOOSE recently (Oct 1-22, 2022) and it doesn't work, reinstall MOOSE with the latest version (MOOSE v0.1.4).
 
 ## 🦌 About MOOSE 
 
