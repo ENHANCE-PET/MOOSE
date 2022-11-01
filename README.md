@@ -314,4 +314,4 @@ This research was supported by:
 
 ## 🦌 MOOSE: An ENHANCE-PET Project
 
-![Alt Text](https://github.com/QIMP-Team/MOOSE/blob/main/Images/DALL·E%202022-10-29%2020.15.22%20-%20Astronaut%20.PNG)
+![Alt Text](https://github.com/QIMP-Team/MOOSE/blob/main/Images/DALL·E%202022-11-01%2018.13.35%20-%20a%20moose%20with%20majestic%20horns.png)
