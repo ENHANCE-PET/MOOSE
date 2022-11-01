@@ -312,6 +312,6 @@ This research was supported by:
 - [ ] Prune/Compress the models for faster inference: (PRs welcome)[@davidiommi](https://github.com/davidiommi) 
 - [ ] Reduce memory requirement (No more 256 GB, ideally 32 GB) for MOOSE during inference: (PRs welcome) [@dhaberl](https://github.com/dhaberl)[@Keyn34](https://github.com/Keyn34)
 
-## A PART OF THE ENHANCE FRAMEWORK
+## 🦌 MOOSE is a part of the ENHANCE-FRAMEWORK
 
 ![Alt Text](https://github.com/QIMP-Team/MOOSE/blob/main/Images/DALL·E%202022-10-29%2020.15.22%20-%20Astronaut%20.PNG)
