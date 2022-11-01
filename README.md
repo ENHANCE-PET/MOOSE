@@ -305,7 +305,7 @@ This research was supported by:
 - [x] Create a working `moose_uninstaller.sh` [@LalithShiyam](https://github.com/LalithShiyam)
 - [x] Create a docker image (`moose_16072022.tar`) for the current version of moose v0.1.0 [@LalithShiyam](https://github.com/LalithShiyam)
 
-**MOOSEv0.2.0: October release candidate**
+**MOOSEv0.2.0: December 25 release candidate**
 
 - [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)[@LalithShiyam](https://github.com/LalithShiyam)
 - [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)[@LalithShiyam](https://github.com/LalithShiyam)
