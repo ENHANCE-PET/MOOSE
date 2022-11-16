@@ -20,6 +20,7 @@ cd ..
 echo '[2] Downloading required files IBM cloud storage...'
 wget "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSE-files-24062022.zip"
 echo '[3] Unzipping moose files...'
+sudo apt install unzip
 unzip MOOSE-files-24062022.zip
 echo '[4] Removing moose zip files...'
 rm MOOSE-files-24062022.zip
