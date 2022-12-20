@@ -2,7 +2,9 @@
 
 ![](https://komarev.com/ghpvc/?username=QIMP-Team&color=blueviolet&style=for-the-badge)[![image](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PLZQERorVWrbcG4AMkDQ9KrL_Rr77D1-6k) [![image](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/9uTHYhWCA5) [![image](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/qimp/) [![Share on Twitter](https://img.shields.io/badge/Twitter-share%20on%20twitter-blue?logo=twitter&style=for-the-badge)](https://twitter.com/intent/tweet?text=Check%20out%20MOOSE%20(Multi-organ%20objective%20segmentation%20:https://github.com/QIMP-Team/MOOSE)%20a%20data-centric%20AI%20solution%20that%20generates%20multilabel%20organ%20segmentations%20to%20facilitate%20systemic%20TB%20whole-person%20research.) 
 
-## 🚀 Current stable version 
+## 🚀 Current stable version | News
+
+[December 20, 2022:] FALCON release has forced us to push the release of MOOSE v0.2 to next year, due to lack of time/resources.
 
 [October 22, 2022: MOOSE version 0.1.4](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4): If your previous MOOSE installation suddenly stopped working or if you downloaded MOOSE recently (Oct 1-22, 2022) and it doesn't work, reinstall MOOSE with the latest version (MOOSE v0.1.4). Please reach us out on discord (click the discord label link above), if the error persists, we will be happy to help.
 
@@ -305,7 +307,7 @@ This research was supported by:
 - [x] Create a working `moose_uninstaller.sh` [@LalithShiyam](https://github.com/LalithShiyam)
 - [x] Create a docker image (`moose_16072022.tar`) for the current version of moose v0.1.0 [@LalithShiyam](https://github.com/LalithShiyam)
 
-**MOOSEv0.2.0: December 25 release candidate**
+**MOOSEv0.2.0: Feb 25, 2023 release candidate** 
 
 - [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)[@LalithShiyam](https://github.com/LalithShiyam)
 - [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)[@LalithShiyam](https://github.com/LalithShiyam)
