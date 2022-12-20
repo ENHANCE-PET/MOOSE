@@ -5,9 +5,23 @@
 ## 🚀 Current stable version | News
 
 ### December 20, 2022:
-FALCON release has forced us to push the release of MOOSE v0.2 to next year, due to lack of time/resources.
 
-[October 22, 2022: MOOSE version 0.1.4](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4): If your previous MOOSE installation suddenly stopped working or if you downloaded MOOSE recently (Oct 1-22, 2022) and it doesn't work, reinstall MOOSE with the latest version (MOOSE v0.1.4). Please reach us out on discord (click the discord label link above), if the error persists, we will be happy to help.
+Dear MOOSE users,
+
+We sincerely apologize for the delay in the release of MOOSE v.02. We understand that many of you have been eagerly anticipating this update and we apologize for any inconvenience or frustration this delay may have caused.
+
+The reason for the delay is that we have recently been focused on the release of FALCON, which required a significant allocation of resources and time. As a result, we have not been able to devote as much attention to MOOSE as we would have liked.
+
+We want to assure you that we are working hard to get MOOSE v.02 released as soon as possible and are committed to providing our users with the best possible experience. In the meantime, if you have any questions or concerns, please do not hesitate to reach out to us.
+
+Thank you for your understanding and patience.
+
+Sincerely, 
+The MOOSE-dev team
+
+### October 22, 2022:
+
+[MOOSE version 0.1.4](https://github.com/QIMP-Team/MOOSE/releases/tag/moose-v0.1.4): If your previous MOOSE installation suddenly stopped working or if you downloaded MOOSE recently (Oct 1-22, 2022) and it doesn't work, reinstall MOOSE with the latest version (MOOSE v0.1.4). Please reach us out on discord (click the discord label link above), if the error persists, we will be happy to help.
 
 ## 🦌 About MOOSE 
 
