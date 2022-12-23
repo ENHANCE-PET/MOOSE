@@ -17,6 +17,7 @@ We want to assure you that we are working hard to get MOOSE v.02 released as soo
 Thank you for your understanding and patience.
 
 Sincerely, 
+
 The MOOSE-dev team
 
 ### October 22, 2022:
