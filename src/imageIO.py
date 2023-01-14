@@ -29,9 +29,15 @@ import fileOp as fop
 
 
 def check_unique_extensions(directory: str) -> list:
-    """Check the number of unique file extensions in a directory by getting all the file extensions
-    :param directory: Directory to check
-    :return: Identified unique file extensions
+    """
+    Check the number of unique file extensions in a directory.
+
+    Parameters:
+    directory (str): The directory to check for unique file extensions.
+    
+    Returns:
+    list: A list of unique file extensions in the directory.
+
     """
     extensions = []
     for file in os.listdir(directory):
