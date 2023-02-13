@@ -19,7 +19,7 @@
 
 MODELS = {
     "clin_ct_bones": {
-        "url": "https://example.com/lungs_model.zip",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSE-files-24062022.zip",
         "filename": "clin_ct_bones_model.zip",
         "directory": "clin_ct_bones_model",
     },

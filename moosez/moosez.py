@@ -23,12 +23,19 @@ from datetime import datetime
 import sys
 import os
 from moosez import download
+from moosez import file_utilities
 
 from moosez import display
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-%H-%M-%d-%m-%Y.log'),
                     filemode='w')
+
+
+def get_virtual_env_root():
+    python_exe = sys.executable
+    virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
+    return virtual_env_root
 
 
 def main():
@@ -38,7 +45,7 @@ def main():
                         required=True)
 
     parser.add_argument("-m", "--model_name", type=str, help="Name of the model to use for segmentation",
-                        choices=["clin_ct_bone",
+                        choices=["clin_ct_bones",
                                  "clin_ct_ribs",
                                  "clin_ct_vertebrae",
                                  "clin_ct_muscles",
@@ -69,7 +76,13 @@ def main():
     print(' ')
     print(f" {display.extended_model_name(model_name)}")
     print(' ')
-    download.model(model_name)
+
+    # Download the necessary model
+    project_root = get_virtual_env_root()
+    model_path = os.path.join(project_root, 'models')
+    file_utilities.create_directory(model_path)
+    download.model(model_name, model_path)
+
 
 if __name__ == '__main__':
     main()
