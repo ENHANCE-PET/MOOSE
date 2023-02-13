@@ -22,6 +22,7 @@ import os
 from datetime import datetime
 import sys
 import os
+from moosez import download
 
 from moosez import display
 
@@ -68,7 +69,8 @@ def main():
     logging.info(f"- {display.extended_model_name(model_name)}")
     print(' ')
     print(f" {display.extended_model_name(model_name)}")
-
+    print(' ')
+    download.download_model(model_name)
 
 if __name__ == '__main__':
     main()
