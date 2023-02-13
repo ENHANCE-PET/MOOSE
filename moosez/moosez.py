@@ -32,7 +32,6 @@ logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d
 
 
 def main():
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-d", "--main_directory", type=str, help="Main directory containing subject folders",
@@ -70,7 +69,7 @@ def main():
     print(' ')
     print(f" {display.extended_model_name(model_name)}")
     print(' ')
-    download.download_model(model_name)
+    download.model(model_name)
 
 if __name__ == '__main__':
     main()

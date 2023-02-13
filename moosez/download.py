@@ -30,7 +30,8 @@ def binary(system_info, url):
         f.write(response.content)
 
 
-def download_model(model_info):
+def model(model_name):
+    model_info = resources.MODELS[model_name]
     url = model_info["url"]
     filename = model_info["filename"]
     directory = model_info["directory"]
