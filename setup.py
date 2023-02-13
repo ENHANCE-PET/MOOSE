@@ -1,9 +1,9 @@
-from setuptools import setup, find_packages
-import sys
 import os
 import subprocess
+import sys
+
+from setuptools import setup, find_packages
 from setuptools.command.install import install
-import tarfile
 
 # check if requests is installed, if not, install it
 try:
@@ -44,65 +44,10 @@ def install_dcm2niix():
     os.chdir("..")
 
 
-def install_library(library_name, library_url, library_version):
-    project_root = get_virtual_env_root()
-    os.chdir(project_root)
-    r = requests.get(library_url, allow_redirects=True)
-    open(f"{library_name}.tar.gz", "wb").write(r.content)
-    tar = tarfile.open(f"{library_name}.tar.gz")
-    tar.extractall()
-    tar.close()
-    os.remove(f"{library_name}.tar.gz")
-    os.chdir(f"{library_name}-{library_version}")
-    subprocess.run(["mkdir", "build"])
-    os.chdir("build")
-    subprocess.run(["cmake", "BUILD_SHARED_LIBS=ON", "CMAKE_BUILD_TYPE=Release", ".."])
-    subprocess.run(["make", "install"])
-    subprocess.run(["make", "-j", str(n_cores / 2)])
-    os.chdir("..")
-    os.chdir("..")
-
-
-def install_itk():
-    install_library("InsightToolkit",
-                    "https://github.com/InsightSoftwareConsortium/ITK/releases/download/v5.1.2/InsightToolkit-5.1.2"
-                    ".tar.gz",
-                    "5.1.2")
-
-
-def install_vtk():
-    install_library("vtk", "https://gitlab.kitware.com/vtk/vtk/-/archive/v9.1.0/vtk-v9.1.0.tar.gz", "v9.1.0")
-
-
-def get_itk_binaries_path():
-    project_root = get_virtual_env_root()
-    return os.path.join(project_root, "InsightToolkit-5.1.2", "build", "bin")
-
-
-def get_vtk_binaries_path():
-    project_root = get_virtual_env_root()
-    return os.path.join(project_root, "vtk-v9.1.0", "build", "bin")
-
-
-def install_greedy():
-    project_root = get_virtual_env_root()
-    os.chdir(project_root)
-    subprocess.run(["git", "clone", "https://github.com/pyushkevich/greedy.git"])
-    os.chdir("greedy")
-    subprocess.run(["mkdir", "build"])
-    os.chdir("build")
-    subprocess.run(["cmake", f"ITK_DIR={get_itk_binaries_path()}", f"VTK_DIR={get_vtk_binaries_path()}",
-                    "CMAKE_BUILD_TYPE=Release", ".."])
-    subprocess.run(["make", "-j", str(n_cores / 2)])
-
-
 class CustomInstallCommand(install):
     def run(self):
         install.run(self)
         install_dcm2niix()
-        install_itk()
-        install_vtk()
-        install_greedy()
 
 
 setup(
