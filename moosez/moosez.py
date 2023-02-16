@@ -141,7 +141,7 @@ def main():
     logging.info(' ')
     logging.info(' RUNNING PREDICTION:')
     logging.info(' ')
-    # predict.run_prediction(model_name, input_dirs, output_dirs)
+    predict.run_prediction(model_name, input_dirs, output_dirs)
     # Run the segmentation on the standardized data and save the results in the output directory
 
 
