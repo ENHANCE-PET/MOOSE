@@ -70,7 +70,7 @@ def predict(model_name: str, input_dir: str, output_dir: str):
     # set the environment variables
     os.environ["RESULTS_FOLDER"] = constants.NNUNET_RESULTS_FOLDER
     subprocess.run(f'nnUNet_predict -i {input_dir} -o {output_dir} -t {task_number} -m 3d_fullres -f all',
-                   shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=os.environ)
+                    shell=True, env=os.environ, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def count_output_files(output_dir):

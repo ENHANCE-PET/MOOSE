@@ -27,6 +27,7 @@ from moosez import file_utilities
 from moosez import input_validation
 from moosez import predict
 from moosez import constants
+from moosez import image_conversion
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -94,6 +95,18 @@ def main():
         # Restore stdout
         os.dup2(old_stdout, 1)
 
+    # INPUT STANDARDIZATION
+
+    print('')
+    print(f'{constants.ANSI_VIOLET} STANDARDIZING INPUT DATA:{constants.ANSI_RESET}')
+    print('')
+    logging.info(' ')
+    logging.info(' STANDARDIZING INPUT DATA:')
+    logging.info(' ')
+    image_conversion.standardize_to_nifti(parent_folder)
+    print(f"{constants.ANSI_GREEN} Standardization complete.{constants.ANSI_RESET}")
+    logging.info(" Standardization complete.")
+
     # SETTING UP DIRECTORY STRUCTURE
 
     print('')
@@ -105,15 +118,6 @@ def main():
     moose_dir, input_dirs, output_dirs = file_utilities.moose_folder_structure(parent_folder, model_name, modalities)
     print(f" MOOSE directory for the current run set at: {moose_dir}")
     logging.info(f" MOOSE directory for the current run set at: {moose_dir}")
-
-    # INPUT STANDARDIZATION
-
-    print('')
-    print(f'{constants.ANSI_VIOLET} STANDARDIZING INPUT DATA:{constants.ANSI_RESET}')
-    print('')
-    logging.info(' ')
-    logging.info(' STANDARDIZING INPUT DATA:')
-    logging.info(' ')
 
     # PREPARE THE DATA FOR PREDICTION
 
@@ -137,9 +141,12 @@ def main():
     logging.info(' ')
     logging.info(' RUNNING PREDICTION:')
     logging.info(' ')
+    # predict.run_prediction(model_name, input_dirs, output_dirs)
     # Run the segmentation on the standardized data and save the results in the output directory
-   # predict.run_prediction(model_name, input_dirs, output_dirs)
-    # Push back the results to their original locations
+
+
+# predict.run_prediction(model_name, input_dirs, output_dirs)
+# Push back the results to their original locations
 
 
 if __name__ == '__main__':
