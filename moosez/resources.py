@@ -19,9 +19,9 @@
 
 MODELS = {
     "clin_ct_bones": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Task208_CT_Organs.zip",
-        "filename": "Task208_CT_Organs.zip",
-        "directory": "Task208_CT_Organs",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Task201_CT_Bones.zip",
+        "filename": "Task201_CT_Bones.zip",
+        "directory": "Task201_CT_Bones",
     },
     "clin_ct_ribs": {
         "url": "https://example.com/bones_model.zip",
@@ -54,9 +54,9 @@ MODELS = {
         "directory": "clin_ct_vessels_model",
     },
     "clin_ct_organs": {
-        "url": "https://example.com/organs_model.zip",
-        "filename": "clin_ct_organs_model.zip",
-        "directory": "clin_ct_organs_model",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Task208_CT_Organs.zip",
+        "filename": "Task208_CT_Organs.zip",
+        "directory": "Task208_CT_Organs",
     },
     "clin_pt_fdg_tumor": {
         "url": "https://example.com/fdg_tumor_model.zip",
