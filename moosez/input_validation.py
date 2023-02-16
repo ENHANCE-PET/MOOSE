@@ -20,7 +20,7 @@
 import os
 from moosez import constants
 import logging
-
+import nibabel as nib
 
 def check_directory_exists(directory_path: str):
     """
@@ -32,27 +32,54 @@ def check_directory_exists(directory_path: str):
         raise Exception(f"Error: The directory '{directory_path}' does not exist.")
 
 
-def select_moose_compliant_subjects(parent_directory: str, modality_tags: list) -> list:
+def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) -> list:
     """
     Selects the subjects that have the files that have names that are compliant with the moosez.
-    :param parent_directory: The path to the parent directory.
+    :param subject_paths: The path to the list of subjects that are present in the parent directory.
     :param modality_tags: The list of appropriate modality suffixes that should be attached to the files for them to be moose
     compliant.
     :return: The list of subject paths that are moose compliant.
     """
     # go through each subject in the parent directory
-    subjects = os.listdir(parent_directory)
     moose_compliant_subjects = []
-    for subject in subjects:
+    for subject_path in subject_paths:
         # go through each subject and see if the files have the appropriate modality suffixes
-        subject_path = os.path.join(parent_directory, subject)
         files = os.listdir(subject_path)
-        suffixes = [file.endswith(tag) for tag in modality_tags for file in files]
-        if all(suffixes):
-            moose_compliant_subjects.append(os.path.join(parent_directory, subject))
-    print("\033[33m" + f"Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
-                       f"{len(os.listdir(parent_directory))}" + "\033[0m")
-    logging.info(f"Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
-                 f"{len(os.listdir(parent_directory))}")
+        suffixes = [file.startswith(tag) for tag in modality_tags for file in files]
+        if sum(suffixes) == len(modality_tags):
+            moose_compliant_subjects.append(subject_path)
+    print("\033[33m" + f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
+                       f"{len(subject_paths)}" + "\033[0m")
+    logging.info(f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
+                 f"{len(subject_paths)}")
 
     return moose_compliant_subjects
+
+
+def make_nnunet_compatible(input_dir: str) -> None:
+    """
+    Checks the files in the specified directory to ensure they comply with the nnUNet requirements. If a file does not
+    comply, it is compressed (if it is not already) and renamed to include the required tag.
+
+    Parameters:
+        input_dir (str): The path to the directory containing the files to check.
+
+    Returns:
+        None
+    """
+
+    for filename in os.listdir(input_dir):
+        if filename.endswith('.nii.gz') and not filename.endswith('_0000.nii.gz'):
+            # if the file is not already in the desired format
+            new_filename = filename
+            if not filename.endswith('.gz'):
+                # if the file is not compressed, compress it
+                img = nib.load(os.path.join(input_dir, filename))
+                new_filename = filename + '.gz'
+                nib.save(img, os.path.join(input_dir, new_filename))
+                os.remove(os.path.join(input_dir, filename))
+
+            # if the file does not have the _0000 tag, add it
+            if not '_0000.nii.gz' in new_filename:
+                new_filename = new_filename.replace('.nii.gz', '_0000.nii.gz')
+                os.rename(os.path.join(input_dir, filename), os.path.join(input_dir, new_filename))

@@ -22,6 +22,7 @@ from datetime import datetime
 import shutil
 from multiprocessing import Pool
 from moosez import constants
+from halo import Halo
 
 
 def create_directory(directory_path: str):
@@ -54,7 +55,7 @@ def moose_folder_structure(parent_directory: str, model_name: str, modalities: l
     for modality in modalities:
         input_dirs.append(os.path.join(moose_dir, 'input_' + modality))
         create_directory(input_dirs[-1])
-        output_dirs.append(os.path.join(moose_dir, 'output_'+ modality))
+        output_dirs.append(os.path.join(moose_dir, 'output_' + modality))
         create_directory(output_dirs[-1])
     return moose_dir, input_dirs, output_dirs
 
@@ -93,6 +94,21 @@ def select_files_by_modality(moose_compliant_subjects: list, modality_tag: str) 
     for subject in moose_compliant_subjects:
         files = os.listdir(subject)
         for file in files:
-            if file.endswith(modality_tag):
+            if file.startswith(modality_tag):
                 selected_files.append(os.path.join(subject, file))
     return selected_files
+
+
+def organise_files_by_modality(moose_compliant_subjects: list, modalities: list, moose_dir) -> None:
+    """
+    Organises the files by modality.
+    :param moose_compliant_subjects: The list of moose-compliant subjects paths.
+    :param modalities: The list of modalities.
+    :param moose_dir: The path to the moose directory.
+    """
+    spinner = Halo(text='Organising files by modality...', spinner='dots')
+    spinner.start()
+    for modality in modalities:
+        files_to_copy = select_files_by_modality(moose_compliant_subjects, modality)
+        copy_files_to_destination(files_to_copy, os.path.join(moose_dir, 'input_' + modality))
+    spinner.succeed('Files organised by modality.')

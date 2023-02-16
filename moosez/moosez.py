@@ -20,7 +20,7 @@ import argparse
 import logging
 import os
 from datetime import datetime
-
+from halo import Halo
 from moosez import display
 from moosez import download
 from moosez import file_utilities
@@ -62,6 +62,8 @@ def main():
     logging.info('                                     STARTING MOOSE-Z V.2.0.0                                       ')
     logging.info('****************************************************************************************************')
 
+    # INPUT VALIDATION AND PREPARATION
+
     logging.info(' ')
     logging.info('- Main directory: ' + parent_folder)
     logging.info('- Model name: ' + model_name)
@@ -71,14 +73,14 @@ def main():
     print(' ')
     display.expectations(model_name)
 
+    # DOWNLOADING THE MODEL
     print('')
     print(' MODEL DOWNLOAD:')
     print('')
-    # Download the model
     model_path = file_utilities.nnunet_folder_structure()
     download.model(model_name, model_path)
 
-    # Get the expected modalities for the model
+    # CHECKING FOR EXPECTED MODALITIES
 
     with open(os.devnull, "w") as devnull:
         old_stdout = os.dup(1)
@@ -90,7 +92,8 @@ def main():
         # Restore stdout
         os.dup2(old_stdout, 1)
 
-    # Set up moosez directory for the current run
+    # SETTING UP DIRECTORY STRUCTURE
+
     print('')
     print(' SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:')
     print('')
@@ -101,16 +104,43 @@ def main():
     print(f" MOOSE directory for the current run set at: {moose_dir}")
     logging.info(f" MOOSE directory for the current run set at: {moose_dir}")
 
-    # Standardize the input data and make a copy of it in the input directory
-    # standardisation remaining
+    # INPUT STANDARDIZATION
+
+    print('')
+    print(' STANDARDIZING INPUT DATA:')
+    print('')
+    logging.info(' ')
+    logging.info(' STANDARDIZING INPUT DATA:')
+    logging.info(' ')
+
+    # PREPARE THE DATA FOR PREDICTION
+
+    # get the subdirectories inside the parent folder
+    subjects = [os.path.join(parent_folder, d) for d in os.listdir(parent_folder) if
+                os.path.isdir(os.path.join(parent_folder, d))]
+    # Remove the moose_dir path from the subjects list
+    if moose_dir in subjects:
+        subjects.remove(moose_dir)
+    moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities)
+    file_utilities.organise_files_by_modality(moose_compliant_subjects, modalities, moose_dir)
+    # Make the data nnUNet compatible
+    spinner = Halo(text='Preparing data for prediction', spinner='dots')
+    spinner.start()
+    for input_dir in input_dirs:
+        input_validation.make_nnunet_compatible(input_dir)
+    spinner.succeed('Data ready for prediction')
 
 
-# moose_compliant_subjects = input_validation.select_moose_compliant_subjects(parent_folder, modalities)
+    # RUN PREDICTION
 
-
-# Run the segmentation on the standardized data and save the results in the output directory
-
-# Push back the results to their original locations
+    print('')
+    print(' RUNNING PREDICTION:')
+    print('')
+    logging.info(' ')
+    logging.info(' RUNNING PREDICTION:')
+    logging.info(' ')
+    # Run the segmentation on the standardized data and save the results in the output directory
+    # Push back the results to their original locations
 
 
 if __name__ == '__main__':
