@@ -69,7 +69,7 @@ MODELS = {
         "directory": "clin_ct_all_model",
     },
     "clin_fdg_pt_ct_all": {
-        "url": "https://example.com/fdg_pt_ct_all_model.zip",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSE-files-24062022.zip",
         "filename": "clin_fdg_pt_ct_all_model.zip",
         "directory": "clin_fdg_pt_ct_all_model",
     },
@@ -80,4 +80,3 @@ MODELS = {
     },
 
 }
-

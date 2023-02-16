@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+import os
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
 # Institution: Medical University of Vienna
@@ -17,10 +20,9 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import requests
-import os
-from moosez import resources
-import logging
 from tqdm import tqdm
+from moosez import constants
+from moosez import resources
 
 
 def binary(system_info, url):
@@ -72,8 +74,9 @@ def model(model_name, model_path):
         logging.info(f" {os.path.basename(directory)} extracted.")
         # Delete the zip file
         os.remove(filename)
+        print(f"{constants.ANSI_GREEN} {os.path.basename(directory)} - download complete. {constants.ANSI_RESET}")
+        logging.info(f" {os.path.basename(directory)} - download complete.")
     else:
-        print(f" A local instance of {os.path.basename(directory)} has been detected.")
+        print(f"{constants.ANSI_GREEN} A local instance of {os.path.basename(directory)} has been detected. "
+              f"{constants.ANSI_RESET}")
         logging.info(f" A local instance of {os.path.basename(directory)} has been detected.")
-
-

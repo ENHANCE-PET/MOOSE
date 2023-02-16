@@ -18,7 +18,10 @@
 
 import os
 import subprocess
+
 from halo import Halo
+
+from moosez import constants
 
 
 def map_model_name_to_task_number(model_name: str):
@@ -64,8 +67,10 @@ def predict(model_name: str, input_dir: str, output_dir: str):
     :return: None
     """
     task_number = map_model_name_to_task_number(model_name)
+    # set the environment variables
+    os.environ["RESULTS_FOLDER"] = constants.NNUNET_RESULTS_FOLDER
     spinner = Halo(text=f'Predicting segmentations using {model_name}...', spinner='dots')
     spinner.start()
     subprocess.run(f'nnUNet_predict -i {input_dir} -o {output_dir} -t {task_number} -m 3d_fullres -f all',
-                   shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                   shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=os.environ)
     spinner.succeed(text=f'Prediction completed successfully using {model_name}.')

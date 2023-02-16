@@ -16,9 +16,10 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import subprocess
-import re
 import logging
+import re
+import subprocess
+
 from halo import Halo
 
 

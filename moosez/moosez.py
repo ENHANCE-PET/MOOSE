@@ -20,22 +20,15 @@ import argparse
 import logging
 import os
 from datetime import datetime
-import sys
-import os
-from moosez import download
-from moosez import file_utilities
 
 from moosez import display
+from moosez import download
+from moosez import file_utilities
+from moosez import input_validation
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                    filename=datetime.now().strftime('moosez-%H-%M-%d-%m-%Y.log'),
+                    filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
                     filemode='w')
-
-
-def get_virtual_env_root():
-    python_exe = sys.executable
-    virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
-    return virtual_env_root
 
 
 def main():
@@ -72,16 +65,52 @@ def main():
     logging.info(' ')
     logging.info('- Main directory: ' + parent_folder)
     logging.info('- Model name: ' + model_name)
-    logging.info(f"- {display.extended_model_name(model_name)}")
+    logging.info(' ')
     print(' ')
-    print(f" {display.extended_model_name(model_name)}")
+    print(' NOTE:')
     print(' ')
+    display.expectations(model_name)
 
-    # Download the necessary model
-    project_root = get_virtual_env_root()
-    model_path = os.path.join(project_root, 'models')
-    file_utilities.create_directory(model_path)
+    print('')
+    print(' MODEL DOWNLOAD:')
+    print('')
+    # Download the model
+    model_path = file_utilities.nnunet_folder_structure()
     download.model(model_name, model_path)
+
+    # Get the expected modalities for the model
+
+    with open(os.devnull, "w") as devnull:
+        old_stdout = os.dup(1)
+        os.dup2(devnull.fileno(), 1)
+
+        # Call the function with suppressed output
+        modalities = display.expected_modality(model_name)
+
+        # Restore stdout
+        os.dup2(old_stdout, 1)
+
+    # Set up moosez directory for the current run
+    print('')
+    print(' SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:')
+    print('')
+    logging.info(' ')
+    logging.info(' SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:')
+    logging.info(' ')
+    moose_dir, input_dirs, output_dirs = file_utilities.moose_folder_structure(parent_folder, model_name, modalities)
+    print(f" MOOSE directory for the current run set at: {moose_dir}")
+    logging.info(f" MOOSE directory for the current run set at: {moose_dir}")
+
+    # Standardize the input data and make a copy of it in the input directory
+    # standardisation remaining
+
+
+# moose_compliant_subjects = input_validation.select_moose_compliant_subjects(parent_folder, modalities)
+
+
+# Run the segmentation on the standardized data and save the results in the output directory
+
+# Push back the results to their original locations
 
 
 if __name__ == '__main__':
