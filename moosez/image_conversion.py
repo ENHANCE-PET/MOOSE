@@ -60,14 +60,14 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         if image_probe.endswith(('IMA', 'dcm')):
             output_image = read_dicom_folder(input_path)
             if modality_tag == 'PT':
-                output_image_basename = f"{constants.TRACER_FDG}_PET_{subject_name}.nii.gz"
+                output_image_basename = f"{constants.TRACER_FDG}_PET_{subject_name}.nii"
             elif modality_tag == 'CT':
                 output_image_basename = f"{modality_tag}_{subject_name}.nii.gz"
     elif os.path.isfile(input_path):
         if input_path.endswith('.nii.gz') or input_path.endswith('.nii'):
             return
         output_image = SimpleITK.ReadImage(input_path)
-        output_image_basename = f"{os.path.splitext(os.path.basename(input_path))[0]}.nii.gz"
+        output_image_basename = f"{os.path.splitext(os.path.basename(input_path))[0]}.nii"
     else:
         return
 
