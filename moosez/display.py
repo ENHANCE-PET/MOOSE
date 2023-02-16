@@ -20,6 +20,7 @@
 import logging
 from moosez import constants
 import pyfiglet
+from moosez import constants
 
 
 def logo():
@@ -28,8 +29,8 @@ def logo():
     :return:
     """
     print(' ')
-    logo_color_code = "\033[38;5;208m"
-    slogan_color_code = "\033[38;5;208m"
+    logo_color_code = constants.ANSI_VIOLET
+    slogan_color_code = constants.ANSI_VIOLET
     result = logo_color_code + pyfiglet.figlet_format("MOOSE 2.0", font="smslant").rstrip() + "\033[0m"
     text = slogan_color_code + " A part of the ENHANCE-PET framework." + "\033[0m"
     print(result)
@@ -111,7 +112,7 @@ def citation():
         Display manuscript citation
         :return:
         """
-    print(" CITATION:")
+    print(f"{constants.ANSI_VIOLET} CITATION:{constants.ANSI_RESET}")
     print(" ")
     print(
         " Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT "

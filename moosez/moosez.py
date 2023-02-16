@@ -25,6 +25,8 @@ from moosez import display
 from moosez import download
 from moosez import file_utilities
 from moosez import input_validation
+from moosez import predict
+from moosez import constants
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -69,13 +71,13 @@ def main():
     logging.info('- Model name: ' + model_name)
     logging.info(' ')
     print(' ')
-    print(' NOTE:')
+    print(f'{constants.ANSI_VIOLET} NOTE:{constants.ANSI_RESET}')
     print(' ')
     display.expectations(model_name)
 
     # DOWNLOADING THE MODEL
     print('')
-    print(' MODEL DOWNLOAD:')
+    print(f'{constants.ANSI_VIOLET} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     print('')
     model_path = file_utilities.nnunet_folder_structure()
     download.model(model_name, model_path)
@@ -95,7 +97,7 @@ def main():
     # SETTING UP DIRECTORY STRUCTURE
 
     print('')
-    print(' SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:')
+    print(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:')
@@ -107,7 +109,7 @@ def main():
     # INPUT STANDARDIZATION
 
     print('')
-    print(' STANDARDIZING INPUT DATA:')
+    print(f'{constants.ANSI_VIOLET} STANDARDIZING INPUT DATA:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' STANDARDIZING INPUT DATA:')
@@ -115,31 +117,28 @@ def main():
 
     # PREPARE THE DATA FOR PREDICTION
 
-    # get the subdirectories inside the parent folder
     subjects = [os.path.join(parent_folder, d) for d in os.listdir(parent_folder) if
                 os.path.isdir(os.path.join(parent_folder, d))]
-    # Remove the moose_dir path from the subjects list
     if moose_dir in subjects:
         subjects.remove(moose_dir)
     moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities)
     file_utilities.organise_files_by_modality(moose_compliant_subjects, modalities, moose_dir)
-    # Make the data nnUNet compatible
     spinner = Halo(text='Preparing data for prediction', spinner='dots')
     spinner.start()
     for input_dir in input_dirs:
         input_validation.make_nnunet_compatible(input_dir)
-    spinner.succeed('Data ready for prediction')
-
+    spinner.succeed('Data ready for prediction.')
 
     # RUN PREDICTION
 
     print('')
-    print(' RUNNING PREDICTION:')
+    print(f'{constants.ANSI_VIOLET} RUNNING PREDICTION:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' RUNNING PREDICTION:')
     logging.info(' ')
     # Run the segmentation on the standardized data and save the results in the output directory
+   # predict.run_prediction(model_name, input_dirs, output_dirs)
     # Push back the results to their original locations
 
 

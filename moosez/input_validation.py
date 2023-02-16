@@ -22,6 +22,7 @@ from moosez import constants
 import logging
 import nibabel as nib
 
+
 def check_directory_exists(directory_path: str):
     """
     Checks if the specified directory exists.
@@ -48,8 +49,8 @@ def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) ->
         suffixes = [file.startswith(tag) for tag in modality_tags for file in files]
         if sum(suffixes) == len(modality_tags):
             moose_compliant_subjects.append(subject_path)
-    print("\033[33m" + f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
-                       f"{len(subject_paths)}" + "\033[0m")
+    print(f"{constants.ANSI_ORANGE} Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
+          f"{len(subject_paths)} {constants.ANSI_RESET}")
     logging.info(f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
                  f"{len(subject_paths)}")
 
@@ -71,15 +72,16 @@ def make_nnunet_compatible(input_dir: str) -> None:
     for filename in os.listdir(input_dir):
         if filename.endswith('.nii.gz') and not filename.endswith('_0000.nii.gz'):
             # if the file is not already in the desired format
-            new_filename = filename
-            if not filename.endswith('.gz'):
-                # if the file is not compressed, compress it
-                img = nib.load(os.path.join(input_dir, filename))
-                new_filename = filename + '.gz'
-                nib.save(img, os.path.join(input_dir, new_filename))
-                os.remove(os.path.join(input_dir, filename))
+            new_filename = filename.replace('.nii.gz', '_0000.nii.gz')
+            os.rename(os.path.join(input_dir, filename), os.path.join(input_dir, new_filename))
+        elif not filename.endswith('.gz'):
+            # if the file is not compressed, compress it
+            img = nib.load(os.path.join(input_dir, filename))
+            new_filename = filename + '.gz'
+            nib.save(img, os.path.join(input_dir, new_filename))
+            os.remove(os.path.join(input_dir, filename))
+            if not new_filename.endswith('_0000.nii.gz'):
+                # if the file is not already in the desired format
+                new_filename_with_zeroes = new_filename.replace('.nii.gz', '_0000.nii.gz')
+                os.rename(os.path.join(input_dir, new_filename), os.path.join(input_dir, new_filename_with_zeroes))
 
-            # if the file does not have the _0000 tag, add it
-            if not '_0000.nii.gz' in new_filename:
-                new_filename = new_filename.replace('.nii.gz', '_0000.nii.gz')
-                os.rename(os.path.join(input_dir, filename), os.path.join(input_dir, new_filename))
