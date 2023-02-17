@@ -88,6 +88,6 @@ def run_prediction(model_name, input_dirs, output_dirs):
 
     # Create a spinner to indicate that prediction is running
     spinner = Halo(text='Running prediction', spinner='dots')
-    for input_dir, output_dir in zip(input_dirs, output_dirs)
+    for input_dir, output_dir in zip(input_dirs, output_dirs):
         predict(model_name, input_dir, output_dir)
     spinner.succeed('Prediction complete')
