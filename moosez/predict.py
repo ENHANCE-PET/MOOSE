@@ -88,7 +88,7 @@ def monitor_output_directory(input_dir, output_dir, total_files, spinner):
     """
     Continuously monitors the specified output directory for new files and updates the progress bar accordingly.
     Parameters:
-        input_dir (str): The path to the input dirrectory.
+        input_dir (str): The path to the input directory.
         output_dir (str): The path to the output directory.
         total_files (int): The total number of files that are expected to be generated in the output directory.
         spinner (Halo): The spinner that displays the progress of the segmentation process.
