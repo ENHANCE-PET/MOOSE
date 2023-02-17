@@ -73,41 +73,6 @@ def predict(model_name: str, input_dir: str, output_dir: str):
                     shell=True, env=os.environ, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def count_output_files(output_dir):
-    """
-    Counts the number of files in the specified output directory.
-
-    Parameters:
-        output_dir (str): The path to the output directory.
-
-    Returns:
-        The number of files in the output directory.
-    """
-    return len([name for name in os.listdir(output_dir) if
-                os.path.isfile(os.path.join(output_dir, name)) and name.endswith('.nii.gz')])
-
-
-def monitor_output_directory(output_dir, total_files, spinner):
-    """
-    Continuously monitors the specified output directory for new files and updates the progress bar accordingly.
-
-    Parameters:
-        output_dir (str): The path to the output directory.
-        total_files (int): The total number of files that are expected to be generated in the output directory.
-        spinner (Halo): The spinner that displays the progress of the segmentation process.
-
-    Returns:
-        None
-    """
-    files_processed = count_output_files(output_dir)
-    while files_processed < total_files:
-        new_files_processed = count_output_files(output_dir)
-        if new_files_processed > files_processed:
-            spinner.text = f'Processed {new_files_processed} of {total_files} files'
-            spinner.spinner = 'dots'
-        files_processed = new_files_processed
-
-
 def run_prediction(model_name, input_dirs, output_dirs):
     """
     Runs the segmentation model on the data in the input directories and saves the results in the output directories.
@@ -123,16 +88,6 @@ def run_prediction(model_name, input_dirs, output_dirs):
 
     # Create a spinner to indicate that prediction is running
     spinner = Halo(text='Running prediction', spinner='dots')
-
-    # Process the input/output directories and show the number of files processed/remaining
-    total_files = sum([len([f for f in os.listdir(input_dir) if f.endswith('.nii.gz')]) for input_dir in input_dirs])
-    files_processed = 0
-    for input_dir, output_dir in zip(input_dirs, output_dirs):
-        t = Thread(target=monitor_output_directory, args=(output_dir, total_files, spinner))
-        t.daemon = True
-        t.start()
+    for input_dir, output_dir in zip(input_dirs, output_dirs)
         predict(model_name, input_dir, output_dir)
-        t.join()
-        files_processed += len([f for f in os.listdir(output_dir) if f.endswith('.nii.gz')])
-        spinner.text = f'Processed {files_processed} of {total_files} files'
     spinner.succeed('Prediction complete')
