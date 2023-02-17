@@ -28,6 +28,8 @@ from moosez import input_validation
 from moosez import predict
 from moosez import constants
 from moosez import image_conversion
+from threading import Thread
+
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -141,8 +143,19 @@ def main():
     logging.info(' ')
     logging.info(' RUNNING PREDICTION:')
     logging.info(' ')
-    predict.run_prediction(model_name, input_dirs, output_dirs)
-    # Run the segmentation on the standardized data and save the results in the output directory
+    spinner = Halo(text=f"Running prediction using {model_name}...", spinner='dots')
+    spinner.start()
+    files_processed = 0
+    for input_dir, output_dir in zip(input_dirs, output_dirs):
+        total_files = sum([len([f for f in os.listdir(input_dir) if f.endswith('.nii.gz')]) for input_dir in input_dirs])
+        t = Thread(target=predict.monitor_output_directory, args=(output_dir, total_files, spinner))
+        t.daemon = True
+        t.start()
+        predict.predict(model_name, input_dir, output_dir)
+        t.join()
+        files_processed += len([f for f in os.listdir(output_dir) if f.endswith('.nii.gz')])
+        spinner.text = f'Processed {files_processed} of {total_files} files...'
+    spinner.succeed(text=f"Prediction complete using {model_name}.")
 
 
 # predict.run_prediction(model_name, input_dirs, output_dirs)

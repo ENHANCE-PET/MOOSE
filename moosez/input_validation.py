@@ -21,6 +21,7 @@ import os
 from moosez import constants
 import logging
 import nibabel as nib
+import multiprocessing
 
 
 def check_directory_exists(directory_path: str):
@@ -57,6 +58,23 @@ def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) ->
     return moose_compliant_subjects
 
 
+def check_file_for_nnunet_compatibility(filename, input_dir):
+    if filename.endswith('.nii.gz') and not filename.endswith('_0000.nii.gz'):
+        # if the file is not already in the desired format
+        new_filename = filename.replace('.nii.gz', '_0000.nii.gz')
+        os.rename(os.path.join(input_dir, filename), os.path.join(input_dir, new_filename))
+    elif not filename.endswith('.gz'):
+        # if the file is not compressed, compress it
+        img = nib.load(os.path.join(input_dir, filename))
+        new_filename = filename + '.gz'
+        nib.save(img, os.path.join(input_dir, new_filename))
+        os.remove(os.path.join(input_dir, filename))
+        if not new_filename.endswith('_0000.nii.gz'):
+            # if the file is not already in the desired format
+            new_filename_with_zeroes = new_filename.replace('.nii.gz', '_0000.nii.gz')
+            os.rename(os.path.join(input_dir, new_filename), os.path.join(input_dir, new_filename_with_zeroes))
+
+
 def make_nnunet_compatible(input_dir: str) -> None:
     """
     Checks the files in the specified directory to ensure they comply with the nnUNet requirements. If a file does not
@@ -68,20 +86,6 @@ def make_nnunet_compatible(input_dir: str) -> None:
     Returns:
         None
     """
-
-    for filename in os.listdir(input_dir):
-        if filename.endswith('.nii.gz') and not filename.endswith('_0000.nii.gz'):
-            # if the file is not already in the desired format
-            new_filename = filename.replace('.nii.gz', '_0000.nii.gz')
-            os.rename(os.path.join(input_dir, filename), os.path.join(input_dir, new_filename))
-        elif not filename.endswith('.gz'):
-            # if the file is not compressed, compress it
-            img = nib.load(os.path.join(input_dir, filename))
-            new_filename = filename + '.gz'
-            nib.save(img, os.path.join(input_dir, new_filename))
-            os.remove(os.path.join(input_dir, filename))
-            if not new_filename.endswith('_0000.nii.gz'):
-                # if the file is not already in the desired format
-                new_filename_with_zeroes = new_filename.replace('.nii.gz', '_0000.nii.gz')
-                os.rename(os.path.join(input_dir, new_filename), os.path.join(input_dir, new_filename_with_zeroes))
-
+    with multiprocessing.Pool() as pool:
+        # Map the check_file() function to each file in the directory
+        pool.starmap(check_file_for_nnunet_compatibility, [(filename, input_dir) for filename in os.listdir(input_dir)])

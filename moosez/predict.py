@@ -18,7 +18,6 @@
 
 import os
 import subprocess
-from threading import Thread
 from halo import Halo
 
 from moosez import constants
@@ -70,24 +69,35 @@ def predict(model_name: str, input_dir: str, output_dir: str):
     # set the environment variables
     os.environ["RESULTS_FOLDER"] = constants.NNUNET_RESULTS_FOLDER
     subprocess.run(f'nnUNet_predict -i {input_dir} -o {output_dir} -t {task_number} -m 3d_fullres -f all',
-                    shell=True, env=os.environ, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                   shell=True, env=os.environ, capture_output=True)
 
 
-def run_prediction(model_name, input_dirs, output_dirs):
+def count_output_files(output_dir):
     """
-    Runs the segmentation model on the data in the input directories and saves the results in the output directories.
-
+    Counts the number of files in the specified output directory.
     Parameters:
-        model_name (str): The name of the segmentation model to use.
-        input_dirs (list): A list of input directories containing the images to segment.
-        output_dirs (list): A list of output directories where the segmentation results should be saved.
+        output_dir (str): The path to the output directory.
+    Returns:
+        The number of files in the output directory.
+    """
+    return len([name for name in os.listdir(output_dir) if
+                os.path.isfile(os.path.join(output_dir, name)) and name.endswith('.nii.gz')])
 
+
+def monitor_output_directory(output_dir, total_files, spinner):
+    """
+    Continuously monitors the specified output directory for new files and updates the progress bar accordingly.
+    Parameters:
+        output_dir (str): The path to the output directory.
+        total_files (int): The total number of files that are expected to be generated in the output directory.
+        spinner (Halo): The spinner that displays the progress of the segmentation process.
     Returns:
         None
     """
-
-    # Create a spinner to indicate that prediction is running
-    spinner = Halo(text='Running prediction', spinner='dots')
-    for input_dir, output_dir in zip(input_dirs, output_dirs):
-        predict(model_name, input_dir, output_dir)
-    spinner.succeed('Prediction complete')
+    files_processed = count_output_files(output_dir)
+    while files_processed < total_files:
+        new_files_processed = count_output_files(output_dir)
+        if new_files_processed > files_processed:
+            spinner.text = f'Processed {new_files_processed} of {total_files} files'
+            spinner.spinner = 'dots'
+        files_processed = new_files_processed
