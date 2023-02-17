@@ -98,6 +98,6 @@ def monitor_output_directory(output_dir, total_files, spinner):
     while files_processed < total_files:
         new_files_processed = count_output_files(output_dir)
         if new_files_processed > files_processed:
-            spinner.text = f'Processed {new_files_processed} of {total_files} files'
+            spinner.text = f'Processed {new_files_processed} of {total_files} files...'
             spinner.spinner = 'dots'
         files_processed = new_files_processed
