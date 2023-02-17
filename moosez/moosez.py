@@ -148,13 +148,13 @@ def main():
     files_processed = 0
     for input_dir, output_dir in zip(input_dirs, output_dirs):
         total_files = sum([len([f for f in os.listdir(input_dir) if f.endswith('.nii.gz')]) for input_dir in input_dirs])
-        t = Thread(target=predict.monitor_output_directory, args=(output_dir, total_files, spinner))
+        t = Thread(target=predict.monitor_output_directory, args=(input_dir, output_dir, total_files, spinner))
         t.daemon = True
         t.start()
         predict.predict(model_name, input_dir, output_dir)
         t.join()
         files_processed += len([f for f in os.listdir(output_dir) if f.endswith('.nii.gz')])
-        spinner.text = f'Processed {files_processed} of {total_files} files...'
+        spinner.text = f'From {os.path.basename(input_dir)} MOOSE processed {files_processed} of {total_files} files...'
     spinner.succeed(text=f"Prediction complete using {model_name}.")
 
 
