@@ -54,7 +54,7 @@ MODELS = {
         "directory": "clin_ct_vessels_model",
     },
     "clin_ct_organs": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Task208_CT_Organs.zip",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/nnUNetTrainerV2__nnUNetPlansv2.1.zip",
         "filename": "Task208_CT_Organs.zip",
         "directory": "Task208_CT_Organs",
     },
