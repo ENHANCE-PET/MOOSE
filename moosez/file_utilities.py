@@ -51,13 +51,13 @@ def moose_folder_structure(parent_directory: str, model_name: str, modalities: l
                              'moosez-' + model_name + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     create_directory(moose_dir)
     input_dirs = []
-    output_dirs = []
     for modality in modalities:
-        input_dirs.append(os.path.join(moose_dir, 'input_' + modality))
+        input_dirs.append(os.path.join(moose_dir, modality))
         create_directory(input_dirs[-1])
-        output_dirs.append(os.path.join(moose_dir, 'output_' + modality))
-        create_directory(output_dirs[-1])
-    return moose_dir, input_dirs, output_dirs
+
+    output_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
+    create_directory(output_dir)
+    return moose_dir, input_dirs, output_dir
 
 
 def nnunet_folder_structure():
@@ -110,5 +110,5 @@ def organise_files_by_modality(moose_compliant_subjects: list, modalities: list,
     spinner.start()
     for modality in modalities:
         files_to_copy = select_files_by_modality(moose_compliant_subjects, modality)
-        copy_files_to_destination(files_to_copy, os.path.join(moose_dir, 'input_' + modality))
+        copy_files_to_destination(files_to_copy, os.path.join(moose_dir, modality))
     spinner.succeed('Files organised by modality.')

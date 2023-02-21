@@ -2,9 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/dcm2niix" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/moosez2/dcm2niix" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/moosez2/dcm2niix/build/cloudflare-zlib" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/moosez2/dcm2niix/build/openjpeg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/mz/dcm2niix" vcs="Git" />
   </component>
 </project>

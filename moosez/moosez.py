@@ -29,6 +29,7 @@ from moosez import predict
 from moosez import constants
 from moosez import image_conversion
 from threading import Thread
+import tqdm
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
@@ -63,11 +64,13 @@ def main():
     display.logo()
     display.citation()
 
-    logging.info('****************************************************************************************************')
+    logging.info('----------------------------------------------------------------------------------------------------')
     logging.info('                                     STARTING MOOSE-Z V.2.0.0                                       ')
-    logging.info('****************************************************************************************************')
+    logging.info('----------------------------------------------------------------------------------------------------')
 
+    # ----------------------------------
     # INPUT VALIDATION AND PREPARATION
+    # ----------------------------------
 
     logging.info(' ')
     logging.info('- Main directory: ' + parent_folder)
@@ -78,14 +81,19 @@ def main():
     print(' ')
     display.expectations(model_name)
 
+    # ----------------------------------
     # DOWNLOADING THE MODEL
+    # ----------------------------------
+
     print('')
     print(f'{constants.ANSI_VIOLET} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     print('')
     model_path = file_utilities.nnunet_folder_structure()
     download.model(model_name, model_path)
 
+    # ----------------------------------
     # CHECKING FOR EXPECTED MODALITIES
+    # ----------------------------------
 
     with open(os.devnull, "w") as devnull:
         old_stdout = os.dup(1)
@@ -97,65 +105,65 @@ def main():
         # Restore stdout
         os.dup2(old_stdout, 1)
 
+    # ----------------------------------
     # INPUT STANDARDIZATION
+    # ----------------------------------
 
     print('')
-    print(f'{constants.ANSI_VIOLET} STANDARDIZING INPUT DATA:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
-    logging.info(' STANDARDIZING INPUT DATA:')
+    logging.info(' STANDARDIZING INPUT DATA TO NIFTI:')
     logging.info(' ')
     image_conversion.standardize_to_nifti(parent_folder)
     print(f"{constants.ANSI_GREEN} Standardization complete.{constants.ANSI_RESET}")
     logging.info(" Standardization complete.")
 
-    # SETTING UP DIRECTORY STRUCTURE
-
-    print('')
-    print(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:{constants.ANSI_RESET}')
-    print('')
-    logging.info(' ')
-    logging.info(' SETTING UP MOOSE-Z DIRECTORY FOR BATCH PROCESSING:')
-    logging.info(' ')
-    moose_dir, input_dirs, output_dirs = file_utilities.moose_folder_structure(parent_folder, model_name, modalities)
-    print(f" MOOSE directory for the current run set at: {moose_dir}")
-    logging.info(f" MOOSE directory for the current run set at: {moose_dir}")
-
-    # PREPARE THE DATA FOR PREDICTION
+    # --------------------------------------
+    # CHECKING FOR MOOSE COMPLIANT SUBJECTS
+    # --------------------------------------
 
     subjects = [os.path.join(parent_folder, d) for d in os.listdir(parent_folder) if
                 os.path.isdir(os.path.join(parent_folder, d))]
-    if moose_dir in subjects:
-        subjects.remove(moose_dir)
     moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities)
-    file_utilities.organise_files_by_modality(moose_compliant_subjects, modalities, moose_dir)
-    spinner = Halo(text='Preparing data for prediction', spinner='dots')
-    spinner.start()
-    for input_dir in input_dirs:
-        input_validation.make_nnunet_compatible(input_dir)
-    spinner.succeed('Data ready for prediction.')
 
-    # RUN PREDICTION
+    # -------------------------------------------------
+    # RUN PREDICTION ONLY FOR MOOSE COMPLIANT SUBJECTS
+    # -------------------------------------------------
 
-    print('')
-    print(f'{constants.ANSI_VIOLET} RUNNING PREDICTION:{constants.ANSI_RESET}')
-    print('')
-    logging.info(' ')
-    logging.info(' RUNNING PREDICTION:')
-    logging.info(' ')
-    spinner = Halo(text=f"Running prediction using {model_name}...", spinner='dots')
-    spinner.start()
-    files_processed = 0
-    for input_dir, output_dir in zip(input_dirs, output_dirs):
-        total_files = sum([len([f for f in os.listdir(input_dir) if f.endswith('.nii.gz')]) for input_dir in input_dirs])
-        t = Thread(target=predict.monitor_output_directory, args=(input_dir, output_dir, total_files, spinner))
-        t.daemon = True
-        t.start()
-        predict.predict(model_name, input_dir, output_dir)
-        t.join()
-        files_processed += len([f for f in os.listdir(output_dir) if f.endswith('.nii.gz')])
-        spinner.text = f'From {os.path.basename(input_dir)} MOOSE processed {files_processed} of {total_files} files...'
-    spinner.succeed(text=f"Prediction complete using {model_name}.")
+    for subject in tqdm.tqdm(moose_compliant_subjects, desc='Processing MOOSE-Z compliant directories'):
+
+        # SETTING UP DIRECTORY STRUCTURE
+
+        logging.info(' ')
+        logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:'
+                     f'{constants.ANSI_RESET}')
+        logging.info(' ')
+        moose_dir, input_dirs, output_dir = file_utilities.moose_folder_structure(subject, model_name,
+                                                                                  modalities)
+        logging.info(f" MOOSE directory for subject {os.path.basename(subject)} at: {moose_dir}")
+
+        # ORGANISE DATA ACCORDING TO MODALITY
+
+        file_utilities.organise_files_by_modality([subject], modalities, moose_dir)
+
+        # PREPARE THE DATA FOR PREDICTION
+
+        with tqdm.tqdm(total=len(input_dirs), desc='Preparing data for prediction', unit='input dir') as pbar:
+            for input_dir in input_dirs:
+                input_validation.make_nnunet_compatible(input_dir)
+                pbar.update()
+
+        # RUN PREDICTION
+
+        logging.info(' ')
+        logging.info(' RUNNING PREDICTION:')
+        logging.info(' ')
+        with tqdm.tqdm(total=len(input_dirs), desc=f"Running prediction using {model_name}", unit='input dir') as pbar:
+            for input_dir, output_dir in zip(input_dirs, output_dir):
+                predict.predict(model_name, input_dir, output_dir)
+                pbar.update()
+        logging.info(f"Prediction complete using {model_name}.")
 
 
 # predict.run_prediction(model_name, input_dirs, output_dirs)

@@ -68,8 +68,10 @@ def predict(model_name: str, input_dir: str, output_dir: str):
     task_number = map_model_name_to_task_number(model_name)
     # set the environment variables
     os.environ["RESULTS_FOLDER"] = constants.NNUNET_RESULTS_FOLDER
-    subprocess.run(f'nnUNet_predict -i {input_dir} -o {output_dir} -t {task_number} -m 3d_fullres -f all',
-                   shell=True, env=os.environ, capture_output=True)
+    print(os.environ["RESULTS_FOLDER"])
+    subprocess.run(f'nnUNet_predict -i {input_dir} -o {output_dir} -t {task_number} -m 3d_fullres -f all'
+                   f' --disable_tta --mode fast',
+                   shell=True, env=os.environ)
 
 
 def count_output_files(output_dir):
@@ -84,11 +86,10 @@ def count_output_files(output_dir):
                 os.path.isfile(os.path.join(output_dir, name)) and name.endswith('.nii.gz')])
 
 
-def monitor_output_directory(input_dir, output_dir, total_files, spinner):
+def monitor_output_directory(output_dir, total_files, spinner):
     """
     Continuously monitors the specified output directory for new files and updates the progress bar accordingly.
     Parameters:
-        input_dir (str): The path to the input directory.
         output_dir (str): The path to the output directory.
         total_files (int): The total number of files that are expected to be generated in the output directory.
         spinner (Halo): The spinner that displays the progress of the segmentation process.
@@ -99,7 +100,6 @@ def monitor_output_directory(input_dir, output_dir, total_files, spinner):
     while files_processed < total_files:
         new_files_processed = count_output_files(output_dir)
         if new_files_processed > files_processed:
-            spinner.text = f'From {os.path.basename(input_dir)} MOOSE processed {files_processed} of {total_files} ' \
-                           f'files...'
+            spinner.text = f'Processed {new_files_processed} of {total_files} files'
             spinner.spinner = 'dots'
         files_processed = new_files_processed

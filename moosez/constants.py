@@ -37,3 +37,8 @@ ANSI_RESET = '\033[0m'
 # SUPPORTED TRACERS (limited patch)
 
 TRACER_FDG = 'FDG'
+
+
+# FOLDER NAMES
+
+SEGMENTATIONS_FOLDER = 'segmentations'
