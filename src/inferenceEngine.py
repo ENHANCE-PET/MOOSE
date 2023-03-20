@@ -75,6 +75,7 @@ def segment_ct(nifti_img: str, out_dir: str) -> str:
     spinner.start()
     segment_tissue(ct_file, out_dir, 'Organs')
     spinner.succeed(text=f"Segmented abdominal organs from {ct_file}")
+    print('OUT LABEL:', fop.get_files(out_dir, pathlib.Path(nifti_img).stem + '*'))
     out_label = fop.get_files(out_dir, pathlib.Path(nifti_img).stem + '*')[0]
     fop.add_prefix_rename(out_label, 'Organs')
     logging.info(f"Initiating post processing of abdominal organs...")
