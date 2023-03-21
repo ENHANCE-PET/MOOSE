@@ -13,7 +13,7 @@
 
 echo '[1] Installing python packages for running moose...'
 pip install -r requirements.txt
-git clone https://github.com/MIC-DKFZ/nnUNet.git
+git clone -b nnunetv1 https://github.com/MIC-DKFZ/nnUNet.git
 cd nnUNet
 pip install -e .
 cd .. 
