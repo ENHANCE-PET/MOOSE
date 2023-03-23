@@ -149,7 +149,7 @@ If you are working on an external server that does not allow the use of Docker d
 ```bash
 mkdir moose_sing
 cd moose_sing
-wget "...."
+wget "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/moose_22032023.tar"
 tar -xvf ...tar
 ```
 After this step, a directory containing the Singularity image with the name 'moose_sing' will be created.
