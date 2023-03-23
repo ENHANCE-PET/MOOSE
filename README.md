@@ -142,6 +142,33 @@ You will now be inside the moose container after the execution of the ```docker 
 
 If you have troubles with the installation, you can reach us via [discord](https://discord.gg/m3pjREWQ)!
 
+### 💫 Installing using Singularity 
+If you are working on an external server that does not allow the use of Docker due to root privileges, we have created the possibility to use a Singularity image instead. The image contains all the necessary packages needed to run MOOSE. However, since write permissions are required in the MOOSE-files when running, these must be downloaded separately and then mounted in the Singularity container.
+
+##### Step: 1
+```bash
+mkdir moose_sing
+cd moose_sing
+wget "...."
+tar -xvf ...tar
+```
+After this step, a directory containing the Singularity image with the name 'moose_sing' will be created.
+
+##### Step: 2
+```bash
+wget "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSE-files-24062022.zip"
+unzip MOOSE-files-24062022.zip
+rm MOOSE-files-24062022.zip
+```
+This step downloads the MOOSE-files directory which is necessary to store outside of the Singularity container.
+
+##### Step: 3
+```bash
+singularity shell --nv --no-home --bind MOOSE-files://work/MOOSE/MOOSE-files,'path_to_mount_without_the_quotes':/data moose.sif
+```
+After this step you are within your Singularity container. The MOOSE-files directory and your data directory are mounted to the container. Make sure you replace the `path_to_mount_without_the_quotes` in the last command with your own local path (e.g. `/home/Documents/data-to-moose`).
+
+
 ## 🗂 Required folder structure 
 
 `MOOSE` inherently performs batchwise analysis. Once you have all the patients to be analysed in a main directory, the analysis is performed sequentially. The output folders that will be created by the script itself are highlighted with the tag "Auto-generated" (refer results section). Organising the folder structure is the sole responsibility of the user. Also closely monitor the moose.log file for finding out more about the workflow of MOOSE. All the labels are stored under the 'labels' folder of each subject. 
@@ -185,7 +212,7 @@ moose -f /home/kyloren/Documents/main_folder # input can be absolute path
 moose -f /main_folder # or relative path
 
 ```
-#### Usage via docker
+#### Usage via docker/singularity
 
 After you start the `moose` docker container, you can use the command below.
 
