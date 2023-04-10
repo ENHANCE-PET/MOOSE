@@ -16,7 +16,6 @@
 # Libraries to import
 
 import logging
-import os
 import pathlib
 import re
 import subprocess
