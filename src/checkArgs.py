@@ -52,9 +52,9 @@ def check_env_vars() -> None:
 
 def has_numbers(string: str) -> bool:
     """
-    Checks if a string contains number
+    Checks if a string contains a number
     :param string: String to check
-    :return: True if string contains numbers, False otherwise
+    :return: True if string contains a number, False otherwise
     """
     return any(char.isdigit() for char in string)
 
@@ -69,6 +69,7 @@ def is_non_negative(value: int) -> bool:
 
 
 # Function to check if a string has alphabets
+
 def is_string_alpha(string: str) -> bool:
     """
     Checks if a string contains alphabets
@@ -78,7 +79,6 @@ def is_string_alpha(string: str) -> bool:
     return any(char.isalpha() for char in string)
 
 
-# Function to remove a particular character from a string
 def remove_char(string: str, char: str) -> str:
     """
     Removes a particular character from a string
