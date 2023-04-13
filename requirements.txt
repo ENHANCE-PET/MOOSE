@@ -13,6 +13,5 @@ pyfiglet~=0.8.post1
 natsort~=8.1.0
 nnunet
 pillow>=9.2.0
-fastai~=2.6.3
-
+fastai
 
