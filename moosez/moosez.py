@@ -31,7 +31,6 @@ from moosez import image_conversion
 from threading import Thread
 import tqdm
 
-
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
                     filemode='w')
@@ -88,7 +87,8 @@ def main():
     print('')
     print(f'{constants.ANSI_VIOLET} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     print('')
-    model_path = file_utilities.nnunet_folder_structure()
+    model_path = constants.NNUNET_RESULTS_FOLDER
+    file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
 
     # ----------------------------------
@@ -131,7 +131,7 @@ def main():
     # RUN PREDICTION ONLY FOR MOOSE COMPLIANT SUBJECTS
     # -------------------------------------------------
 
-    for subject in tqdm.tqdm(moose_compliant_subjects, desc='Processing MOOSE-Z compliant directories'):
+    for subject in tqdm.tqdm(moose_compliant_subjects, desc=' Processing MOOSE-Z compliant directories'):
 
         # SETTING UP DIRECTORY STRUCTURE
 
@@ -149,10 +149,10 @@ def main():
 
         # PREPARE THE DATA FOR PREDICTION
 
-        with tqdm.tqdm(total=len(input_dirs), desc='Preparing data for prediction', unit='input dir') as pbar:
-            for input_dir in input_dirs:
-                input_validation.make_nnunet_compatible(input_dir)
-                pbar.update()
+        for input_dir in input_dirs:
+            input_validation.make_nnunet_compatible(input_dir)
+        logging.info(f" {constants.ANSI_GREEN}Data preparation complete using {model_name} for subject "
+                     f"{os.path.basename(subject)}{constants.ANSI_RESET}")
 
         # RUN PREDICTION
 

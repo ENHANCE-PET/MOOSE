@@ -47,7 +47,7 @@ def install_dcm2niix():
 class CustomInstallCommand(install):
     def run(self):
         install.run(self)
-        install_dcm2niix()
+
 
 
 setup(
@@ -79,19 +79,21 @@ setup(
              ' preclinical-segmentation clinical-segmentation',
     packages=find_packages(),
     install_requires=[
+        'nnunetv2',
         'nibabel~=3.2.2',
         'halo~=0.0.31',
         'pandas~=1.4.1',
-        'SimpleITK~=2.1.1',
+        'SimpleITK~=2.2.1',
         'pydicom~=2.2.2',
         'argparse~=1.4.0',
+        'imageio~=2.16.1',
         'numpy~=1.22.3',
         'mpire~=2.3.3',
         'openpyxl~=3.0.9',
-        'matplotlib~=3.1.3',
+        'matplotlib',
         'pyfiglet~=0.8.post1',
         'natsort~=8.1.0',
-        'pillow>=9.2.0',
+        'pillow>=9.2.0'
     ],
     cmdclass={'install': CustomInstallCommand},
     entry_points={

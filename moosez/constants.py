@@ -25,7 +25,7 @@ project_root = file_utilities.get_virtual_env_root()
 NNUNET_RESULTS_FOLDER = os.path.join(project_root, 'models', 'nnunet_trained_models')
 MOOSEZ_MODEL_FOLDER = os.path.join(NNUNET_RESULTS_FOLDER, 'nnUNet', '3d_fullres')
 ALLOWED_MODALITIES = ['CT', 'FDG_PT', 'MR']
-
+TEMP_FOLDER = 'temp'
 
 # COLOR CODES
 ANSI_ORANGE = '\033[38;5;208m'
@@ -42,3 +42,8 @@ TRACER_FDG = 'FDG'
 # FOLDER NAMES
 
 SEGMENTATIONS_FOLDER = 'segmentations'
+
+
+# PREPROCESSING PARAMETERS
+
+VOXEL_SPACING = [1.5, 1.5, 1.5]

@@ -62,16 +62,20 @@ def model(model_name, model_path):
                 open(filename, "ab").write(chunk)
                 pbar.update(chunk_size)
         # Unzip the model
+        # Unzip the model
         import zipfile
         with tqdm(unit="B", unit_scale=True, leave=False, desc=f" Extracting {os.path.basename(directory)}") as pbar:
             with zipfile.ZipFile(filename, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
                 pbar.total = total_size
+                # Get the parent directory of 'directory'
+                parent_directory = os.path.dirname(directory)
                 for file in zip_ref.infolist():
-                    zip_ref.extract(file, directory)
+                    zip_ref.extract(file, parent_directory)
                     extracted_size = file.file_size
                     pbar.update(extracted_size)
         logging.info(f" {os.path.basename(directory)} extracted.")
+
         # Delete the zip file
         os.remove(filename)
         print(f"{constants.ANSI_GREEN} {os.path.basename(directory)} - download complete. {constants.ANSI_RESET}")

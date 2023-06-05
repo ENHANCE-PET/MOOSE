@@ -40,6 +40,20 @@ def get_virtual_env_root():
     return virtual_env_root
 
 
+def get_files(directory, wildcard):
+    """
+    Returns the list of files in the directory with the specified wildcard.
+    :param directory: The directory path.
+    :param wildcard: The wildcard to be used.
+    :return: The list of files.
+    """
+    files = []
+    for file in os.listdir(directory):
+        if file.endswith(wildcard):
+            files.append(os.path.join(directory, file))
+    return files
+
+
 def moose_folder_structure(parent_directory: str, model_name: str, modalities: list):
     """
     Creates the moose folder structure.
@@ -58,15 +72,6 @@ def moose_folder_structure(parent_directory: str, model_name: str, modalities: l
     output_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
     create_directory(output_dir)
     return moose_dir, input_dirs, output_dir
-
-
-def nnunet_folder_structure():
-    """
-    Creates the nnunet folder structure.
-    """
-    nnunet_dir = os.path.join(constants.MOOSEZ_MODEL_FOLDER)
-    create_directory(nnunet_dir)
-    return nnunet_dir
 
 
 def copy_file(file, destination):
@@ -106,9 +111,6 @@ def organise_files_by_modality(moose_compliant_subjects: list, modalities: list,
     :param modalities: The list of modalities.
     :param moose_dir: The path to the moose directory.
     """
-    spinner = Halo(text='Organising files by modality...', spinner='dots')
-    spinner.start()
     for modality in modalities:
         files_to_copy = select_files_by_modality(moose_compliant_subjects, modality)
         copy_files_to_destination(files_to_copy, os.path.join(moose_dir, modality))
-    spinner.succeed('Files organised by modality.')

@@ -19,8 +19,10 @@
 import os
 import subprocess
 from halo import Halo
-
+from moosez import file_utilities
 from moosez import constants
+import shutil
+from moosez import image_processing
 
 
 def map_model_name_to_task_number(model_name: str):
@@ -44,7 +46,7 @@ def map_model_name_to_task_number(model_name: str):
     elif model_name == "clin_ct_vessels":
         return 207
     elif model_name == "clin_ct_organs":
-        return 208
+        return 123
     elif model_name == "clin_pt_fdg_tumor":
         return 209
     elif model_name == "clin_ct_all":
@@ -67,11 +69,54 @@ def predict(model_name: str, input_dir: str, output_dir: str):
     """
     task_number = map_model_name_to_task_number(model_name)
     # set the environment variables
-    os.environ["RESULTS_FOLDER"] = constants.NNUNET_RESULTS_FOLDER
-    print(os.environ["RESULTS_FOLDER"])
-    subprocess.run(f'nnUNet_predict -i {input_dir} -o {output_dir} -t {task_number} -m 3d_fullres -f all'
-                   f' --disable_tta --mode fast',
+    os.environ["nnUNet_results"] = constants.NNUNET_RESULTS_FOLDER
+
+    # Preprocess the image
+    temp_input_dir, resampled_image = preprocess(input_dir)
+    subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
+                   f' -tr nnUNetTrainer_2000epochs_NoMirroring'
+                   f' --disable_tta',
                    shell=True, env=os.environ)
+    original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
+
+    # Postprocess the label
+    postprocess(original_image_files[0], output_dir)
+    shutil.rmtree(temp_input_dir)
+
+
+def preprocess(original_image_directory: str):
+    """
+    Preprocesses the original images.
+    :param original_image_directory: The directory containing the original images.
+    :return: temp_folder: The path to the temp folder.
+    """
+    # create the temp directory
+    temp_folder = os.path.join(original_image_directory, constants.TEMP_FOLDER)
+    os.makedirs(temp_folder, exist_ok=True)
+    original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
+    resampled_image = os.path.join(temp_folder, 'resampled_image.nii.gz')
+
+    # [1] Resample the images to 1.5 mm isotropic voxel size
+    resampled_image = image_processing.resample(input_image_path=original_image_files[0],
+                                                output_image_path=resampled_image,
+                                                interpolation='linear',
+                                                desired_spacing=constants.VOXEL_SPACING)
+    return temp_folder, resampled_image
+
+
+def postprocess(original_image, output_dir):
+    """
+    Postprocesses the predicted images.
+    :param original_image: The original image.
+    :param output_dir: The output directory containing the label image.
+    :return: None
+    """
+    # [1] Resample the predicted image to the original image's voxel spacing
+    predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
+    image_processing.resample(input_image_path=predicted_image,
+                              output_image_path=predicted_image,
+                              interpolation='nearest',
+                              desired_spacing=image_processing.get_spacing(original_image))
 
 
 def count_output_files(output_dir):
