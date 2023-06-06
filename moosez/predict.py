@@ -76,7 +76,7 @@ def predict(model_name: str, input_dir: str, output_dir: str):
     subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
                    f' -tr nnUNetTrainer_2000epochs_NoMirroring'
                    f' --disable_tta',
-                   shell=True, env=os.environ)
+                   shell=True, stdout=subprocess.DEVNULL, env=os.environ)
     original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
 
     # Postprocess the label
@@ -94,7 +94,7 @@ def preprocess(original_image_directory: str):
     temp_folder = os.path.join(original_image_directory, constants.TEMP_FOLDER)
     os.makedirs(temp_folder, exist_ok=True)
     original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
-    resampled_image = os.path.join(temp_folder, 'resampled_image.nii.gz')
+    resampled_image = os.path.join(temp_folder, 'resampled_image_0000.nii.gz')
 
     # [1] Resample the images to 1.5 mm isotropic voxel size
     resampled_image = image_processing.resample(input_image_path=original_image_files[0],
@@ -113,10 +113,12 @@ def postprocess(original_image, output_dir):
     """
     # [1] Resample the predicted image to the original image's voxel spacing
     predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
+    multilabel_image = os.path.join(output_dir, constants.MULTILABEL_SUFFIX + os.path.basename(original_image))
     image_processing.resample(input_image_path=predicted_image,
-                              output_image_path=predicted_image,
+                              output_image_path=multilabel_image,
                               interpolation='nearest',
                               desired_spacing=image_processing.get_spacing(original_image))
+    os.remove(predicted_image)
 
 
 def count_output_files(output_dir):

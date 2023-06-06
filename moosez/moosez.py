@@ -30,6 +30,7 @@ from moosez import constants
 from moosez import image_conversion
 from threading import Thread
 import tqdm
+import time
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -131,10 +132,21 @@ def main():
     # RUN PREDICTION ONLY FOR MOOSE COMPLIANT SUBJECTS
     # -------------------------------------------------
 
-    for subject in tqdm.tqdm(moose_compliant_subjects, desc=' Processing MOOSE-Z compliant directories'):
+    print('')
+    print(f'{constants.ANSI_VIOLET} PERFORMING PREDICTION:{constants.ANSI_RESET}')
+    print('')
+    logging.info(' ')
+    logging.info(' PERFORMING PREDICTION:')
+    logging.info(' ')
+
+    spinner = Halo(text=' Initiating', spinner='dots')
+    spinner.start()
+    start_total_time = time.time()
+    time_per_subject = {}
+    for subject in moose_compliant_subjects:
 
         # SETTING UP DIRECTORY STRUCTURE
-
+        spinner.text = f' Setting up directory structure for {os.path.basename(subject)}...'
         logging.info(' ')
         logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:'
                      f'{constants.ANSI_RESET}')
@@ -144,30 +156,37 @@ def main():
         logging.info(f" MOOSE directory for subject {os.path.basename(subject)} at: {moose_dir}")
 
         # ORGANISE DATA ACCORDING TO MODALITY
-
+        spinner.text = f' Organising data according to modality for {os.path.basename(subject)}...'
         file_utilities.organise_files_by_modality([subject], modalities, moose_dir)
 
         # PREPARE THE DATA FOR PREDICTION
-
+        spinner.text = f' Preparing data for prediction for {os.path.basename(subject)}...'
         for input_dir in input_dirs:
             input_validation.make_nnunet_compatible(input_dir)
         logging.info(f" {constants.ANSI_GREEN}Data preparation complete using {model_name} for subject "
                      f"{os.path.basename(subject)}{constants.ANSI_RESET}")
 
         # RUN PREDICTION
-
+        start_time = time.time()
         logging.info(' ')
         logging.info(' RUNNING PREDICTION:')
         logging.info(' ')
-        with tqdm.tqdm(total=len(input_dirs), desc=f"Running prediction using {model_name}", unit='input dir') as pbar:
-            for input_dir, output_dir in zip(input_dirs, output_dir):
-                predict.predict(model_name, input_dir, output_dir)
-                pbar.update()
+        spinner.text = f' Running prediction for {os.path.basename(subject)} using {model_name}...'
+
+        for input_dir in input_dirs:
+            predict.predict(model_name, input_dir, output_dir)
         logging.info(f"Prediction complete using {model_name}.")
 
-
-# predict.run_prediction(model_name, input_dirs, output_dirs)
-# Push back the results to their original locations
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        spinner.text = f' {constants.ANSI_GREEN}Prediction done for {os.path.basename(subject)} using {model_name}!' \
+                       f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}'
+        time.sleep(3)
+    end_total_time = time.time()
+    total_elapsed_time = (end_total_time - start_total_time) / 60
+    spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
+                    f'{len(moose_compliant_subjects)}: {round(total_elapsed_time, 1)} min'
+                    f' {constants.ANSI_RESET}')
 
 
 if __name__ == '__main__':
