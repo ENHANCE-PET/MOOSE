@@ -19,19 +19,20 @@
 import argparse
 import logging
 import os
+import time
 from datetime import datetime
+
+import colorama
 from halo import Halo
+
+from moosez import constants
 from moosez import display
 from moosez import download
 from moosez import file_utilities
+from moosez import image_conversion
 from moosez import input_validation
 from moosez import predict
-from moosez import constants
-from moosez import image_conversion
-from threading import Thread
-import tqdm
-import time
-import colorama
+from moosez import resources
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -83,6 +84,7 @@ def main():
     print(f'{constants.ANSI_VIOLET} NOTE:{constants.ANSI_RESET}')
     print(' ')
     modalities = display.expectations(model_name)
+    accelerator = resources.check_cuda()
 
     # ----------------------------------
     # DOWNLOADING THE MODEL
@@ -163,7 +165,7 @@ def main():
         spinner.text = f' Running prediction for {os.path.basename(subject)} using {model_name}...'
 
         for input_dir in input_dirs:
-            predict.predict(model_name, input_dir, output_dir)
+            predict.predict(model_name, input_dir, output_dir, accelerator)
         logging.info(f"Prediction complete using {model_name}.")
 
         end_time = time.time()

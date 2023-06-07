@@ -17,11 +17,13 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-import subprocess
-from halo import Halo
-from moosez import file_utilities
-from moosez import constants
 import shutil
+import subprocess
+
+from halo import Halo
+
+from moosez import constants
+from moosez import file_utilities
 from moosez import image_processing
 
 
@@ -59,12 +61,13 @@ def map_model_name_to_task_number(model_name: str):
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
 
-def predict(model_name: str, input_dir: str, output_dir: str):
+def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     """
     Runs the prediction using nnunet_predict.
     :param model_name: The name of the model.
     :param input_dir: The input directory.
     :param output_dir: The output directory.
+    :param accelerator: The accelerator to use.
     :return: None
     """
     task_number = map_model_name_to_task_number(model_name)
@@ -75,7 +78,7 @@ def predict(model_name: str, input_dir: str, output_dir: str):
     temp_input_dir, resampled_image = preprocess(input_dir)
     subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
                    f' -tr nnUNetTrainer_2000epochs_NoMirroring'
-                   f' --disable_tta',
+                   f' --disable_tta -device {accelerator}',
                    shell=True, stdout=subprocess.DEVNULL, env=os.environ)
     original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
 

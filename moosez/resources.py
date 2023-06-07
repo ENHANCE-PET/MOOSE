@@ -16,6 +16,9 @@
 # binaries and models for the moosez.
 #
 # ----------------------------------------------------------------------------------------------------------------------
+import torch
+
+from moosez import constants
 
 MODELS = {
     "clin_ct_bones": {
@@ -80,3 +83,20 @@ MODELS = {
     },
 
 }
+
+
+def check_cuda() -> str:
+    """
+    This function checks if cuda is available in the device and prints the device name and number of cuda devices
+    available in the device.
+    :return: str
+    """
+    if not torch.cuda.is_available():
+        print(f'{constants.ANSI_ORANGE} Cuda not available in this device, will run predictions on CPU'
+              f'{constants.ANSI_RESET}')
+        return "cpu"
+    else:
+        device_count = torch.cuda.device_count()
+        print(f'{constants.ANSI_GREEN} Cuda (no. of gpus: {device_count}) available in this device, will run '
+              f'predictions on GPU {constants.ANSI_RESET}')
+        return "cuda"
