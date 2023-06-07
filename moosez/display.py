@@ -39,73 +39,35 @@ def logo():
     print(' ')
 
 
-def expected_modality(model_name: str) -> list:
+def expected_modality(model_name: str) -> dict:
     """
     Display expected modality for the model.
     :param model_name: The name of the model.
     :return: The expected modality for the model.
     """
-    if model_name == "clin_ct_bones":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Bones")
-        logging.info(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Bones")
-        return ["CT"]
-    elif model_name == "clin_ct_ribs":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Ribs")
-        logging.info(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Ribs")
-        return ["CT"]
-    elif model_name == "clin_ct_vertebrae":
-        print(
-            f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Vertebral bodies")
-        logging.info(
-            f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Vertebral "
-            f"bodies")
-        return ["CT"]
-    elif model_name == "clin_ct_muscles":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Muscles")
-        logging.info(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Muscles")
-        return ["CT"]
-    elif model_name == "clin_ct_lungs":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Lungs")
-        logging.info(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Lungs")
-        return ["CT"]
-    elif model_name == "clin_ct_fat":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Fat")
-        logging.info(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Fat")
-        return ["CT"]
-    elif model_name == "clin_ct_vessels":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Vessels")
-        logging.info(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Vessels")
-        return ["CT"]
-    elif model_name == "clin_ct_organs":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Organs")
-        logging.info(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: Organs")
-        return ["CT"]
-    elif model_name == "clin_pt_fdg_tumor":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: FDG-PET | Tissue of interest: Tumor")
-        logging.info(
-            f" Requested model: {model_name} | Imaging: Clinical | Modality: FDG-PET | Tissue of interest: Tumor")
-        return ["FDG_PT"]
-    elif model_name == "clin_ct_all":
-        print(f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: All regions")
-        logging.info(
-            f" Requested model: {model_name} | Imaging: Clinical | Modality: CT | Tissue of interest: All regions")
-        return ["CT"]
-    elif model_name == "clin_fdg_pt_ct_all":
-        print(
-            f" Requested model: {model_name} | Imaging: Clinical | Modality: FDG-PET-CT | Tissue of interest: All regions")
-        logging.info(
-            f" Requested model: {model_name} | Imaging: Clinical | Modality: FDG-PET-CT | Tissue of interest: All "
-            f"regions")
-        return ['FDG_PT', 'CT']
-    elif model_name == "preclin_mr_all":
-        print(
-            f" Requested model: {model_name} | Imaging: Pre-clinical | Modality: MR | Tissue of interest: All regions")
-        logging.info(f" Requested model: {model_name} | Imaging: Pre-clinical | Modality: MR | Tissue of interest: All "
-                     f"regions")
-        return ["MR"]
-    else:
-        print(" Requested model is not available. Please check the model name.")
-        logging.error(" Requested model is not available. Please check the model name.")
+    models = {
+        "clin_ct_bones": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Bones"},
+        "clin_ct_ribs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Ribs"},
+        "clin_ct_vertebrae": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vertebral bodies"},
+        "clin_ct_muscles": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Muscles"},
+        "clin_ct_lungs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Lungs"},
+        "clin_ct_fat": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Fat"},
+        "clin_ct_vessels": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vessels"},
+        "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
+        "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "FDG-PET", "Tissue of interest": "Tumor"},
+        "clin_ct_all": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "All regions"},
+        "clin_fdg_pt_ct_all": {"Imaging": "Clinical", "Modality": "FDG-PET-CT", "Tissue of interest": "All regions"},
+        "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
+    }
+
+    if model_name in models:
+        model = models[model_name]
+        model["Model name"] = model_name
+        return model
+
+    logging.error(" Requested model is not available. Please check the model name.")
+    return {"Error": "Requested model is not available. Please check the model name."}
+
 
 
 def citation():
@@ -121,23 +83,39 @@ def citation():
     print(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def expectations(model_name):
+def expectations(model_name: str) -> list:
     """
     Display expected modality for the model. This is used to check if the user has provided the correct modality.
     :param model_name: The name of the model.
+    :return: list of modalities
     """
-    modalities = expected_modality(model_name)
-    expected_suffix = [modality + "_" for modality in modalities]
-    print(f" Required modalities: {modalities} |  No. of modalities: {len(modalities)} "
-          f"| Required Suffix for non-DICOM files: {expected_suffix} ")
+    model_info = expected_modality(model_name)
+    modality = model_info['Modality']
+
+    # check for special case where 'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'
+    if modality == 'FDG-PET-CT':
+        modalities = ['FDG-PET', 'CT']
+    else:
+        modalities = [modality]
+    expected_suffix = [m.replace('-', '_') + "_" for m in modalities]
+
+    print(
+        f" Imaging: {constants.ANSI_ORANGE}{model_info['Imaging']}{constants.ANSI_RESET} |"
+        f" Modality: {constants.ANSI_ORANGE}{modality}{constants.ANSI_RESET} | "
+        f"Tissue of interest: {constants.ANSI_ORANGE}{model_info['Tissue of interest']}{constants.ANSI_RESET}")
+    print(
+        f" Required modalities: {constants.ANSI_ORANGE}{modalities}{constants.ANSI_RESET} | "
+        f" No. of modalities: {constants.ANSI_ORANGE}{len(modalities)}{constants.ANSI_RESET}"
+        f" | Required Suffix for non-DICOM files: {constants.ANSI_ORANGE}{expected_suffix}"
+        f"{constants.ANSI_RESET}")
     logging.info(f" Required modalities: {modalities} |  No. of modalities: {len(modalities)} "
                  f"| Required Suffix for non-DICOM files: {expected_suffix} ")
-    # Print the original message to the console in orange color
     print(
         f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file suffix] "
         f"will be skipped. {constants.ANSI_RESET}")
-
-    # Log the more detailed warning message
     warning_message = " Skipping subjects without the required modalities (check file suffix).\n" \
                       " These subjects will be excluded from analysis and their data will not be used."
     logging.warning(warning_message)
+
+    return modalities
+

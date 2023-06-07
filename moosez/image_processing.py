@@ -61,7 +61,7 @@ def resample(input_image_path: str, output_image_path: str, interpolation: str, 
 
     # Resample the image to the desired spacing
     desired_spacing = np.array(desired_spacing)
-    new_size = [int(original_size[i] * (original_spacing[i] / desired_spacing[i])) for i in range(len(original_size))]
+    new_size = [round(original_size[i] * (original_spacing[i] / desired_spacing[i])) for i in range(len(original_size))]
     resampled_sitk_image = SimpleITK.Resample(sitk_input_image, new_size, SimpleITK.Transform(), interpolation_method,
                                               sitk_input_image.GetOrigin(), desired_spacing.tolist(),
                                               sitk_input_image.GetDirection(), 0.0, sitk_input_image.GetPixelIDValue())

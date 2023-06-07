@@ -31,6 +31,7 @@ from moosez import image_conversion
 from threading import Thread
 import tqdm
 import time
+import colorama
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -38,6 +39,8 @@ logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d
 
 
 def main():
+    colorama.init()
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-d", "--main_directory", type=str, help="Main directory containing subject folders",
@@ -79,7 +82,7 @@ def main():
     print(' ')
     print(f'{constants.ANSI_VIOLET} NOTE:{constants.ANSI_RESET}')
     print(' ')
-    display.expectations(model_name)
+    modalities = display.expectations(model_name)
 
     # ----------------------------------
     # DOWNLOADING THE MODEL
@@ -91,20 +94,6 @@ def main():
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
-
-    # ----------------------------------
-    # CHECKING FOR EXPECTED MODALITIES
-    # ----------------------------------
-
-    with open(os.devnull, "w") as devnull:
-        old_stdout = os.dup(1)
-        os.dup2(devnull.fileno(), 1)
-
-        # Call the function with suppressed output
-        modalities = display.expected_modality(model_name)
-
-        # Restore stdout
-        os.dup2(old_stdout, 1)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
