@@ -17,6 +17,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import argparse
+import colorama
 import logging
 import os
 import time
@@ -133,7 +134,6 @@ def main():
     spinner = Halo(text=' Initiating', spinner='dots')
     spinner.start()
     start_total_time = time.time()
-    time_per_subject = {}
     for subject in moose_compliant_subjects:
 
         # SETTING UP DIRECTORY STRUCTURE
