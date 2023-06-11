@@ -42,7 +42,7 @@ def map_model_name_to_task_number(model_name: str):
     elif model_name == "clin_ct_muscles":
         return 204
     elif model_name == "clin_ct_lungs":
-        return 205
+        return 124
     elif model_name == "clin_ct_fat":
         return 206
     elif model_name == "clin_ct_vessels":
