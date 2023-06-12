@@ -41,6 +41,8 @@ def binary(system_info, url):
 
 
 
+from rich.progress import Progress
+
 def model(model_name, model_path):
     """
     Downloads the model for the current system.
@@ -60,7 +62,7 @@ def model(model_name, model_path):
         chunk_size = 1024 * 10
 
         with Progress() as progress:
-            task = progress.add_task("[cyan] Downloading...", total=total_size)
+            task = progress.add_task(f"[cyan] Downloading {model_name}...", total=total_size)
             for chunk in response.iter_content(chunk_size=chunk_size):
                 open(filename, "ab").write(chunk)
                 progress.update(task, advance=chunk_size)
@@ -70,7 +72,7 @@ def model(model_name, model_path):
         with Progress() as progress:
             with zipfile.ZipFile(filename, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
-                task = progress.add_task("[cyan] Extracting...", total=total_size)
+                task = progress.add_task(f"[cyan] Extracting {model_name}...", total=total_size)
                 # Get the parent directory of 'directory'
                 parent_directory = os.path.dirname(directory)
                 for file in zip_ref.infolist():
