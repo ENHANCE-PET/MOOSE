@@ -103,6 +103,6 @@ def standardize_to_nifti(parent_dir: str):
                         non_nifti_to_nifti(image_path)
             else:
                 continue
-            progress.update(task, advance=1, description=f"[cyan]Processing {subject}...")
+            progress.update(task, advance=1, description=f"[cyan] Processing {subject}...")
 
 
