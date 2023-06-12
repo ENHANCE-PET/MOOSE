@@ -3,6 +3,7 @@
 
 import logging
 import os
+from rich.progress import Progress
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
@@ -39,6 +40,7 @@ def binary(system_info, url):
         f.write(response.content)
 
 
+
 def model(model_name, model_path):
     """
     Downloads the model for the current system.
@@ -52,28 +54,30 @@ def model(model_name, model_path):
 
     if not os.path.exists(directory):
         logging.info(f" Downloading {directory}")
-        # show progress using tqdm
-        with tqdm(unit="B", unit_scale=True, leave=False, desc=f" Downloading {os.path.basename(directory)}") as pbar:
-            response = requests.get(url, stream=True)
-            total_size = int(response.headers.get("Content-Length", 0))
-            pbar.total = total_size
-            chunk_size = 1024 * 10
+        # show progress using rich
+        response = requests.get(url, stream=True)
+        total_size = int(response.headers.get("Content-Length", 0))
+        chunk_size = 1024 * 10
+
+        with Progress() as progress:
+            task = progress.add_task("[cyan] Downloading...", total=total_size)
             for chunk in response.iter_content(chunk_size=chunk_size):
                 open(filename, "ab").write(chunk)
-                pbar.update(chunk_size)
-        # Unzip the model
+                progress.update(task, advance=chunk_size)
+
         # Unzip the model
         import zipfile
-        with tqdm(unit="B", unit_scale=True, leave=False, desc=f" Extracting {os.path.basename(directory)}") as pbar:
+        with Progress() as progress:
             with zipfile.ZipFile(filename, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
-                pbar.total = total_size
+                task = progress.add_task("[cyan] Extracting...", total=total_size)
                 # Get the parent directory of 'directory'
                 parent_directory = os.path.dirname(directory)
                 for file in zip_ref.infolist():
                     zip_ref.extract(file, parent_directory)
                     extracted_size = file.file_size
-                    pbar.update(extracted_size)
+                    progress.update(task, advance=extracted_size)
+
         logging.info(f" {os.path.basename(directory)} extracted.")
 
         # Delete the zip file
