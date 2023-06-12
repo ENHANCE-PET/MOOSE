@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='moosez',
-    version='2.0.6',
+    version='2.0.7',
     author='Lalith Kumar Shiyam Sundar',
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
@@ -47,7 +47,8 @@ setup(
         'pyfiglet~=0.8.post1',
         'natsort~=8.1.0',
         'pillow>=9.2.0',
-        'colorama~=0.4.6'
+        'colorama~=0.4.6',
+        'rich'
     ],
     entry_points={
         'console_scripts': [
