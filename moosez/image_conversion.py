@@ -77,6 +77,8 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     SimpleITK.WriteImage(output_image, output_image_path)
 
 
+from rich.progress import Progress
+
 def standardize_to_nifti(parent_dir: str):
     """
     Converts all images in a parent directory to NIFTI
@@ -85,11 +87,13 @@ def standardize_to_nifti(parent_dir: str):
     subjects = os.listdir(parent_dir)
     # get only the directories
     subjects = [subject for subject in subjects if os.path.isdir(os.path.join(parent_dir, subject))]
-    with tqdm(total=len(subjects), desc=' Processing subjects') as pbar:
+
+    with Progress() as progress:
+        task = progress.add_task("[cyan] Processing subjects...", total=len(subjects))
         for subject in subjects:
             subject_path = os.path.join(parent_dir, subject)
             if os.path.isdir(subject_path):
-                pbar.set_description(f" Processing {subject}")
+                progress.console.print(f" Processing {subject}", highlight=False)
                 images = os.listdir(subject_path)
                 for image in images:
                     if os.path.isdir(os.path.join(subject_path, image)):
@@ -100,5 +104,5 @@ def standardize_to_nifti(parent_dir: str):
                         non_nifti_to_nifti(image_path)
             else:
                 continue
-            pbar.update(1)
-    pbar.close()
+            progress.update(task, advance=1)
+
