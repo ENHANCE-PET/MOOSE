@@ -28,6 +28,8 @@ from moosez import constants
 from multiprocessing import Pool
 from typing import List
 from tqdm import tqdm
+from rich.progress import Progress
+
 
 
 def read_dicom_folder(folder_path: str) -> SimpleITK.Image:
@@ -77,8 +79,6 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     SimpleITK.WriteImage(output_image, output_image_path)
 
 
-from rich.progress import Progress
-
 def standardize_to_nifti(parent_dir: str):
     """
     Converts all images in a parent directory to NIFTI
@@ -93,7 +93,6 @@ def standardize_to_nifti(parent_dir: str):
         for subject in subjects:
             subject_path = os.path.join(parent_dir, subject)
             if os.path.isdir(subject_path):
-                progress.console.print(f" Processing {subject}", highlight=False)
                 images = os.listdir(subject_path)
                 for image in images:
                     if os.path.isdir(os.path.join(subject_path, image)):
@@ -104,5 +103,6 @@ def standardize_to_nifti(parent_dir: str):
                         non_nifti_to_nifti(image_path)
             else:
                 continue
-            progress.update(task, advance=1)
+            progress.update(task, advance=1, description=f"[cyan]Processing {subject}...")
+
 
