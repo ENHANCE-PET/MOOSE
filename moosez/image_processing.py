@@ -38,6 +38,8 @@ def resample(input_image_path: str, output_image_path: str, interpolation: str, 
         interpolation_method = SimpleITK.sitkNearestNeighbor
     elif interpolation == 'linear':
         interpolation_method = SimpleITK.sitkLinear
+    elif interpolation == 'bspline':
+        interpolation_method = SimpleITK.sitkBSpline
     else:
         raise ValueError('The interpolation method is not supported.')
 
