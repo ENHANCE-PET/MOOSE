@@ -19,7 +19,7 @@
 import os
 import shutil
 import subprocess
-
+import glob
 from halo import Halo
 
 from moosez import constants
@@ -219,7 +219,7 @@ def handle_large_image(image_path, save_dir):
         z_indices = [(0, z_part + constants.MARGIN_PADDING),
                      (z_part + 1 - constants.MARGIN_PADDING, z_part * 2 + constants.MARGIN_PADDING),
                      (z_part * 2 + 1 - constants.MARGIN_PADDING, None)]
-        filenames = ["subpart_01.nii.gz", "subpart_02.nii.gz", "subpart_03.nii.gz"]
+        filenames = ["subpart01_0000.nii.gz", "subpart02_0000.nii.gz", "subpart03_0000.nii.gz"]
 
         split_and_save(image_data, image.affine, save_dir, z_indices, filenames)
 
@@ -239,7 +239,7 @@ def merge_image_parts(save_dir, original_image_shape, original_image_affine):
         original_image_affine (np.ndarray): The affine transformation of the original image.
 
     Returns:
-        nibabel.nifti1.Nifti1Image: The recombined image.
+        merged_image_path (str): Path to the merged image.
     """
     # Create an empty array with the original image's shape
     merged_image_data = np.zeros(original_image_shape, dtype=np.uint8)
@@ -248,11 +248,24 @@ def merge_image_parts(save_dir, original_image_shape, original_image_affine):
     z_split_index = original_image_shape[2] // 3
 
     # Load each part, extract its data, and place it in the correct position in the merged image
-    merged_image_data[:, :, :z_split_index] = nib.load(os.path.join(save_dir, "subpart_01.nii.gz")).get_fdata()[:, :, :-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index:z_split_index*2] = nib.load(os.path.join(save_dir, "subpart_02.nii.gz")).get_fdata()[:, :, constants.MARGIN_PADDING-1:-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index*2:] = nib.load(os.path.join(save_dir, "subpart_03.nii.gz")).get_fdata()[:, :, constants.MARGIN_PADDING-1:]
+    merged_image_data[:, :, :z_split_index] = nib.load(os.path.join(save_dir, "subpart01_0000.nii.gz")).get_fdata()[:,
+                                              :, :-constants.MARGIN_PADDING]
+    merged_image_data[:, :, z_split_index:z_split_index * 2] = nib.load(
+        os.path.join(save_dir, "subpart02_0000.nii.gz")).get_fdata()[:, :,
+                                                               constants.MARGIN_PADDING - 1:-constants.MARGIN_PADDING]
+    merged_image_data[:, :, z_split_index * 2:] = nib.load(os.path.join(save_dir, "subpart03_0000.nii.gz")).get_fdata()[
+                                                  :, :, constants.MARGIN_PADDING - 1:]
 
     # Create a new Nifti1Image with the merged data and the original image's affine transformation
     merged_image = nib.Nifti1Image(merged_image_data, original_image_affine)
 
-    return merged_image
+    # remove the split image parts
+    files_to_remove = glob.glob(os.path.join(save_dir, "subpart*"))
+    for file in files_to_remove:
+        os.remove(file)
+
+    # write the merged image to disk
+    merged_image_path = os.path.join(save_dir, constants.RESAMPLED_IMAGE_FILE_NAME)
+    nib.save(merged_image, merged_image_path)
+
+    return merged_image_path
