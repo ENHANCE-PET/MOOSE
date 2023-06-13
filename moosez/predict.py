@@ -213,7 +213,6 @@ def handle_large_image(image_path, save_dir):
     image_data = image.get_fdata()
 
     if check_image_size(image_shape):
-        print("Splitting the image into parts...")
 
         # Calculate indices for z-axis split
         z_part = image_shape[2] // 3
@@ -249,9 +248,9 @@ def merge_image_parts(save_dir, original_image_shape, original_image_affine):
     z_split_index = original_image_shape[2] // 3
 
     # Load each part, extract its data, and place it in the correct position in the merged image
-    merged_image_data[:, :, :z_split_index] = nib.load(os.path.join(save_dir, "part_01.nii.gz")).get_fdata()[:, :, :-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index:z_split_index*2] = nib.load(os.path.join(save_dir, "part_02.nii.gz")).get_fdata()[:, :, constants.MARGIN_PADDING-1:-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index*2:] = nib.load(os.path.join(save_dir, "part_03.nii.gz")).get_fdata()[:, :, constants.MARGIN_PADDING-1:]
+    merged_image_data[:, :, :z_split_index] = nib.load(os.path.join(save_dir, "subpart_01.nii.gz")).get_fdata()[:, :, :-constants.MARGIN_PADDING]
+    merged_image_data[:, :, z_split_index:z_split_index*2] = nib.load(os.path.join(save_dir, "subpart_02.nii.gz")).get_fdata()[:, :, constants.MARGIN_PADDING-1:-constants.MARGIN_PADDING]
+    merged_image_data[:, :, z_split_index*2:] = nib.load(os.path.join(save_dir, "subpart_03.nii.gz")).get_fdata()[:, :, constants.MARGIN_PADDING-1:]
 
     # Create a new Nifti1Image with the merged data and the original image's affine transformation
     merged_image = nib.Nifti1Image(merged_image_data, original_image_affine)
