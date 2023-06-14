@@ -78,7 +78,7 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     os.environ["nnUNet_results"] = constants.NNUNET_RESULTS_FOLDER
 
     # Preprocess the image
-    temp_input_dir, resampled_image = preprocess(input_dir)
+    temp_input_dir, resampled_image = preprocess(input_dir, model_name)
     resampled_image_shape = nib.load(resampled_image).shape
     resampled_image_affine = nib.load(resampled_image).affine
     os.remove(resampled_image)
