@@ -66,6 +66,36 @@ There you have it! You're ready to venture into the world of 3D medical image se
 
 Happy exploring! 🚀🔬
 
+## Usage Guide 📚
+
+Embarking on your journey with MOOSE 2.0 is straightforward and easy. Our command-line tool requires only two arguments: the directory path where your subject images are stored, and the segmentation model name you wish to use. Here's how you can get started:
+
+```bash
+moosez -d <path_to_image_dir> -m <model_name>
+```
+
+Here `<path_to_image_dir>` refers to the directory containing your subject images and `<model_name>` is the name of the segmentation model you intend to utilize. 
+
+For instance, to perform clinical CT organ segmentation, the command would be:
+
+```bash
+moosez -d <path_to_image_dir> -m clin_ct_organs
+```
+
+In this example, 'clin_ct_organs' is the segmentation model name for clinical CT organ segmentation.
+
+And that's it! With just one command, you're all set to explore the new horizons of 3D medical image segmentation with MOOSE 2.0.
+
+Need assistance along the way? Don't worry, we've got you covered. Simply type:
+
+```bash
+moosez -h
+```
+
+This command will provide you with all the help and additional information you might need.
+
+Happy Segmenting! 🎯🚀
+
 ## 🦌 MOOSE: An ENHANCE-PET Project
 
 ![Alt Text](https://github.com/QIMP-Team/MOOSE/blob/main/Images/DALL·E%202022-11-01%2018.13.35%20-%20a%20moose%20with%20majestic%20horns.png)
