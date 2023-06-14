@@ -94,7 +94,47 @@ moosez -h
 
 This command will provide you with all the help and additional information you might need.
 
-Happy Segmenting! 🎯🚀
+## Directory Structure and Naming Conventions for MOOSE 📂🏷️
+
+Using MOOSE 2.0 optimally requires your data to be structured according to specific conventions. MOOSE 2.0 supports both DICOM and NIFTI formats. For DICOM files, MOOSE infers the modality from the DICOM tags and checks if the given modality is suitable for the chosen segmentation model. However, for NIFTI files, users need to ensure that the files are named with the correct modality as a suffix.
+
+### Required Directory Structure 🌳
+Please structure your dataset as follows:
+
+```
+MOOSEv2_data/
+├── S1
+│   ├── AC-CT
+│   │   ├── WBACCTiDose2_2001_CT001.dcm
+│   │   ├── WBACCTiDose2_2001_CT002.dcm
+│   │   ├── .
+│   │   ├── .
+│   │   ├── .
+│   │   └── WBACCTiDose2_2001_CT532.dcm
+│   └── AC-PT
+│       ├── DetailWB_CTACWBPT001_PT001.dcm
+│       ├── DetailWB_CTACWBPT001_PT002.dcm
+│       ├── .
+│       ├── .
+│       ├── .
+│       └── DetailWB_CTACWBPT001_PT532.dcm
+├── S2
+│   └── CT_S2.nii
+├── S3
+│   └── CT_S3.nii
+├── S4
+│   └── S4_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20211025075852_2.nii
+└── S5
+    └── CT_S5.nii
+```
+**Note:** If the necessary naming conventions are not followed, MOOSE 2.0 will skip the subjects.
+
+### Naming Conventions for NIFTI files 📝
+When using NIFTI files, you should name the file with the appropriate modality as a suffix. 
+
+For instance, if you have chosen the `model_name` as `clin_ct_organs`, the CT scan for subject 'S2' in NIFTI format, should have the modality tag 'CT_' attached to the file name, e.g. `CT_S2.nii`. In the directory shown above, every subject will be processed by `moosez` except S4.
+
+**Remember:** Adhering to these file naming and directory structure conventions ensures smooth and efficient processing with MOOSE 2.0. Happy segmenting! 🚀
 
 ## 🦌 MOOSE: An ENHANCE-PET Project
 
