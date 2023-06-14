@@ -59,7 +59,7 @@ def map_model_name_to_task_number(model_name: str):
     elif model_name == "clin_fdg_pt_ct_all":
         return 211
     elif model_name == "preclin_mr_all":
-        return 212
+        return 234
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
