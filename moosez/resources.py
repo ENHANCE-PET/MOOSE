@@ -77,9 +77,9 @@ MODELS = {
         "directory": "clin_fdg_pt_ct_all_model",
     },
     "preclin_mr_all": {
-        "url": "https://example.com/mr_all_model.zip",
-        "filename": "preclin_mr_all_model.zip",
-        "directory": "preclin_mr_all_model",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_mr_14062023.zip",
+        "filename": "Dataset234_Preclin.zip",
+        "directory": "Dataset234_Preclin",
     },
 
 }

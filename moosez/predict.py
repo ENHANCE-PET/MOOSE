@@ -96,10 +96,11 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     shutil.rmtree(temp_input_dir)
 
 
-def preprocess(original_image_directory: str):
+def preprocess(original_image_directory: str, model_name: str):
     """
     Preprocesses the original images.
     :param original_image_directory: The directory containing the original images.
+    :param model_name: The name of the model.
     :return: temp_folder: The path to the temp folder.
     """
     # create the temp directory
@@ -108,11 +109,20 @@ def preprocess(original_image_directory: str):
     original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
     resampled_image = os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME)
 
-    # [1] Resample the images to 1.5 mm isotropic voxel size
-    resampled_image = image_processing.resample(input_image_path=original_image_files[0],
-                                                output_image_path=resampled_image,
-                                                interpolation='bspline',
-                                                desired_spacing=constants.CLINICAL_VOXEL_SPACING)
+    # check if the model is a clinical model or preclinical model
+    if model_name.startswith('clin'):
+
+        # [1] Resample the images to 1.5 mm isotropic voxel size
+        resampled_image = image_processing.resample(input_image_path=original_image_files[0],
+                                                    output_image_path=resampled_image,
+                                                    interpolation='bspline',
+                                                    desired_spacing=constants.CLINICAL_VOXEL_SPACING)
+    else:
+        # [1] Resample the images to 0.5 mm isotropic voxel size
+        resampled_image = image_processing.resample(input_image_path=original_image_files[0],
+                                                    output_image_path=resampled_image,
+                                                    interpolation='bspline',
+                                                    desired_spacing=constants.PRECLINICAL_VOXEL_SPACING)
     # [2] Chunk if the image is too large
 
     handle_large_image(resampled_image, temp_folder)
