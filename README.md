@@ -19,6 +19,20 @@ Accommodating an array of modalities including PET, CT, and MRI, MOOSE 2.0 stand
 
 Join us as we embark on this journey.
 
+## Requirements ✅
+
+Before you dive into the incredible world of MOOSE 2.0, here are a few things you need to ensure for an optimal experience:
+
+- **Operating System**: We've got you covered whether you're on Windows, Mac, or Linux. MOOSE 2.0 has been tested across these platforms to ensure seamless operation.
+
+- **Memory**: MOOSE 2.0 has quite an appetite! Make sure you have at least 32GB of RAM for the smooth running of all tasks.
+
+- **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 2.0 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
+
+- **Python**: Ensure that you have Python 3.9 or above installed on your system. MOOSE 2.0 likes to keep up with the latest, after all!
+
+So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 2.0 has to offer. 🚀🌐
+
 ## Installation Guide 🛠️
 
 Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 2.0.
