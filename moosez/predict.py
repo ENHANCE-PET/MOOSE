@@ -83,10 +83,20 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     resampled_image_affine = nib.load(resampled_image).affine
     os.remove(resampled_image)
 
-    subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
-                   f' -tr nnUNetTrainer_2000epochs_NoMirroring'
-                   f' --disable_tta -device {accelerator}',
-                   shell=True, stdout=subprocess.DEVNULL, env=os.environ)
+    # check if model is clinical or precinical
+
+    if model_name.startswith('clin'):
+        subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
+                       f' -tr nnUNetTrainer_2000epochs_NoMirroring'
+                       f' --disable_tta -device {accelerator}',
+                       shell=True, stdout=subprocess.DEVNULL, env=os.environ)
+
+    else:
+        subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
+                       f' -tr nnUNetTrainerNoMirroring'
+                       f' --disable_tta -device {accelerator}',
+                       shell=True, stdout=subprocess.DEVNULL, env=os.environ)
+
     original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
 
     # Postprocess the label
