@@ -17,9 +17,9 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import numpy as np
-import nibabel
 import SimpleITK
+import nibabel
+import numpy as np
 
 
 def resample(input_image_path: str, output_image_path: str, interpolation: str, desired_spacing: list) -> str:

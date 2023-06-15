@@ -3,7 +3,6 @@
 
 import logging
 import os
-from rich.progress import Progress
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
@@ -21,7 +20,7 @@ from rich.progress import Progress
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import requests
-from tqdm import tqdm
+
 from moosez import constants
 from moosez import resources
 
@@ -40,8 +39,8 @@ def binary(system_info, url):
         f.write(response.content)
 
 
-
 from rich.progress import Progress
+
 
 def model(model_name, model_path):
     """

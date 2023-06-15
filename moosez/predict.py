@@ -16,18 +16,18 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
+import glob
 import os
 import shutil
 import subprocess
-import glob
+
+import nibabel as nib
+import numpy as np
 from halo import Halo
 
 from moosez import constants
 from moosez import file_utilities
 from moosez import image_processing
-import numpy as np
-import nibabel as nib
-from pathlib import Path
 
 
 def map_model_name_to_task_number(model_name: str):
@@ -83,19 +83,15 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     resampled_image_affine = nib.load(resampled_image).affine
     os.remove(resampled_image)
 
-    # check if model is clinical or precinical
+    # Check if the model is a clinical model or preclinical model
+    trainer = 'nnUNetTrainer_2000epochs_NoMirroring' if model_name.startswith('clin') else 'nnUNetTrainerNoMirroring'
 
-    if model_name.startswith('clin'):
-        subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
-                       f' -tr nnUNetTrainer_2000epochs_NoMirroring'
-                       f' --disable_tta -device {accelerator}',
-                       shell=True, stdout=subprocess.DEVNULL, env=os.environ)
+    # Construct the command
+    command = f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres' \
+              f' -f all -tr {trainer} --disable_tta -device {accelerator}'
 
-    else:
-        subprocess.run(f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres -f all'
-                       f' -tr nnUNetTrainerNoMirroring'
-                       f' --disable_tta -device {accelerator}',
-                       shell=True, stdout=subprocess.DEVNULL, env=os.environ)
+    # Run the command
+    subprocess.run(command, shell=True, stdout=subprocess.DEVNULL, env=os.environ)
 
     original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
 
@@ -120,19 +116,15 @@ def preprocess(original_image_directory: str, model_name: str):
     resampled_image = os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME)
 
     # check if the model is a clinical model or preclinical model
-    if model_name.startswith('clin'):
+    desired_spacing = constants.CLINICAL_VOXEL_SPACING if model_name.startswith(
+        'clin') else constants.PRECLINICAL_VOXEL_SPACING
 
-        # [1] Resample the images to 1.5 mm isotropic voxel size
-        resampled_image = image_processing.resample(input_image_path=original_image_files[0],
-                                                    output_image_path=resampled_image,
-                                                    interpolation='bspline',
-                                                    desired_spacing=constants.CLINICAL_VOXEL_SPACING)
-    else:
-        # [1] Resample the images to 0.5 mm isotropic voxel size
-        resampled_image = image_processing.resample(input_image_path=original_image_files[0],
-                                                    output_image_path=resampled_image,
-                                                    interpolation='bspline',
-                                                    desired_spacing=constants.PRECLINICAL_VOXEL_SPACING)
+    # Resample the images to the desired isotropic voxel size
+    resampled_image = image_processing.resample(input_image_path=original_image_files[0],
+                                                output_image_path=resampled_image,
+                                                interpolation=constants.INTERPOLATION,
+                                                desired_spacing=desired_spacing)
+
     # [2] Chunk if the image is too large
 
     handle_large_image(resampled_image, temp_folder)

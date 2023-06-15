@@ -17,12 +17,12 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+import shutil
 import sys
 from datetime import datetime
-import shutil
 from multiprocessing import Pool
+
 from moosez import constants
-from halo import Halo
 
 
 def create_directory(directory_path: str):

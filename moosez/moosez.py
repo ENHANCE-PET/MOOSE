@@ -17,7 +17,6 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import argparse
-import colorama
 import logging
 import os
 import time

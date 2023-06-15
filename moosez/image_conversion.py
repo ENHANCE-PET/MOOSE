@@ -17,19 +17,13 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import logging
-import re
-import subprocess
 import os
-from halo import Halo
+
 import SimpleITK
 import pydicom
-from moosez import constants
-from multiprocessing import Pool
-from typing import List
-from tqdm import tqdm
 from rich.progress import Progress
 
+from moosez import constants
 
 
 def read_dicom_folder(folder_path: str) -> SimpleITK.Image:
@@ -104,5 +98,3 @@ def standardize_to_nifti(parent_dir: str):
             else:
                 continue
             progress.update(task, advance=1, description=f"[cyan] Processing {subject}...")
-
-

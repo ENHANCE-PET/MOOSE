@@ -18,8 +18,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import logging
-from moosez import constants
+
 import pyfiglet
+
 from moosez import constants
 
 
@@ -31,8 +32,8 @@ def logo():
     print(' ')
     logo_color_code = constants.ANSI_VIOLET
     slogan_color_code = constants.ANSI_VIOLET
-    result = logo_color_code + pyfiglet.figlet_format("MOOSE 2.0", font="smslant").rstrip() + "\033[0m"
-    text = slogan_color_code + "A part of the ENHANCE community. Join us at www.enhance.pet to build the future of " \
+    result = logo_color_code + pyfiglet.figlet_format(" MOOSE 2.0", font="smslant").rstrip() + "\033[0m"
+    text = slogan_color_code + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of " \
                                "PET imaging together." + "\033[0m"
     print(result)
     print(text)
@@ -67,7 +68,6 @@ def expected_modality(model_name: str) -> dict:
 
     logging.error(" Requested model is not available. Please check the model name.")
     return {"Error": "Requested model is not available. Please check the model name."}
-
 
 
 def citation():
@@ -118,4 +118,3 @@ def expectations(model_name: str) -> list:
     logging.warning(warning_message)
 
     return modalities
-

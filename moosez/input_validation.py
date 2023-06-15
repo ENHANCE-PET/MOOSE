@@ -17,11 +17,13 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import os
-from moosez import constants
 import logging
-import nibabel as nib
 import multiprocessing
+import os
+
+import nibabel as nib
+
+from moosez import constants
 
 
 def check_directory_exists(directory_path: str):
