@@ -87,16 +87,16 @@ MODELS = {
 
 def check_cuda() -> str:
     """
-    This function checks if cuda is available in the device and prints the device name and number of cuda devices
-    available in the device.
-    :return: str
+    This function checks if CUDA is available on the device and prints the device name and number of CUDA devices
+    available on the device.
+
+    Returns:
+        str: The device to run predictions on, either "cpu" or "cuda".
     """
     if not torch.cuda.is_available():
-        print(f'{constants.ANSI_ORANGE} Cuda not available in this device, will run predictions on CPU'
-              f'{constants.ANSI_RESET}')
+        print(f"{constants.ANSI_ORANGE}CUDA not available on this device. Predictions will be run on CPU.{constants.ANSI_RESET}")
         return "cpu"
     else:
         device_count = torch.cuda.device_count()
-        print(f'{constants.ANSI_GREEN} Cuda (no. of gpus: {device_count}) available in this device, will run '
-              f'predictions on GPU {constants.ANSI_RESET}')
+        print(f"{constants.ANSI_GREEN}CUDA is available on this device with {device_count} GPU(s). Predictions will be run on GPU.{constants.ANSI_RESET}")
         return "cuda"
