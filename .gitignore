@@ -1,0 +1,4 @@
+build/
+.idea/
+moosez.egg-info/
+.DS_Store
