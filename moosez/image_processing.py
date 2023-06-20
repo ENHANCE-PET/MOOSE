@@ -20,19 +20,47 @@
 import SimpleITK
 import nibabel
 import numpy as np
+import dask.array as da
 
 
-def resample(input_image_path: str, output_image_path: str, interpolation: str, desired_spacing: list) -> str:
+def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: tuple, interpolation_method: str,
+                             output_spacing: tuple = (1.5, 1.5, 1.5)) -> da.array:
     """
-    Resamples an image to a new spacing.
-    :param input_image_path: Path to the input image.
-    :param output_image_path: Path to the output image.
-    :param interpolation: The interpolation method to use.
-    :param desired_spacing: The new spacing to use.
-    :return: The path to the output image.
+    Resamples a dask array chunk
+    :param interpolation_method: SimpleITK interpolation type
+    :param image_chunk: The chunk (part of an image) to be resampled
+    :param input_spacing: The original spacing of the chunk (part of an image)
+    :param output_spacing: The desired output spacing
+    :return: The resampled chunk (part of an image)
     """
 
-    # Set interpolator for SimpleITK
+    sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
+    sitk_image_chunk.SetSpacing(input_spacing)
+    input_size = sitk_image_chunk.GetSize()
+    output_size = [round(input_size[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_size))]
+
+    if all(x == 0 for x in input_size):
+        return image_chunk
+
+    resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
+                                              interpolation_method,
+                                              sitk_image_chunk.GetOrigin(), output_spacing,
+                                              sitk_image_chunk.GetDirection(), 0.0, sitk_image_chunk.GetPixelIDValue())
+
+    resampled_array = SimpleITK.GetArrayFromImage(resampled_sitk_image)
+    return resampled_array
+
+
+def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: str,
+                                  output_spacing: tuple = (1.5, 1.5, 1.5)) -> SimpleITK.Image:
+    """
+    Resamples a sitk_image using dask and scipy. Uses SimpleITK as IO.
+    :param sitk_image: The SimpleITK image to be resampled
+    :param interpolation: nearest|linear|bspline
+    :param output_spacing: The desired output spacing of the resampled sitk_image
+    :return: The resampled sitk_image
+    :rtype: SimpleITK.Image
+    """
 
     if interpolation == 'nearest':
         interpolation_method = SimpleITK.sitkNearestNeighbor
@@ -43,13 +71,42 @@ def resample(input_image_path: str, output_image_path: str, interpolation: str, 
     else:
         raise ValueError('The interpolation method is not supported.')
 
+    input_spacing = sitk_image.GetSpacing()
+    input_size = sitk_image.GetSize()
+    input_chunks = (input_size[0] / 8, input_size[1] / 8, input_size[2] / 10)
+    input_chunks_reversed = list(reversed(input_chunks))
+    image_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
+
+    output_chunks = [int(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_chunks))]
+    output_chunks_reversed = list(reversed(output_chunks))
+    result = da.map_blocks(resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
+                           chunks=output_chunks_reversed)
+
+    resampled_image = SimpleITK.GetImageFromArray(result)
+    resampled_image.SetSpacing(output_spacing)
+    resampled_image.SetOrigin(sitk_image.GetOrigin())
+    resampled_image.SetDirection(sitk_image.GetDirection())
+
+    return resampled_image
+
+
+def resample(input_image_path: str, resampled_image_path: str, interpolation: str, desired_spacing: list) -> \
+        tuple[str, nibabel.Nifti1Image]:
+    """
+    Resamples an image to a new spacing.
+    :param input_image_path: Path to the input image.
+    :param resampled_image_path: Path to the output image.
+    :param interpolation: The interpolation method to use.
+    :param desired_spacing: The new spacing to use.
+    :return: The path to the output image.
+    """
+
     # Load the image and get necessary information
     input_image = nibabel.load(input_image_path)
     image_data = input_image.get_fdata()
     image_header = input_image.header
     image_affine = input_image.affine
     original_spacing = image_header.get_zooms()
-    original_size = image_data.shape
     translation_vector = image_affine[:3, 3]
     rotation_matrix = image_affine[:3, :3]
 
@@ -61,17 +118,25 @@ def resample(input_image_path: str, output_image_path: str, interpolation: str, 
     sitk_input_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))
     sitk_input_image.SetDirection((np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(original_spacing)).ravel())
 
-    # Resample the image to the desired spacing
-    desired_spacing = np.array(desired_spacing)
-    new_size = [round(original_size[i] * (original_spacing[i] / desired_spacing[i])) for i in range(len(original_size))]
-    resampled_sitk_image = SimpleITK.Resample(sitk_input_image, new_size, SimpleITK.Transform(), interpolation_method,
-                                              sitk_input_image.GetOrigin(), desired_spacing.tolist(),
-                                              sitk_input_image.GetDirection(), 0.0, sitk_input_image.GetPixelIDValue())
+    # Interpolation:
+    resampled_sitk_image = resample_image_SimpleITK_DASK(sitk_input_image, interpolation)
+    new_size = resampled_sitk_image.GetSize()
 
     # Save the resampled image to disk
-    SimpleITK.WriteImage(resampled_sitk_image, output_image_path)
+    # Edit affine to fit new image
+    new_affine = image_affine
+    for diagonal, spacing in enumerate(desired_spacing):
+        new_affine[diagonal, diagonal] = (new_affine[diagonal, diagonal] / abs(
+            new_affine[diagonal, diagonal])) * spacing
 
-    return output_image_path
+    # Edit header to fit new image
+    image_header['pixdim'][1:4] = desired_spacing
+    image_header['dim'][1:4] = new_size
+    resampled_image = nibabel.Nifti1Image(SimpleITK.GetArrayFromImage(resampled_sitk_image).swapaxes(0, 2),
+                                          affine=new_affine,
+                                          header=image_header)
+
+    return resampled_image_path, resampled_image
 
 
 def get_spacing(image_path: str) -> list:
