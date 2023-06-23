@@ -19,8 +19,31 @@
 
 import SimpleITK
 import nibabel
+from nibabel import Nifti1Image
+import constants
 import numpy as np
 import dask.array as da
+
+
+def chunk_along_axis(axis: int) -> int:
+    """
+
+    Args:
+        axis: the axis length as integer
+
+    Returns:
+        object: the determined integer values that splits the axis evenly
+    """
+    split = 2
+    result = axis / split
+    rest = axis % split
+
+    while result >= constants.CHUNK_THRESHOLD or rest != 0:
+        split += 1
+        result = axis / split
+        rest = axis % split
+
+    return split
 
 
 def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: tuple, interpolation_method: str,
@@ -73,11 +96,13 @@ def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: st
 
     input_spacing = sitk_image.GetSpacing()
     input_size = sitk_image.GetSize()
-    input_chunks = (input_size[0] / 8, input_size[1] / 8, input_size[2] / 10)
+    input_chunks = (input_size[0] / chunk_along_axis(input_size[0]),
+                    input_size[1] / chunk_along_axis(input_size[1]),
+                    input_size[2] / chunk_along_axis(input_size[2]))
     input_chunks_reversed = list(reversed(input_chunks))
     image_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
 
-    output_chunks = [int(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_chunks))]
+    output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_chunks))]
     output_chunks_reversed = list(reversed(output_chunks))
     result = da.map_blocks(resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
                            chunks=output_chunks_reversed)
@@ -90,15 +115,15 @@ def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: st
     return resampled_image
 
 
-def resample(input_image_path: str, resampled_image_path: str, interpolation: str, desired_spacing: list) -> \
-        tuple[str, nibabel.Nifti1Image]:
+def resample(input_image_path: str, interpolation: str, desired_spacing: list, output_image_path: str = None) -> \
+        tuple[Nifti1Image, str | None]:
     """
     Resamples an image to a new spacing.
     :param input_image_path: Path to the input image.
-    :param resampled_image_path: Path to the output image.
+    :param output_image_path: Optional path to the output image.
     :param interpolation: The interpolation method to use.
     :param desired_spacing: The new spacing to use.
-    :return: The path to the output image.
+    :return: The resampled_image and the output_image_path (if provided, else None).
     """
 
     # Load the image and get necessary information
@@ -136,7 +161,10 @@ def resample(input_image_path: str, resampled_image_path: str, interpolation: st
                                           affine=new_affine,
                                           header=image_header)
 
-    return resampled_image_path, resampled_image
+    if output_image_path is not None:
+        nibabel.save(resampled_image, output_image_path)
+
+    return resampled_image, output_image_path
 
 
 def get_spacing(image_path: str) -> list:

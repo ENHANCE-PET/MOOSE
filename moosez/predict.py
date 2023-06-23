@@ -113,23 +113,20 @@ def preprocess(original_image_directory: str, model_name: str):
     temp_folder = os.path.join(original_image_directory, constants.TEMP_FOLDER)
     os.makedirs(temp_folder, exist_ok=True)
     original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
-    resampled_image = os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME)
 
     # check if the model is a clinical model or preclinical model
     desired_spacing = constants.CLINICAL_VOXEL_SPACING if model_name.startswith(
         'clin') else constants.PRECLINICAL_VOXEL_SPACING
 
     # Resample the images to the desired isotropic voxel size
-    resampled_image = image_processing.resample(input_image_path=original_image_files[0],
-                                                output_image_path=resampled_image,
-                                                interpolation=constants.INTERPOLATION,
-                                                desired_spacing=desired_spacing)
+    resampled_image, resampled_image_path = image_processing.resample(input_image_path=original_image_files[0],
+                                                                      interpolation=constants.INTERPOLATION,
+                                                                      desired_spacing=desired_spacing)
 
     # [2] Chunk if the image is too large
-
     handle_large_image(resampled_image, temp_folder)
 
-    return temp_folder, resampled_image
+    return temp_folder, resampled_image_path
 
 
 def postprocess(original_image, output_dir):
@@ -180,17 +177,17 @@ def monitor_output_directory(output_dir, total_files, spinner):
         files_processed = new_files_processed
 
 
-def split_and_save(shared_objects, z_index, image_chunk_path):
+def split_and_save(shared_image_data, z_index, image_chunk_path):
     """
     Split the image and save each part.
 
     Args:
-        shared_objects: image_data (np.ndarray): The voxel data of the image and image_affine (np.ndarray): The affine
-        transformation associated with the data.
+        shared_image_data: image_data (np.ndarray): The voxel data of the image and image_affine (np.ndarray):
+        The affine transformation associated with the data.
         z_index (list): List of tuples containing start and end indices for z-axis split.
         image_chunk_path: The path to save the image part.
     """
-    image_data, image_affine = shared_objects
+    image_data, image_affine = shared_image_data
     image_part = nib.Nifti1Image(image_data[:, :, z_index[0]:z_index[1]], image_affine)
     nib.save(image_part, image_chunk_path)
 
