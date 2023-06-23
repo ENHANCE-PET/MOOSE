@@ -21,6 +21,7 @@ import os
 import shutil
 import subprocess
 
+import SimpleITK
 import nibabel as nib
 import numpy as np
 from halo import Halo
@@ -95,7 +96,10 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
 
     # Postprocess the label
-    merge_image_parts(output_dir, resampled_image_shape, resampled_image_affine)
+    # if temp_input_dir has more than file, run logic below
+    if len(os.listdir(temp_input_dir)) > 1:
+        merge_image_parts(output_dir, resampled_image_shape, resampled_image_affine)
+
     postprocess(original_image_files[0], output_dir)
 
     shutil.rmtree(temp_input_dir)
@@ -112,18 +116,27 @@ def preprocess(original_image_directory: str, model_name: str):
     temp_folder = os.path.join(original_image_directory, constants.TEMP_FOLDER)
     os.makedirs(temp_folder, exist_ok=True)
     original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
-
+    org_image = nib.load(original_image_files[0])
+    # get size of original image
+    org_img_size = org_image.shape
+    total_voxels = org_img_size[0] * org_img_size[1] * org_img_size[2]
     # check if the model is a clinical model or preclinical model
     desired_spacing = constants.CLINICAL_VOXEL_SPACING if model_name.startswith(
         'clin') else constants.PRECLINICAL_VOXEL_SPACING
 
-    # Resample the images to the desired isotropic voxel size
-    resampled_image, resampled_image_path = image_processing.resample(input_image_path=original_image_files[0],
-                                                                      interpolation=constants.INTERPOLATION,
-                                                                      desired_spacing=desired_spacing)
-
-    # [2] Chunk if the image is too large
-    handle_large_image(resampled_image, temp_folder)
+    # Decide which resampling function to use based on image size
+    if total_voxels > constants.MATRIX_THRESHOLD and org_img_size[2] > constants.Z_AXIS_THRESHOLD:
+        # Resample the images to the desired isotropic voxel size
+        resampled_image, resampled_image_path = image_processing.resample(input_image_path=original_image_files[0],
+                                                                          interpolation=constants.INTERPOLATION,
+                                                                          desired_spacing=desired_spacing)
+        # [2] Chunk if the image is too large
+        handle_large_image(resampled_image, temp_folder)
+    else:
+        # [2] Proceed without chunking
+        resampled_image, resampled_image_path = image_processing.resample_image_SimpleITK(
+            input_image_path=original_image_files[0], interpolation=constants.INTERPOLATION,
+            output_image_path=os.path.join(temp_folder, os.path.basename(original_image_files[0])))
 
     return temp_folder, resampled_image
 
@@ -131,18 +144,16 @@ def preprocess(original_image_directory: str, model_name: str):
 def postprocess(original_image, output_dir):
     """
     Postprocesses the predicted images.
-    :param original_image: The original image.
+    :param original_image: The path to the original image.
     :param output_dir: The output directory containing the label image.
     :return: None
     """
     # [1] Resample the predicted image to the original image's voxel spacing
     predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
     multilabel_image = os.path.join(output_dir, constants.MULTILABEL_SUFFIX + os.path.basename(original_image))
-    image_processing.resample(input_image_path=predicted_image,
-                              output_image_path=multilabel_image,
-                              interpolation='nearest',
-                              desired_spacing=image_processing.get_spacing(original_image))
-    #os.remove(predicted_image)
+    image_processing.resample_mask(image_path=original_image, mask_path=predicted_image,
+                                   output_mask_path=multilabel_image, interpolation_method='nearest')
+    # os.remove(predicted_image)
 
 
 def count_output_files(output_dir):
