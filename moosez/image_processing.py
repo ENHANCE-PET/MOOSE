@@ -20,7 +20,7 @@
 import SimpleITK
 import nibabel
 from nibabel import Nifti1Image
-import constants
+from moosez import constants
 import numpy as np
 import dask.array as da
 
