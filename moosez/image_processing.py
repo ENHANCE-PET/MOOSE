@@ -47,7 +47,7 @@ def chunk_along_axis(axis: int) -> int:
 
 
 def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: tuple, interpolation_method: str,
-                             output_spacing: tuple = (1.5, 1.5, 1.5)) -> da.array:
+                             output_spacing: tuple = (1.5, 1.5, 1.5), output_size: tuple = None) -> da.array:
     """
     Resamples a dask array chunk
     :param interpolation_method: SimpleITK interpolation type
@@ -60,7 +60,10 @@ def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: tuple, interp
     sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
     sitk_image_chunk.SetSpacing(input_spacing)
     input_size = sitk_image_chunk.GetSize()
-    output_size = [round(input_size[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_size))]
+    if output_size is None:
+        output_size = [round(input_size[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_size))]
+    else:
+        output_spacing = [round(input_spacing[i] * (input_size[i] / output_size[i])) for i in range(len(input_size))]
 
     if all(x == 0 for x in input_size):
         return image_chunk
@@ -75,7 +78,7 @@ def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: tuple, interp
 
 
 def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: str,
-                                  output_spacing: tuple = (1.5, 1.5, 1.5)) -> SimpleITK.Image:
+                                  output_spacing: tuple = (1.5, 1.5, 1.5), output_size: tuple = None) -> SimpleITK.Image:
     """
     Resamples a sitk_image using dask and scipy. Uses SimpleITK as IO.
     :param sitk_image: The SimpleITK image to be resampled
@@ -102,10 +105,14 @@ def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: st
     input_chunks_reversed = list(reversed(input_chunks))
     image_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
 
+    if output_size is not None:
+        output_spacing = [round(input_spacing[i] * (input_size[i] / output_size[i])) for i in range(len(input_size))]
+
     output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_chunks))]
     output_chunks_reversed = list(reversed(output_chunks))
-    result = da.map_blocks(resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
-                           chunks=output_chunks_reversed)
+
+    result = da.map_blocks(resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method, output_spacing,
+                           output_size, chunks=output_chunks_reversed)
 
     resampled_image = SimpleITK.GetImageFromArray(result)
     resampled_image.SetSpacing(output_spacing)
@@ -115,8 +122,8 @@ def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: st
     return resampled_image
 
 
-def resample(input_image_path: str, interpolation: str, desired_spacing: list, output_image_path: str = None) -> \
-        tuple[Nifti1Image, str | None]:
+def resample(input_image_path: str, interpolation: str, desired_spacing: list, output_image_path: str = None,
+             desired_size: list = None) -> tuple[Nifti1Image, str]:
     """
     Resamples an image to a new spacing.
     :param input_image_path: Path to the input image.
@@ -144,8 +151,12 @@ def resample(input_image_path: str, interpolation: str, desired_spacing: list, o
     sitk_input_image.SetDirection((np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(original_spacing)).ravel())
 
     # Interpolation:
-    resampled_sitk_image = resample_image_SimpleITK_DASK(sitk_input_image, interpolation, tuple(desired_spacing))
-    new_size = resampled_sitk_image.GetSize()
+    resampled_sitk_image = resample_image_SimpleITK_DASK(sitk_input_image, interpolation, tuple(desired_spacing),
+                                                         output_size=desired_size)
+    if desired_size is None:
+        new_size = resampled_sitk_image.GetSize()
+    else:
+        new_size = desired_size
 
     # Save the resampled image to disk
     # Edit affine to fit new image
