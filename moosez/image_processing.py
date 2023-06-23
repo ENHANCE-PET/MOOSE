@@ -104,7 +104,7 @@ def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: st
 
     output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_chunks))]
     output_chunks_reversed = list(reversed(output_chunks))
-    result = da.map_blocks(resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
+    result = da.map_blocks(resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method, output_spacing,
                            chunks=output_chunks_reversed)
 
     resampled_image = SimpleITK.GetImageFromArray(result)
@@ -120,7 +120,7 @@ def resample(input_image_path: str, interpolation: str, desired_spacing: list, o
     """
     Resamples an image to a new spacing.
     :param input_image_path: Path to the input image.
-    :param output_image_path: Optional path to the output image.
+    :param output_image_path: Optional path tAdd missed packageo the output image.
     :param interpolation: The interpolation method to use.
     :param desired_spacing: The new spacing to use.
     :return: The resampled_image and the output_image_path (if provided, else None).

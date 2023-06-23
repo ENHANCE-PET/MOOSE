@@ -98,5 +98,5 @@ def check_cuda() -> str:
         return "cpu"
     else:
         device_count = torch.cuda.device_count()
-        print(f"{constants.ANSI_GREEN}CUDA is available on this device with {device_count} GPU(s). Predictions will be run on GPU.{constants.ANSI_RESET}")
+        print(f"{constants.ANSI_GREEN} CUDA is available on this device with {device_count} GPU(s). Predictions will be run on GPU.{constants.ANSI_RESET}")
         return "cuda"
