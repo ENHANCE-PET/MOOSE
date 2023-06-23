@@ -24,7 +24,7 @@ import subprocess
 import nibabel as nib
 import numpy as np
 from halo import Halo
-
+from mpire import WorkerPool
 from moosez import constants
 from moosez import file_utilities
 from moosez import image_processing
@@ -113,23 +113,20 @@ def preprocess(original_image_directory: str, model_name: str):
     temp_folder = os.path.join(original_image_directory, constants.TEMP_FOLDER)
     os.makedirs(temp_folder, exist_ok=True)
     original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
-    resampled_image = os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME)
 
     # check if the model is a clinical model or preclinical model
     desired_spacing = constants.CLINICAL_VOXEL_SPACING if model_name.startswith(
         'clin') else constants.PRECLINICAL_VOXEL_SPACING
 
     # Resample the images to the desired isotropic voxel size
-    resampled_image = image_processing.resample(input_image_path=original_image_files[0],
-                                                output_image_path=resampled_image,
-                                                interpolation=constants.INTERPOLATION,
-                                                desired_spacing=desired_spacing)
+    resampled_image, resampled_image_path = image_processing.resample(input_image_path=original_image_files[0],
+                                                                      interpolation=constants.INTERPOLATION,
+                                                                      desired_spacing=desired_spacing)
 
     # [2] Chunk if the image is too large
-
     handle_large_image(resampled_image, temp_folder)
 
-    return temp_folder, resampled_image
+    return temp_folder, resampled_image_path
 
 
 def postprocess(original_image, output_dir):
@@ -180,51 +177,38 @@ def monitor_output_directory(output_dir, total_files, spinner):
         files_processed = new_files_processed
 
 
-def check_image_size(image_shape):
-    """
-    Check if the image size exceeds the threshold or the z-axis length is less than the minimum.
-
-    Args:
-        image_shape (tuple): The shape of the image.
-
-    Returns:
-        bool: True if conditions are met, False otherwise.
-    """
-    return np.prod(image_shape) > constants.MATRIX_THRESHOLD and image_shape[2] > constants.Z_AXIS_THRESHOLD
-
-
-def split_and_save(image_data, affine, save_dir, z_indices, filenames):
+def split_and_save(shared_image_data, z_index, image_chunk_path):
     """
     Split the image and save each part.
 
     Args:
-        image_data (np.ndarray): The voxel data of the image.
-        affine (np.ndarray): The affine transformation associated with the data.
-        save_dir: The directory to save the image part.
-        z_indices (list): List of tuples containing start and end indices for z-axis split.
-        filenames (list): List of filenames to save each image part.
+        shared_image_data: image_data (np.ndarray): The voxel data of the image and image_affine (np.ndarray):
+        The affine transformation associated with the data.
+        z_index (list): List of tuples containing start and end indices for z-axis split.
+        image_chunk_path: The path to save the image part.
     """
-    for z_index, filename in zip(z_indices, filenames):
-        image_part = nib.Nifti1Image(image_data[:, :, z_index[0]:z_index[1]], affine)
-        nib.save(image_part, os.path.join(save_dir, filename))
+    image_data, image_affine = shared_image_data
+    image_part = nib.Nifti1Image(image_data[:, :, z_index[0]:z_index[1]], image_affine)
+    nib.save(image_part, image_chunk_path)
 
 
-def handle_large_image(image_path, save_dir):
+def handle_large_image(image: nib.Nifti1Image, save_dir):
     """
     Split a large image into parts and save them.
 
     Args:
-        image_path: path to the image.
+        image: The NIBABEL image.
         save_dir: Directory to save the image parts.
 
     Returns:
         list: List of paths of the original or split image parts.
     """
-    image = nib.load(image_path)
+
     image_shape = image.shape
     image_data = image.get_fdata()
+    image_affine = image.affine
 
-    if check_image_size(image_shape):
+    if np.prod(image_shape) > constants.MATRIX_THRESHOLD and image_shape[2] > constants.Z_AXIS_THRESHOLD:
 
         # Calculate indices for z-axis split
         z_part = image_shape[2] // 3
@@ -232,13 +216,25 @@ def handle_large_image(image_path, save_dir):
                      (z_part + 1 - constants.MARGIN_PADDING, z_part * 2 + constants.MARGIN_PADDING),
                      (z_part * 2 + 1 - constants.MARGIN_PADDING, None)]
         filenames = ["subpart01_0000.nii.gz", "subpart02_0000.nii.gz", "subpart03_0000.nii.gz"]
+        resampled_chunks_paths = [os.path.join(save_dir, filename) for filename in filenames]
 
-        split_and_save(image_data, image.affine, save_dir, z_indices, filenames)
+        chunk_data = []
+        for z_index, resampled_chunk_path in zip(z_indices, resampled_chunks_paths):
+            chunk_data.append({"z_index": z_index,
+                               "image_chunk_path": resampled_chunk_path})
 
-        return [os.path.join(save_dir, filename) for filename in filenames]
+        shared_objects = (image_data, image_affine)
+
+        with WorkerPool(n_jobs=3, shared_objects=shared_objects) as pool:
+            pool.map(split_and_save, chunk_data)
+
+        return resampled_chunks_paths
 
     else:
-        return [image_path]
+        resampled_image_path = os.path.join(save_dir, constants.RESAMPLED_IMAGE_FILE_NAME)
+        nib.save(image, resampled_image_path)
+
+        return [resampled_image_path]
 
 
 def merge_image_parts(save_dir, original_image_shape, original_image_affine):
