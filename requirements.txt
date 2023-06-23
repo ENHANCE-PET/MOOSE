@@ -1,0 +1,15 @@
+argparse~=1.4.0
+colorama~=0.4.6
+halo~=0.0.31
+moosez~=2.0.20
+pyfiglet~=0.8.post1
+nibabel~=3.2.2
+numpy~=1.22.4
+mpire~=2.3.5
+requests~=2.31.0
+rich~=13.4.2
+torch~=2.0.1
+SimpleITK~=2.2.1
+pydicom~=2.2.2
+dask~=2023.6.0
+setuptools~=67.7.2
