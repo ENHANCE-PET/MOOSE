@@ -79,9 +79,8 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
 
     # Preprocess the image
     temp_input_dir, resampled_image = preprocess(input_dir, model_name)
-    resampled_image_shape = nib.load(resampled_image).shape
-    resampled_image_affine = nib.load(resampled_image).affine
-    os.remove(resampled_image)
+    resampled_image_shape = resampled_image.shape
+    resampled_image_affine = resampled_image.affine
 
     # Check if the model is a clinical model or preclinical model
     trainer = 'nnUNetTrainer_2000epochs_NoMirroring' if model_name.startswith('clin') else 'nnUNetTrainerNoMirroring'
@@ -126,7 +125,7 @@ def preprocess(original_image_directory: str, model_name: str):
     # [2] Chunk if the image is too large
     handle_large_image(resampled_image, temp_folder)
 
-    return temp_folder, resampled_image_path
+    return temp_folder, resampled_image
 
 
 def postprocess(original_image, output_dir):
@@ -143,7 +142,7 @@ def postprocess(original_image, output_dir):
                               output_image_path=multilabel_image,
                               interpolation='nearest',
                               desired_spacing=image_processing.get_spacing(original_image))
-    os.remove(predicted_image)
+    #os.remove(predicted_image)
 
 
 def count_output_files(output_dir):

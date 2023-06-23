@@ -144,7 +144,7 @@ def resample(input_image_path: str, interpolation: str, desired_spacing: list, o
     sitk_input_image.SetDirection((np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(original_spacing)).ravel())
 
     # Interpolation:
-    resampled_sitk_image = resample_image_SimpleITK_DASK(sitk_input_image, interpolation)
+    resampled_sitk_image = resample_image_SimpleITK_DASK(sitk_input_image, interpolation, tuple(desired_spacing))
     new_size = resampled_sitk_image.GetSize()
 
     # Save the resampled image to disk
