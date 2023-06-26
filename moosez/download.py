@@ -23,7 +23,7 @@ import requests
 
 from moosez import constants
 from moosez import resources
-
+from rich.progress import Progress
 
 def binary(system_info, url):
     """
@@ -39,7 +39,6 @@ def binary(system_info, url):
         f.write(response.content)
 
 
-from rich.progress import Progress
 
 
 def model(model_name, model_path):

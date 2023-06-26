@@ -60,21 +60,33 @@ def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) ->
     return moose_compliant_subjects
 
 
-def check_file_for_nnunet_compatibility(filename, input_dir):
+
+def check_file_for_nnunet_compatibility(filename: str, input_dir: str) -> None:
+    """
+    Checks if the file is nnUNet compatible. If not, compresses the file and renames it to include the required tag.
+
+    Parameters:
+        filename (str): The name of the file to check.
+        input_dir (str): The path to the directory containing the file.
+
+    Returns:
+        None
+    """
     if filename.endswith('.nii.gz') and not filename.endswith('_0000.nii.gz'):
-        # if the file is not already in the desired format
+        # Rename the file to include the required tag
         new_filename = filename.replace('.nii.gz', '_0000.nii.gz')
         os.rename(os.path.join(input_dir, filename), os.path.join(input_dir, new_filename))
     elif not filename.endswith('.gz'):
-        # if the file is not compressed, compress it
+        # Compress the file if it is not already compressed
         img = nib.load(os.path.join(input_dir, filename))
         new_filename = filename + '.gz'
         nib.save(img, os.path.join(input_dir, new_filename))
         os.remove(os.path.join(input_dir, filename))
         if not new_filename.endswith('_0000.nii.gz'):
-            # if the file is not already in the desired format
+            # Rename the file to include the required tag
             new_filename_with_zeroes = new_filename.replace('.nii.gz', '_0000.nii.gz')
             os.rename(os.path.join(input_dir, new_filename), os.path.join(input_dir, new_filename_with_zeroes))
+
 
 
 def make_nnunet_compatible(input_dir: str) -> None:

@@ -267,3 +267,78 @@ def resample_image_SimpleITK(input_image_path: str, interpolation: str, output_s
         nibabel.save(resampled_image, output_image_path)
 
     return resampled_image, output_image_path
+
+
+
+
+#---------------------------------#
+#  SPRINT SESSION: 1 <26.06.2023> #
+#---------------------------------#
+
+import numpy as np
+import nibabel as nib
+import SimpleITK as sitk
+import constants
+
+class MooseObject:
+    def __init__(self, image_path=None):
+        self.image_path = image_path
+        self.large_image = False
+        if image_path is not None:
+            self.load_image()
+
+    def load_image(self):
+        # Load as nibabel image
+        self.nib_image = nib.load(self.image_path)
+        self.original_properties = {'affine': self.nib_image.affine, 
+                                    'header': self.nib_image.header, 
+                                    'shape': self.nib_image.shape}
+        # Convert nibabel image to SimpleITK image
+        self.image = self.nib_to_sitk(self.nib_image)
+
+    def nib_to_sitk(self, nib_image):
+        data_array = nib_image.get_fdata()
+        image = sitk.GetImageFromArray(data_array)
+        affine = nib_image.affine
+        image.SetOrigin(affine[:3,3])
+        image.SetDirection(affine[:3,:3].flatten())
+        return image
+
+    def save_image(self, output_path):
+        # Save SimpleITK image
+        sitk.WriteImage(self.image, output_path)
+
+    def remove_singleton_dims(self):
+        self.nib_image = nib.squeeze_image(self.nib_image)
+
+    def standardize_orientation(self):
+        if nib.aff2axcodes(self.nib_image.affine) != ('L', 'A', 'S'):
+            self.nib_image = nib.as_reoriented(self.nib_image, nib.aff2axcodes(self.nib_image.affine), ('L', 'A', 'S'))
+
+    def orient_image(self):
+        self.nib_image = nib.as_closest_canonical(self.nib_image)
+
+    def check_size(self):
+        total_voxels = np.prod(self.nib_image.shape)
+        z_axis_length = self.nib_image.shape[2]
+        if total_voxels > constants.MATRIX_THRESHOLD and z_axis_length > constants.Z_AXIS_THRESHOLD:
+            self.large_image = True
+
+    def get_original_properties(self):
+        return self.original_properties
+
+    def create_image_from_scratch(self, data, affine=np.eye(4)):
+        self.nib_image = nib.Nifti1Image(data, affine)
+        self.image = self.nib_to_sitk(self.nib_image)
+
+    def run_preprocessing_pipeline(self):
+        self.remove_singleton_dims()
+        self.standardize_orientation()
+        self.orient_image()
+        self.check_size()
+        # Convert preprocessed nibabel image to SimpleITK image
+        self.image = self.nib_to_sitk(self.nib_image)
+
+    def is_large_image(self):
+        return self.large_image
+
