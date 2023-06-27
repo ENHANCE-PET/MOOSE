@@ -149,7 +149,7 @@ def postprocess(original_image, output_dir):
                                                                  desired_spacing=native_spacing,
                                                                  desired_size=native_size)
     image_processing.write_image(resampled_prediction, multilabel_image, False)
-    # os.remove(predicted_image)
+    os.remove(predicted_image)
 
 
 def count_output_files(output_dir):
