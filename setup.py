@@ -49,7 +49,8 @@ setup(
         'pillow>=9.2.0',
         'colorama~=0.4.6',
         'dask~=2023.6.0',
-        'rich'
+        'rich',
+        'dicom2nifti~=2.4.8'
     ],
     entry_points={
         'console_scripts': [

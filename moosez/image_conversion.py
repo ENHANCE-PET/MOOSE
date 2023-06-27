@@ -22,7 +22,7 @@ import sys
 import SimpleITK
 import pydicom
 from rich.progress import Progress
-from nipype.interfaces.dcm2nii import Dcm2niix
+import dicom2nifti
 from moosez import constants
 
 
@@ -104,31 +104,8 @@ def dcm2niix(input_path: str, output_image_basename: str) -> None:
     """
     Converts DICOM images into Nifti images using dcm2niix
     :param input_path: Path to the folder with the dicom files to convert
-    :param output_image_basename: Name of the converted nifti image
     """
-    # Initialize converter
-    converter = Dcm2niix()
-    converter.inputs.source_dir = input_path
-    converter.inputs.bids_format = False
-    converter.inputs.verbose = False
-
-    # Set output directory and filename
-    # output directory is one level up the input path, use pathlib to get the parent directory
     output_dir = os.path.dirname(input_path)
-    converter.inputs.output_dir = output_dir
-    converter.inputs.out_filename = output_image_basename
-    devnull = open(os.devnull, 'w')
-    converter.terminal_output = 'allatonce'
-    converter.inputs.environ['CLOBBER'] = 'Y'
-    converter.inputs.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
-    converter.inputs.environ['RUNBETWEEN'] = 'N'
+    output_file = os.path.join(output_dir, output_image_basename)
 
-    # Run converter
-    with open(os.devnull, 'w') as devnull:
-        original_stdout = sys.stdout
-        original_stderr = sys.stderr
-        sys.stdout = devnull
-        sys.stderr = devnull
-        converter.run()
-        sys.stdout = original_stdout
-        sys.stderr = original_stderr
+    dicom2nifti.dicom_series_to_nifti(input_path, output_file, reorient_nifti=True)
