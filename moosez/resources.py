@@ -42,9 +42,9 @@ MODELS = {
         "directory": "clin_ct_muscles_model",
     },
     "clin_ct_lungs": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/HMS_3dlungs_10062023.zip",
-        "filename": "Dataset124_HMS_3dlungs.zip",
-        "directory": "Dataset124_HMS_3dlungs",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_lungs_24062023.zip",
+        "filename": "Dataset333_HMS3dlungs.zip",
+        "directory": "Dataset333_HMS3dlungs",
     },
     "clin_ct_fat": {
         "url": "https://example.com/fat_model.zip",
