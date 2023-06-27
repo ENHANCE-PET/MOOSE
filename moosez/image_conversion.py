@@ -18,11 +18,11 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-
+import sys
 import SimpleITK
 import pydicom
 from rich.progress import Progress
-
+from nipype.interfaces.dcm2nii import Dcm2niix
 from moosez import constants
 
 
@@ -53,12 +53,12 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     if os.path.isdir(input_path):
         image_probe = os.listdir(input_path)[0]
         modality_tag = pydicom.read_file(os.path.join(input_path, image_probe)).Modality
-        if image_probe.endswith(('IMA', 'dcm')):
-            output_image = read_dicom_folder(input_path)
-            if modality_tag == 'PT':
-                output_image_basename = f"{constants.TRACER_FDG}_PET_{subject_name}.nii"
-            elif modality_tag == 'CT':
-                output_image_basename = f"{modality_tag}_{subject_name}.nii"
+        if modality_tag == 'PT':
+            output_image_basename = f"{constants.TRACER_FDG}_PET_{subject_name}.nii"
+        elif modality_tag == 'CT':
+            output_image_basename = f"{modality_tag}_{subject_name}.nii"
+        dcm2niix(input_path, output_image_basename)
+        return
     elif os.path.isfile(input_path):
         if input_path.endswith('.nii.gz') or input_path.endswith('.nii'):
             return
@@ -98,3 +98,37 @@ def standardize_to_nifti(parent_dir: str):
             else:
                 continue
             progress.update(task, advance=1, description=f"[cyan] Processing {subject}...")
+
+
+def dcm2niix(input_path: str, output_image_basename: str) -> None:
+    """
+    Converts DICOM images into Nifti images using dcm2niix
+    :param input_path: Path to the folder with the dicom files to convert
+    :param output_image_basename: Name of the converted nifti image
+    """
+    # Initialize converter
+    converter = Dcm2niix()
+    converter.inputs.source_dir = input_path
+    converter.inputs.bids_format = False
+    converter.inputs.verbose = False
+
+    # Set output directory and filename
+    # output directory is one level up the input path, use pathlib to get the parent directory
+    output_dir = os.path.dirname(input_path)
+    converter.inputs.output_dir = output_dir
+    converter.inputs.out_filename = output_image_basename
+    devnull = open(os.devnull, 'w')
+    converter.terminal_output = 'allatonce'
+    converter.inputs.environ['CLOBBER'] = 'Y'
+    converter.inputs.environ['FSLOUTPUTTYPE'] = 'NIFTI_GZ'
+    converter.inputs.environ['RUNBETWEEN'] = 'N'
+
+    # Run converter
+    with open(os.devnull, 'w') as devnull:
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        sys.stdout = devnull
+        sys.stderr = devnull
+        converter.run()
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr

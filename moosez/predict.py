@@ -29,6 +29,8 @@ from mpire import WorkerPool
 from moosez import constants
 from moosez import file_utilities
 from moosez import image_processing
+from moosez.image_processing import NiftiPreprocessor
+from moosez.image_processing import ImageResampler
 
 
 def map_model_name_to_task_number(model_name: str):
@@ -79,7 +81,7 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     os.environ["nnUNet_results"] = constants.NNUNET_RESULTS_FOLDER
 
     # Preprocess the image
-    temp_input_dir, resampled_image = preprocess(input_dir, model_name)
+    temp_input_dir, resampled_image, moose_image_object = preprocess(input_dir, model_name)
     resampled_image_shape = resampled_image.shape
     resampled_image_affine = resampled_image.affine
 
@@ -96,10 +98,10 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
 
     # Postprocess the label
-    # if temp_input_dir has more than file, run logic below
-    if len(os.listdir(temp_input_dir)) > 1:
-        merge_image_parts(output_dir, resampled_image_shape, resampled_image_affine)
+    # if temp_input_dir has more than one nifti file, run logic below
 
+    if len(file_utilities.get_files(output_dir, '.nii.gz')) > 1:
+        merge_image_parts(output_dir, resampled_image_shape, resampled_image_affine)
     postprocess(original_image_files[0], output_dir)
 
     shutil.rmtree(temp_input_dir)
@@ -117,28 +119,17 @@ def preprocess(original_image_directory: str, model_name: str):
     os.makedirs(temp_folder, exist_ok=True)
     original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
     org_image = nib.load(original_image_files[0])
-    # get size of original image
-    org_img_size = org_image.shape
-    total_voxels = org_img_size[0] * org_img_size[1] * org_img_size[2]
+    moose_image_object = NiftiPreprocessor(org_image)
     # check if the model is a clinical model or preclinical model
     desired_spacing = constants.CLINICAL_VOXEL_SPACING if model_name.startswith(
         'clin') else constants.PRECLINICAL_VOXEL_SPACING
 
-    # Decide which resampling function to use based on image size
-    if total_voxels > constants.MATRIX_THRESHOLD and org_img_size[2] > constants.Z_AXIS_THRESHOLD:
-        # Resample the images to the desired isotropic voxel size
-        resampled_image, resampled_image_path = image_processing.resample(input_image_path=original_image_files[0],
-                                                                          interpolation=constants.INTERPOLATION,
-                                                                          desired_spacing=desired_spacing)
-        # [2] Chunk if the image is too large
-        handle_large_image(resampled_image, temp_folder)
-    else:
-        # [2] Proceed without chunking
-        resampled_image, resampled_image_path = image_processing.resample_image_SimpleITK(
-            input_image_path=original_image_files[0], interpolation=constants.INTERPOLATION,
-            output_image_path=os.path.join(temp_folder, os.path.basename(original_image_files[0])))
-
-    return temp_folder, resampled_image
+    resampled_image = ImageResampler.resample_image(moose_img_object=moose_image_object,
+                                                    interpolation=constants.INTERPOLATION,
+                                                    desired_spacing=desired_spacing)
+    image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
+                                 moose_image_object.is_large)
+    return temp_folder, resampled_image, moose_image_object
 
 
 def postprocess(original_image, output_dir):
@@ -151,8 +142,13 @@ def postprocess(original_image, output_dir):
     # [1] Resample the predicted image to the original image's voxel spacing
     predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
     multilabel_image = os.path.join(output_dir, constants.MULTILABEL_SUFFIX + os.path.basename(original_image))
-    image_processing.resample_mask(image_path=original_image, mask_path=predicted_image,
-                                   output_mask_path=multilabel_image, interpolation_method='nearest')
+    original_header = nib.load(original_image).header
+    native_spacing = original_header.get_zooms()
+    native_size = original_header.get_data_shape()
+    resampled_prediction = ImageResampler.resample_segmentations(input_image_path=predicted_image,
+                                                                 desired_spacing=native_spacing,
+                                                                 desired_size=native_size)
+    image_processing.write_image(resampled_prediction, multilabel_image, False)
     # os.remove(predicted_image)
 
 
@@ -266,19 +262,19 @@ def merge_image_parts(save_dir, original_image_shape, original_image_affine):
     z_split_index = original_image_shape[2] // 3
 
     # Load each part, extract its data, and place it in the correct position in the merged image
-    merged_image_data[:, :, :z_split_index] = nib.load(os.path.join(save_dir, "subpart01.nii.gz")).get_fdata()[:,
+    merged_image_data[:, :, :z_split_index] = nib.load(os.path.join(save_dir, "chunk01.nii.gz")).get_fdata()[:,
                                               :, :-constants.MARGIN_PADDING]
     merged_image_data[:, :, z_split_index:z_split_index * 2] = nib.load(
-        os.path.join(save_dir, "subpart02.nii.gz")).get_fdata()[:, :,
+        os.path.join(save_dir, "chunk02.nii.gz")).get_fdata()[:, :,
                                                                constants.MARGIN_PADDING - 1:-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index * 2:] = nib.load(os.path.join(save_dir, "subpart03.nii.gz")).get_fdata()[
+    merged_image_data[:, :, z_split_index * 2:] = nib.load(os.path.join(save_dir, "chunk03.nii.gz")).get_fdata()[
                                                   :, :, constants.MARGIN_PADDING - 1:]
 
     # Create a new Nifti1Image with the merged data and the original image's affine transformation
     merged_image = nib.Nifti1Image(merged_image_data, original_image_affine)
 
     # remove the split image parts
-    files_to_remove = glob.glob(os.path.join(save_dir, "subpart*"))
+    files_to_remove = glob.glob(os.path.join(save_dir, "chunk*"))
     for file in files_to_remove:
         os.remove(file)
 
