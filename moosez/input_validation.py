@@ -48,7 +48,9 @@ def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) ->
     moose_compliant_subjects = []
     for subject_path in subject_paths:
         # go through each subject and see if the files have the appropriate modality suffixes
-        files = os.listdir(subject_path)
+        # files = os.listdir(subject_path)
+        # get the nifti files in the subject_path
+        files = [file for file in os.listdir(subject_path) if file.endswith('.nii')]
         suffixes = [file.startswith(tag) for tag in modality_tags for file in files]
         if sum(suffixes) == len(modality_tags):
             moose_compliant_subjects.append(subject_path)

@@ -99,7 +99,7 @@ def select_files_by_modality(moose_compliant_subjects: list, modality_tag: str) 
     for subject in moose_compliant_subjects:
         files = os.listdir(subject)
         for file in files:
-            if file.startswith(modality_tag):
+            if file.startswith(modality_tag) and file.endswith('.nii') or file.endswith('.nii.gz'):
                 selected_files.append(os.path.join(subject, file))
     return selected_files
 
