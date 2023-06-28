@@ -59,5 +59,5 @@ MULTILABEL_SUFFIX = 'MULTILABEL-'
 
 # FILE NAMES
 
-RESAMPLED_IMAGE_FILE_NAME = 'resampled_image.nii.gz'
+RESAMPLED_IMAGE_FILE_NAME = 'resampled_image_0000.nii.gz'
 RESAMPLED_MASK_FILE_NAME = 'resampled_mask.nii.gz'
