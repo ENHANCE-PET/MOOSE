@@ -232,24 +232,35 @@ class ImageResampler:
     @staticmethod
     def chunk_along_axis(axis: int) -> int:
         """
-        Determines the integer values that splits the axis evenly.
+        Determines the maximum number of evenly-sized chunks that the axis can be split into.
+        Each chunk is at least of size CHUNK_THRESHOLD.
 
         Args:
-            axis: the axis length as an integer.
+            axis (int): Length of the axis.
 
         Returns:
-            split: the determined integer values that splits the axis evenly.
-        """
-        split = 2
-        chunk_size = axis / split
-        rest = axis % split
+            int: The maximum number of evenly-sized chunks.
 
-        while chunk_size >= CHUNK_THRESHOLD or rest != 0:
-            split += 1
-            chunk_size = axis / split
-            rest = axis % split
-            if split == axis:
-                return 1
+        Raises:
+            ValueError: If axis is negative or if CHUNK_THRESHOLD is less than or equal to 0.
+        """
+        # Check for negative input values
+        if axis < 0:
+            raise ValueError('Axis must be non-negative')
+
+        if CHUNK_THRESHOLD <= 0:
+            raise ValueError('CHUNK_THRESHOLD must be greater than 0')
+
+        # If the axis is smaller than the threshold, it cannot be split into smaller chunks
+        if axis < CHUNK_THRESHOLD:
+            return 1
+
+        # Determine the maximum number of chunks that the axis can be split into
+        split = axis // CHUNK_THRESHOLD
+
+        # Reduce the number of chunks until axis is evenly divisible by split
+        while axis % split != 0:
+            split -= 1
 
         return split
 
