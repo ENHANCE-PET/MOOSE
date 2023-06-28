@@ -174,9 +174,11 @@ def main():
         time.sleep(3)
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
+    time_per_dataset = total_elapsed_time / len(moose_compliant_subjects)
+
     spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
-                    f'{len(moose_compliant_subjects)}: {round(total_elapsed_time, 1)} min'
-                    f' {constants.ANSI_RESET}')
+                    f'{len(moose_compliant_subjects)} datasets: {round(total_elapsed_time, 1)} min'
+                    f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
 
 
 if __name__ == '__main__':
