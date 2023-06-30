@@ -40,6 +40,7 @@ TRACER_FDG = 'FDG'
 # FOLDER NAMES
 
 SEGMENTATIONS_FOLDER = 'segmentations'
+STATS_FOLDER = 'stats'
 
 # PREPROCESSING PARAMETERS
 
@@ -61,3 +62,36 @@ MULTILABEL_SUFFIX = 'MULTILABEL-'
 
 RESAMPLED_IMAGE_FILE_NAME = 'resampled_image_0000.nii.gz'
 RESAMPLED_MASK_FILE_NAME = 'resampled_mask.nii.gz'
+
+
+# ORGAN INDICES
+
+ORGAN_INDICES = {
+    "clin_ct_organs": {
+        1: "spleen",
+        2: "kidney_right",
+        3: "kidney_left",
+        4: "gallbladder",
+        5: "liver",
+        6: "stomach",
+        7: "aorta",
+        8: "inferior_vena_cava",
+        9: "portal_vein_and_splenic_vein",
+        10: "pancreas",
+        11: "adrenal_gland_right",
+        12: "adrenal_gland_left",
+        13: "lung_upper_lobe_left",
+        14: "lung_lower_lobe_left",
+        15: "lung_upper_lobe_right",
+        16: "lung_middle_lobe_right",
+        17: "lung_lower_lobe_right"
+    },
+    "clin_ct_lungs": {
+        1: "lung_upper_lobe_left",
+        2: "lung_lower_lobe_left",
+        3: "lung_upper_lobe_right",
+        4: "lung_middle_lobe_right",
+        5: "lung_lower_lobe_right"
+    }
+    # More index-to-name dictionaries for other models...
+}

@@ -16,6 +16,7 @@ colorama~=0.4.6
 pillow>=9.2.0
 dask~=2023.6.0
 rich
+pandas
 dicom2nifti~=2.4.8
 
 

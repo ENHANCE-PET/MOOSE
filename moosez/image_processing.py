@@ -21,9 +21,38 @@ import os
 import numpy as np
 import nibabel
 import SimpleITK as sitk
-from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING
+from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES
 import dask.array as da
 from mpire import WorkerPool
+import pandas as pd
+
+
+def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
+    """
+    Get the intensity statistics of a NIFTI image file
+    :param image: Source image from which the intensity statistics are calculated
+    :param mask_image: Multilabel mask image
+    :param model_name: Name of the model
+    :param out_csv: Path to the output csv file
+    :return None
+     """
+    intensity_statistics = sitk.LabelIntensityStatisticsImageFilter()
+    intensity_statistics.Execute(mask_image, image)
+    stats_list = [(intensity_statistics.GetMean(i), intensity_statistics.GetStandardDeviation(i),
+                   intensity_statistics.GetMedian(i), intensity_statistics.GetMaximum(i),
+                   intensity_statistics.GetMinimum(i)) for i in intensity_statistics.GetLabels()]
+    columns = ['Mean', 'Standard-Deviation', 'Median', 'Maximum', 'Minimum']
+    stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
+    labels_present = stats_df.index.to_list()
+    regions_present = []
+    organ_indices_dict = ORGAN_INDICES[model_name]
+    for label in labels_present:
+        if label in organ_indices_dict:
+            regions_present.append(organ_indices_dict[label])
+        else:
+            continue
+    stats_df.insert(0, 'Regions-Present', np.array(regions_present))
+    stats_df.to_csv(out_csv)
 
 
 def split_and_save(shared_image: tuple, chunk_index: list, image_chunk_path: str) -> None:
@@ -490,4 +519,28 @@ class ImageResampler:
                                               affine=new_affine,
                                               header=image_header)
 
+        return resampled_image
+
+    @staticmethod
+    def reslice_identity(reference_image: sitk.Image, moving_image: sitk.Image,
+                         output_image_path: str = None, is_label_image: bool = False) -> sitk.Image:
+        """
+        Reslice an image to the same space as another image
+        :param reference_image: The reference image
+        :param moving_image: The image to reslice to the reference image
+        :param output_image_path: Path to the resliced image
+        :param is_label_image: Determines if the image is a label image. Default is False
+        """
+        resampler = sitk.ResampleImageFilter()
+        resampler.SetReferenceImage(reference_image)
+
+        if is_label_image:
+            resampler.SetInterpolator(sitk.sitkNearestNeighbor)
+        else:
+            resampler.SetInterpolator(sitk.sitkLinear)
+
+        resampled_image = resampler.Execute(moving_image)
+        resampled_image = sitk.Cast(resampled_image, sitk.sitkInt32)
+        if output_image_path is not None:
+            sitk.WriteImage(resampled_image, output_image_path)
         return resampled_image

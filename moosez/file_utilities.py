@@ -17,6 +17,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+import glob
 import shutil
 import sys
 from datetime import datetime
@@ -70,8 +71,10 @@ def moose_folder_structure(parent_directory: str, model_name: str, modalities: l
         create_directory(input_dirs[-1])
 
     output_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
+    stats_dir = os.path.join(moose_dir, constants.STATS_FOLDER)
     create_directory(output_dir)
-    return moose_dir, input_dirs, output_dir
+    create_directory(stats_dir)
+    return moose_dir, input_dirs, output_dir, stats_dir
 
 
 def copy_file(file, destination):
@@ -114,3 +117,15 @@ def organise_files_by_modality(moose_compliant_subjects: list, modalities: list,
     for modality in modalities:
         files_to_copy = select_files_by_modality(moose_compliant_subjects, modality)
         copy_files_to_destination(files_to_copy, os.path.join(moose_dir, modality))
+
+
+def find_pet_file(folder):
+    # Searching for files with 'PET' in their name and ending with either .nii or .nii.gz
+    pet_files = glob.glob(os.path.join(folder, '*PET*.nii*'))
+
+    if len(pet_files) == 1:
+        return pet_files[0]
+    elif len(pet_files) > 1:
+        raise ValueError("More than one PET file found in the directory.")
+    else:
+        raise ValueError("No PET files found in the directory.")
