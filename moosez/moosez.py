@@ -180,8 +180,8 @@ def main():
         # EXTRACT PET ACTIVITY
         # ----------------------------------
         pet_file = file_utilities.find_pet_file(subject)
-        pet_image = SimpleITK.ReadImage(pet_file)
         if pet_file is not None:
+            pet_image = SimpleITK.ReadImage(pet_file)
             spinner.text = f' Extracting PET activity for {os.path.basename(subject)}...'
             multilabel_file = glob.glob(os.path.join(output_dir, constants.MULTILABEL_SUFFIX + '*nii*'))[0]
             multilabel_image = SimpleITK.ReadImage(multilabel_file)

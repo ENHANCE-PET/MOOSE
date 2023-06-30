@@ -128,4 +128,4 @@ def find_pet_file(folder):
     elif len(pet_files) > 1:
         raise ValueError("More than one PET file found in the directory.")
     else:
-        raise ValueError("No PET files found in the directory.")
+        return None
