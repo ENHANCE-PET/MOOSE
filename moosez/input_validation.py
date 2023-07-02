@@ -40,18 +40,18 @@ def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) ->
     """
     Selects the subjects that have the files that have names that are compliant with the moosez.
     :param subject_paths: The path to the list of subjects that are present in the parent directory.
-    :param modality_tags: The list of appropriate modality suffixes that should be attached to the files for them to be moose
+    :param modality_tags: The list of appropriate modality prefixes that should be attached to the files for them to be moose
     compliant.
     :return: The list of subject paths that are moose compliant.
     """
     # go through each subject in the parent directory
     moose_compliant_subjects = []
     for subject_path in subject_paths:
-        # go through each subject and see if the files have the appropriate modality suffixes
+        # go through each subject and see if the files have the appropriate modality prefixes
 
         files = [file for file in os.listdir(subject_path) if file.endswith('.nii') or file.endswith('.nii.gz')]
-        suffixes = [file.startswith(tag) for tag in modality_tags for file in files]
-        if sum(suffixes) == len(modality_tags):
+        prefixes = [file.startswith(tag) for tag in modality_tags for file in files]
+        if sum(prefixes) == len(modality_tags):
             moose_compliant_subjects.append(subject_path)
     print(f"{constants.ANSI_ORANGE} Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
           f"{len(subject_paths)} {constants.ANSI_RESET}")

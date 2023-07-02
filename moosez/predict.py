@@ -141,7 +141,7 @@ def postprocess(original_image, output_dir):
     """
     # [1] Resample the predicted image to the original image's voxel spacing
     predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
-    multilabel_image = os.path.join(output_dir, constants.MULTILABEL_SUFFIX + os.path.basename(original_image))
+    multilabel_image = os.path.join(output_dir, constants.MULTILABEL_PREFIX + os.path.basename(original_image))
     original_header = nib.load(original_image).header
     native_spacing = original_header.get_zooms()
     native_size = original_header.get_data_shape()
@@ -262,19 +262,24 @@ def merge_image_parts(save_dir, original_image_shape, original_image_affine):
     z_split_index = original_image_shape[2] // 3
 
     # Load each part, extract its data, and place it in the correct position in the merged image
-    merged_image_data[:, :, :z_split_index] = nib.load(os.path.join(save_dir, "chunk01.nii.gz")).get_fdata()[:,
+
+    predicted_chunk_filenames = [s.replace("_0000", "") for s in constants.CHUNK_FILENAMES]
+
+    merged_image_data[:, :, :z_split_index] = nib.load(
+        os.path.join(save_dir, predicted_chunk_filenames[0])).get_fdata()[:,
                                               :, :-constants.MARGIN_PADDING]
     merged_image_data[:, :, z_split_index:z_split_index * 2] = nib.load(
-        os.path.join(save_dir, "chunk02.nii.gz")).get_fdata()[:, :,
+        os.path.join(save_dir, predicted_chunk_filenames[1])).get_fdata()[:, :,
                                                                constants.MARGIN_PADDING - 1:-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index * 2:] = nib.load(os.path.join(save_dir, "chunk03.nii.gz")).get_fdata()[
+    merged_image_data[:, :, z_split_index * 2:] = nib.load(
+        os.path.join(save_dir, predicted_chunk_filenames[2])).get_fdata()[
                                                   :, :, constants.MARGIN_PADDING - 1:]
 
     # Create a new Nifti1Image with the merged data and the original image's affine transformation
     merged_image = nib.Nifti1Image(merged_image_data, original_image_affine)
 
     # remove the split image parts
-    files_to_remove = glob.glob(os.path.join(save_dir, "chunk*"))
+    files_to_remove = glob.glob(os.path.join(save_dir, constants.CHUNK_PREFIX+"*"))
     for file in files_to_remove:
         os.remove(file)
 

@@ -21,7 +21,8 @@ import os
 import numpy as np
 import nibabel
 import SimpleITK as sitk
-from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES
+from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
+    CHUNK_FILENAMES
 import dask.array as da
 from mpire import WorkerPool
 import pandas as pd
@@ -89,7 +90,7 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         chunk_indices = [(0, chunk_size + MARGIN_PADDING),
                          (chunk_size + 1 - MARGIN_PADDING, chunk_size * 2 + MARGIN_PADDING),
                          (chunk_size * 2 + 1 - MARGIN_PADDING, None)]
-        filenames = ["chunk01_0000.nii.gz", "chunk02_0000.nii.gz", "chunk03_0000.nii.gz"]
+        filenames = CHUNK_FILENAMES
         save_dir = os.path.dirname(out_image_path)
         chunk_paths = [os.path.join(save_dir, filename) for filename in filenames]
 

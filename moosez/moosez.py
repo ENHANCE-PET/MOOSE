@@ -183,7 +183,7 @@ def main():
         if pet_file is not None:
             pet_image = SimpleITK.ReadImage(pet_file)
             spinner.text = f' Extracting PET activity for {os.path.basename(subject)}...'
-            multilabel_file = glob.glob(os.path.join(output_dir, constants.MULTILABEL_SUFFIX + '*nii*'))[0]
+            multilabel_file = glob.glob(os.path.join(output_dir, constants.MULTILABEL_PREFIX + '*nii*'))[0]
             multilabel_image = SimpleITK.ReadImage(multilabel_file)
             resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
                                                                          moving_image=multilabel_image,

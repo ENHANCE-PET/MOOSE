@@ -54,15 +54,16 @@ CHUNK_THRESHOLD = 200
 
 # FILE NAMES PREFIX
 
-ORGANS_MULTILABEL_SUFFIX = 'Organs-Multilabel-'
-LUNGS_MULTILABEL_SUFFIX = 'Lungs-Multilabel-'
-MULTILABEL_SUFFIX = 'MULTILABEL-'
+ORGANS_MULTILABEL_PREFIX = 'Organs-Multilabel-'
+LUNGS_MULTILABEL_PREFIX = 'Lungs-Multilabel-'
+MULTILABEL_PREFIX = 'MULTILABEL-'
 
 # FILE NAMES
 
 RESAMPLED_IMAGE_FILE_NAME = 'resampled_image_0000.nii.gz'
 RESAMPLED_MASK_FILE_NAME = 'resampled_mask.nii.gz'
-
+CHUNK_FILENAMES = ["chunk01_0000.nii.gz", "chunk02_0000.nii.gz", "chunk03_0000.nii.gz"]
+CHUNK_PREFIX = 'chunk'
 
 # ORGAN INDICES
 

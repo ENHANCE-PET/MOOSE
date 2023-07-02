@@ -97,23 +97,22 @@ def expectations(model_name: str) -> list:
         modalities = ['FDG-PET', 'CT']
     else:
         modalities = [modality]
-    expected_suffix = [m.replace('-', '_') + "_" for m in modalities]
+    expected_prefix = [m.replace('-', '_') + "_" for m in modalities]
 
     print(
-        f" Imaging: {constants.ANSI_ORANGE}{model_info['Imaging']}{constants.ANSI_RESET} |"
-        f" Modality: {constants.ANSI_ORANGE}{modality}{constants.ANSI_RESET} | "
-        f"Tissue of interest: {constants.ANSI_ORANGE}{model_info['Tissue of interest']}{constants.ANSI_RESET}")
+        f" Imaging: {model_info['Imaging']} |"
+        f" Modality: {modality} | "
+        f"Tissue of interest: {model_info['Tissue of interest']}")
     print(
-        f" Required modalities: {constants.ANSI_ORANGE}{modalities}{constants.ANSI_RESET} | "
-        f" No. of modalities: {constants.ANSI_ORANGE}{len(modalities)}{constants.ANSI_RESET}"
-        f" | Required Suffix for non-DICOM files: {constants.ANSI_ORANGE}{expected_suffix}"
-        f"{constants.ANSI_RESET}")
+        f" Required modalities: {modalities} | "
+        f" No. of modalities: {len(modalities)}"
+        f" | Required prefix for non-DICOM files: {expected_prefix}")
     logging.info(f" Required modalities: {modalities} |  No. of modalities: {len(modalities)} "
-                 f"| Required Suffix for non-DICOM files: {expected_suffix} ")
+                 f"| Required prefix for non-DICOM files: {expected_prefix} ")
     print(
-        f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file suffix] "
+        f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
         f"will be skipped. {constants.ANSI_RESET}")
-    warning_message = " Skipping subjects without the required modalities (check file suffix).\n" \
+    warning_message = " Skipping subjects without the required modalities (check file prefix).\n" \
                       " These subjects will be excluded from analysis and their data will not be used."
     logging.warning(warning_message)
 

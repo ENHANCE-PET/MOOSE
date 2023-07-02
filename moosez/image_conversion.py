@@ -83,7 +83,7 @@ def standardize_to_nifti(parent_dir: str):
     subjects = [subject for subject in subjects if os.path.isdir(os.path.join(parent_dir, subject))]
 
     with Progress() as progress:
-        task = progress.add_task("[cyan] Processing subjects...", total=len(subjects))
+        task = progress.add_task("[white] Processing subjects...", total=len(subjects))
         for subject in subjects:
             subject_path = os.path.join(parent_dir, subject)
             if os.path.isdir(subject_path):
@@ -97,7 +97,7 @@ def standardize_to_nifti(parent_dir: str):
                         non_nifti_to_nifti(image_path)
             else:
                 continue
-            progress.update(task, advance=1, description=f"[cyan] Processing {subject}...")
+            progress.update(task, advance=1, description=f"[white] Processing {subject}...")
 
 
 def dcm2niix(input_path: str, output_image_basename: str) -> None:
