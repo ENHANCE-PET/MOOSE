@@ -18,6 +18,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+import re
+import traceback
+import unicodedata
 
 import SimpleITK
 import dicom2nifti
@@ -103,6 +106,18 @@ def dcm2niix(input_path: str) -> str:
     return output_dir
 
 
+def remove_accents(unicode_filename):
+    try:
+        unicode_filename = unicode_filename.replace(" ", "_")
+        cleaned_filename = unicodedata.normalize('NFKD', unicode_filename).encode('ASCII', 'ignore').decode('ASCII')
+        cleaned_filename = re.sub(r'[^\w\s-]', '', cleaned_filename.strip().lower())
+        cleaned_filename = re.sub(r'[-\s]+', '-', cleaned_filename)
+        return cleaned_filename
+    except:
+        traceback.print_exc()
+        return unicode_filename
+
+
 def create_dicom_lookup(dicom_dir):
     """Create a lookup dictionary from DICOM files.
 
@@ -119,26 +134,30 @@ def create_dicom_lookup(dicom_dir):
 
     # loop over the DICOM files
     for filename in os.listdir(dicom_dir):
-        if filename.endswith('.dcm') or filename.endswith('.ima') or filename.endswith(''):
+        if filename.endswith('.dcm') or filename.endswith('.ima') or filename.endswith('.IMA') or \
+                filename.endswith('.DCM') or filename.endswith(''):
             # read the DICOM file
             ds = pydicom.dcmread(os.path.join(dicom_dir, filename))
 
             # extract the necessary information
-            series_number = ds.SeriesNumber
+            series_number = ds.SeriesNumber if 'SeriesNumber' in ds else None
             series_description = ds.SeriesDescription if 'SeriesDescription' in ds else None
             sequence_name = ds.SequenceName if 'SequenceName' in ds else None
             protocol_name = ds.ProtocolName if 'ProtocolName' in ds else None
+            series_instance_UID = ds.SeriesInstanceUID if 'SeriesInstanceUID' in ds else None
             modality = ds.Modality
 
             # anticipate the filename dicom2nifti will produce and store the modality tag with it
-            if series_description is not None:
-                anticipated_filename = f"{series_number}_{series_description}.nii"
-            elif sequence_name is not None:
-                anticipated_filename = f"{series_number}_{sequence_name}.nii"
-            elif protocol_name is not None:
-                anticipated_filename = f"{series_number}_{protocol_name}.nii"
+            if series_number is not None:
+                base_filename = remove_accents(series_number)
+                if series_description is not None:
+                    anticipated_filename = f"{base_filename}_{remove_accents(series_description)}.nii"
+                elif sequence_name is not None:
+                    anticipated_filename = f"{base_filename}_{remove_accents(sequence_name)}.nii"
+                elif protocol_name is not None:
+                    anticipated_filename = f"{base_filename}_{remove_accents(protocol_name)}.nii"
             else:
-                anticipated_filename = f"{series_number}.nii"
+                anticipated_filename = f"{remove_accents(series_instance_UID)}.nii"
 
             dicom_info[anticipated_filename] = modality
 
