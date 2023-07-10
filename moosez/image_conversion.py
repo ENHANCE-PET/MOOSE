@@ -150,10 +150,10 @@ def create_dicom_lookup(dicom_dir):
             sequence_name = ds.SequenceName if 'SequenceName' in ds else None
             protocol_name = ds.ProtocolName if 'ProtocolName' in ds else None
             series_instance_UID = ds.SeriesInstanceUID if 'SeriesInstanceUID' in ds else None
-            if ds.modality == 'PT':
+            if ds.Modality == 'PT':
                 modality = 'PET'
             else:
-                modality = ds.modality
+                modality = ds.Modality
 
             # anticipate the filename dicom2nifti will produce and store the modality tag with it
             if series_number is not None:
