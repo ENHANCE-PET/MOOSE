@@ -17,9 +17,10 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
+import contextlib
+import io
 import os
 import re
-import traceback
 import unicodedata
 
 import SimpleITK
@@ -102,20 +103,24 @@ def dcm2niix(input_path: str) -> str:
     :return: str, Path to the folder with the converted nifti files
     """
     output_dir = os.path.dirname(input_path)
-    dicom2nifti.convert_directory(input_path, output_dir, compression=False, reorient=True)
+
+    # redirect standard output and standard error to discard output
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        dicom2nifti.convert_directory(input_path, output_dir, compression=False, reorient=True)
+
     return output_dir
 
 
 def remove_accents(unicode_filename):
     try:
-        unicode_filename = unicode_filename.replace(" ", "_")
+        unicode_filename = str(unicode_filename).replace(" ", "_")
         cleaned_filename = unicodedata.normalize('NFKD', unicode_filename).encode('ASCII', 'ignore').decode('ASCII')
         cleaned_filename = re.sub(r'[^\w\s-]', '', cleaned_filename.strip().lower())
         cleaned_filename = re.sub(r'[-\s]+', '-', cleaned_filename)
         return cleaned_filename
     except:
-        traceback.print_exc()
         return unicode_filename
+
 
 
 def create_dicom_lookup(dicom_dir):
@@ -134,8 +139,8 @@ def create_dicom_lookup(dicom_dir):
 
     # loop over the DICOM files
     for filename in os.listdir(dicom_dir):
-        if filename.endswith('.dcm') or filename.endswith('.ima') or filename.endswith('.IMA') or \
-                filename.endswith('.DCM') or filename.endswith(''):
+        if filename.endswith('.dcm') or filename.endswith('.ima') or filename.endswith('.DCM') or filename.endswith(
+                '.IMA'):
             # read the DICOM file
             ds = pydicom.dcmread(os.path.join(dicom_dir, filename))
 
