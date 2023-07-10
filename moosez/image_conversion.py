@@ -186,9 +186,13 @@ def rename_nifti_files(nifti_dir, dicom_info):
         if filename.endswith('.nii'):
             # get the corresponding DICOM information
             modality = dicom_info.get(filename, '')
+            if modality: # only if the modality is found in the dicom_info dict
+                # create the new filename
+                new_filename = f"{modality}_{filename}"
 
-            # create the new filename
-            new_filename = f"{modality}_{filename}"
+                # rename the file
+                os.rename(os.path.join(nifti_dir, filename), os.path.join(nifti_dir, new_filename))
 
-            # rename the file
-            os.rename(os.path.join(nifti_dir, filename), os.path.join(nifti_dir, new_filename))
+                # delete the old name from the dictionary
+                del dicom_info[filename]
+
