@@ -119,7 +119,7 @@ def create_dicom_lookup(dicom_dir):
 
     # loop over the DICOM files
     for filename in os.listdir(dicom_dir):
-        if filename.endswith('.dcm'):
+        if filename.endswith('.dcm') or filename.endswith('.ima') or filename.endswith(''):
             # read the DICOM file
             ds = pydicom.dcmread(os.path.join(dicom_dir, filename))
 
