@@ -123,6 +123,14 @@ def remove_accents(unicode_filename):
 
 
 
+def is_dicom_file(filename):
+    try:
+        pydicom.dcmread(filename)
+        return True
+    except pydicom.errors.InvalidDicomError:
+        return False
+        
+
 def create_dicom_lookup(dicom_dir):
     """Create a lookup dictionary from DICOM files.
 
@@ -139,10 +147,10 @@ def create_dicom_lookup(dicom_dir):
 
     # loop over the DICOM files
     for filename in os.listdir(dicom_dir):
-        if filename.endswith('.dcm') or filename.endswith('.ima') or filename.endswith('.DCM') or filename.endswith(
-                '.IMA'):
+        full_path = os.path.join(dicom_dir, filename)
+        if is_dicom_file(full_path):
             # read the DICOM file
-            ds = pydicom.dcmread(os.path.join(dicom_dir, filename))
+            ds = pydicom.dcmread(full_path)
 
             # extract the necessary information
             series_number = ds.SeriesNumber if 'SeriesNumber' in ds else None
