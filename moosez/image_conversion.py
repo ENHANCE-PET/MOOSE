@@ -18,12 +18,11 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-import sys
+
 import SimpleITK
+import dicom2nifti
 import pydicom
 from rich.progress import Progress
-import dicom2nifti
-from moosez import constants
 
 
 def read_dicom_folder(folder_path: str) -> SimpleITK.Image:
@@ -47,17 +46,10 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     :param input_path: str, Directory OR filename to convert to nii.gz
     :param output_directory: str, optional output directory to write the image to.
     """
-    subject_name = os.path.basename(os.path.dirname(input_path))
-    output_image_basename = "output"
-    output_image = None  # initialize output_image
     if os.path.isdir(input_path):
-        image_probe = os.listdir(input_path)[0]
-        modality_tag = pydicom.read_file(os.path.join(input_path, image_probe)).Modality
-        if modality_tag == 'PT':
-            output_image_basename = f"{constants.TRACER_FDG}_PET_{subject_name}.nii"
-        elif modality_tag == 'CT':
-            output_image_basename = f"{modality_tag}_{subject_name}.nii"
-        dcm2niix(input_path, output_image_basename)
+        dicom_info = create_dicom_lookup(input_path)
+        nifti_dir = dcm2niix(input_path)
+        rename_nifti_files(nifti_dir, dicom_info)
         return
     elif os.path.isfile(input_path):
         if input_path.endswith('.nii.gz') or input_path.endswith('.nii'):
@@ -100,12 +92,76 @@ def standardize_to_nifti(parent_dir: str):
             progress.update(task, advance=1, description=f"[white] Processing {subject}...")
 
 
-def dcm2niix(input_path: str, output_image_basename: str) -> None:
+def dcm2niix(input_path: str) -> str:
     """
     Converts DICOM images into Nifti images using dcm2niix
     :param input_path: Path to the folder with the dicom files to convert
+    :return: str, Path to the folder with the converted nifti files
     """
     output_dir = os.path.dirname(input_path)
-    output_file = os.path.join(output_dir, output_image_basename)
+    dicom2nifti.convert_directory(input_path, output_dir, compression=False, reorient=True)
+    return output_dir
 
-    dicom2nifti.dicom_series_to_nifti(input_path, output_file, reorient_nifti=True)
+
+def create_dicom_lookup(dicom_dir):
+    """Create a lookup dictionary from DICOM files.
+
+    Parameters:
+    dicom_dir (str): The directory where DICOM files are stored.
+
+    Returns:
+    dict: A dictionary where the key is the anticipated filename that dicom2nifti will produce and
+          the value is the modality of the DICOM series.
+    """
+
+    # a dictionary to store information from the DICOM files
+    dicom_info = {}
+
+    # loop over the DICOM files
+    for filename in os.listdir(dicom_dir):
+        if filename.endswith('.dcm'):
+            # read the DICOM file
+            ds = pydicom.dcmread(os.path.join(dicom_dir, filename))
+
+            # extract the necessary information
+            series_number = ds.SeriesNumber
+            series_description = ds.SeriesDescription if 'SeriesDescription' in ds else None
+            sequence_name = ds.SequenceName if 'SequenceName' in ds else None
+            protocol_name = ds.ProtocolName if 'ProtocolName' in ds else None
+            modality = ds.Modality
+
+            # anticipate the filename dicom2nifti will produce and store the modality tag with it
+            if series_description is not None:
+                anticipated_filename = f"{series_number}_{series_description}.nii"
+            elif sequence_name is not None:
+                anticipated_filename = f"{series_number}_{sequence_name}.nii"
+            elif protocol_name is not None:
+                anticipated_filename = f"{series_number}_{protocol_name}.nii"
+            else:
+                anticipated_filename = f"{series_number}.nii"
+
+            dicom_info[anticipated_filename] = modality
+
+    return dicom_info
+
+
+def rename_nifti_files(nifti_dir, dicom_info):
+    """Rename NIfTI files based on a lookup dictionary.
+
+    Parameters:
+    nifti_dir (str): The directory where NIfTI files are stored.
+    dicom_info (dict): A dictionary where the key is the anticipated filename that dicom2nifti will produce and
+                       the value is the modality of the DICOM series.
+    """
+
+    # loop over the NIfTI files
+    for filename in os.listdir(nifti_dir):
+        if filename.endswith('.nii'):
+            # get the corresponding DICOM information
+            modality = dicom_info.get(filename, '')
+
+            # create the new filename
+            new_filename = f"{modality}_{filename}"
+
+            # rename the file
+            os.rename(os.path.join(nifti_dir, filename), os.path.join(nifti_dir, new_filename))
