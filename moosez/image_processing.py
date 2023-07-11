@@ -101,9 +101,15 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         pool.close()
         pool.join()
 
+        # Close and unlink the shared memory after use
+        shm.close()
+        shm.unlink()
+
     else:
         resampled_image_path = out_image_path
         nibabel.save(image, resampled_image_path)
+
+
 
 
 class NiftiPreprocessor:
