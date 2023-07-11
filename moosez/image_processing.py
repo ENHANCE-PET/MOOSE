@@ -26,6 +26,8 @@ from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD
 import dask.array as da
 from mpire import WorkerPool
 import pandas as pd
+import multiprocessing
+from multiprocessing import shared_memory
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -56,18 +58,13 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df.to_csv(out_csv)
 
 
-def split_and_save(shared_image: tuple, chunk_index: list, image_chunk_path: str) -> None:
-    """
-    Split the image into chunks and save each part.
-
-    Args:
-        shared_image: (image_data, image_affine) tuple.
-        chunk_index: List of tuples containing start and end indices for each chunk.
-        image_chunk_path: The path to save the image chunk.
-    """
-    image_data, image_affine = shared_image
-    chunk_part = nibabel.Nifti1Image(image_data[:, :, chunk_index[0]:chunk_index[1]], image_affine)
-    nibabel.save(chunk_part, image_chunk_path)
+def split_and_save(args):
+    shm_name_image_data, image_shape, image_affine, chunk_index, image_chunk_path = args
+    existing_shm = shared_memory.SharedMemory(name=shm_name_image_data)
+    np_array = np.ndarray(image_shape, dtype=np.float32, buffer=existing_shm.buf)
+    chunk = np_array[:, :, chunk_index[0]:chunk_index[1]]
+    chunk_image = nibabel.Nifti1Image(chunk, image_affine)
+    nibabel.save(chunk_image, image_chunk_path)
 
 
 def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False) -> None:
@@ -94,14 +91,16 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         save_dir = os.path.dirname(out_image_path)
         chunk_paths = [os.path.join(save_dir, filename) for filename in filenames]
 
-        chunk_data = []
-        for chunk_index, chunk_path in zip(chunk_indices, chunk_paths):
-            chunk_data.append({"chunk_index": chunk_index, "image_chunk_path": chunk_path})
+        shm = shared_memory.SharedMemory(create=True, size=image_data.nbytes)
+        np_array = np.ndarray(image_data.shape, dtype=np.float32, buffer=shm.buf)
+        np_array[:] = image_data[:]
 
-        shared_data = (image_data, image_affine)
+        pool = multiprocessing.Pool(processes=num_chunks)
+        pool.map(split_and_save, [(shm.name, image_data.shape, image_affine, chunk_index, chunk_path) 
+                                  for chunk_index, chunk_path in zip(chunk_indices, chunk_paths)])
+        pool.close()
+        pool.join()
 
-        with WorkerPool(n_jobs=num_chunks, shared_objects=shared_data) as pool:
-            pool.map(split_and_save, chunk_data)
     else:
         resampled_image_path = out_image_path
         nibabel.save(image, resampled_image_path)
