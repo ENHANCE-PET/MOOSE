@@ -3,7 +3,7 @@ from emoji import emojize
 
 setup(
     name='moosez',
-    version='2.1.33',
+    version='2.1.34',
     author=emojize('Lalith Kumar Shiyam Sundar 👨‍🔬 | Sebastian Gutschmayer 👨‍🔬'),
     author_email=emojize('Lalith.shiyamsundar@meduniwien.ac.at 📧 | Sebastian.Gutschmayer@meduniwien.ac.at 📧'),
     description=emojize('An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks 🧠 🏥'),
