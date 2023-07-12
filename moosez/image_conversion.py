@@ -122,14 +122,13 @@ def remove_accents(unicode_filename):
         return unicode_filename
 
 
-
 def is_dicom_file(filename):
     try:
         pydicom.dcmread(filename)
         return True
     except pydicom.errors.InvalidDicomError:
         return False
-        
+
 
 def create_dicom_lookup(dicom_dir):
     """Create a lookup dictionary from DICOM files.
@@ -194,7 +193,7 @@ def rename_nifti_files(nifti_dir, dicom_info):
         if filename.endswith('.nii'):
             # get the corresponding DICOM information
             modality = dicom_info.get(filename, '')
-            if modality: # only if the modality is found in the dicom_info dict
+            if modality:  # only if the modality is found in the dicom_info dict
                 # create the new filename
                 new_filename = f"{modality}_{filename}"
 
@@ -203,4 +202,3 @@ def rename_nifti_files(nifti_dir, dicom_info):
 
                 # delete the old name from the dictionary
                 del dicom_info[filename]
-

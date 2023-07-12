@@ -21,16 +21,17 @@ import os
 import shutil
 import subprocess
 
-import SimpleITK
 import nibabel as nib
 import numpy as np
 from halo import Halo
 from mpire import WorkerPool
+
 from moosez import constants
 from moosez import file_utilities
 from moosez import image_processing
-from moosez.image_processing import NiftiPreprocessor
 from moosez.image_processing import ImageResampler
+from moosez.image_processing import NiftiPreprocessor
+from moosez.resources import MODELS
 
 
 def map_model_name_to_task_number(model_name: str):
@@ -63,6 +64,8 @@ def map_model_name_to_task_number(model_name: str):
         return 211
     elif model_name == "preclin_mr_all":
         return 234
+    elif model_name == "clin_ct_body":
+        return 696
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
@@ -86,7 +89,7 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     resampled_image_affine = resampled_image.affine
 
     # Check if the model is a clinical model or preclinical model
-    trainer = 'nnUNetTrainer_2000epochs_NoMirroring' if model_name.startswith('clin') else 'nnUNetTrainerNoMirroring'
+    trainer = MODELS[model_name]["trainer"]
 
     # Construct the command
     command = f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres' \
@@ -279,7 +282,7 @@ def merge_image_parts(save_dir, original_image_shape, original_image_affine):
     merged_image = nib.Nifti1Image(merged_image_data, original_image_affine)
 
     # remove the split image parts
-    files_to_remove = glob.glob(os.path.join(save_dir, constants.CHUNK_PREFIX+"*"))
+    files_to_remove = glob.glob(os.path.join(save_dir, constants.CHUNK_PREFIX + "*"))
     for file in files_to_remove:
         os.remove(file)
 

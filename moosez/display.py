@@ -58,6 +58,7 @@ def expected_modality(model_name: str) -> dict:
         "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "FDG-PET", "Tissue of interest": "Tumor"},
         "clin_ct_all": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "All regions"},
         "clin_fdg_pt_ct_all": {"Imaging": "Clinical", "Modality": "FDG-PET-CT", "Tissue of interest": "All regions"},
+        "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body"},
         "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
     }
 

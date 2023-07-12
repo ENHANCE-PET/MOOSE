@@ -25,63 +25,80 @@ MODELS = {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Task201_CT_Bones.zip",
         "filename": "Task201_CT_Bones.zip",
         "directory": "Task201_CT_Bones",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_ribs": {
         "url": "https://example.com/bones_model.zip",
         "filename": "clin_ct_ribs_model.zip",
         "directory": "clin_ct_ribs_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_vertebrae": {
         "url": "https://example.com/vertebrae_model.zip",
         "filename": "clin_ct_vertebrae_model.zip",
         "directory": "clin_ct_vertebrae_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_muscles": {
         "url": "https://example.com/muscles_model.zip",
         "filename": "clin_ct_muscles_model.zip",
         "directory": "clin_ct_muscles_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_lungs": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_lungs_24062023.zip",
         "filename": "Dataset333_HMS3dlungs.zip",
         "directory": "Dataset333_HMS3dlungs",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_fat": {
         "url": "https://example.com/fat_model.zip",
         "filename": "clin_ct_fat_model.zip",
         "directory": "clin_ct_fat_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_vessels": {
         "url": "https://example.com/vessels_model.zip",
         "filename": "clin_ct_vessels_model.zip",
         "directory": "clin_ct_vessels_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_organs": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSEv2_bspline_organs23062023.zip",
         "filename": "Dataset123_Organs.zip",
         "directory": "Dataset123_Organs",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_pt_fdg_tumor": {
         "url": "https://example.com/fdg_tumor_model.zip",
         "filename": "clin_pt_fdg_tumor_model.zip",
         "directory": "clin_pt_fdg_tumor_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_ct_all": {
         "url": "https://example.com/ct_all_model.zip",
         "filename": "clin_ct_all_model.zip",
         "directory": "clin_ct_all_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_fdg_pt_ct_all": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/MOOSE-files-24062022.zip",
         "filename": "clin_fdg_pt_ct_all_model.zip",
         "directory": "clin_fdg_pt_ct_all_model",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "preclin_mr_all": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_mr_14062023.zip",
         "filename": "Dataset234_Preclin.zip",
         "directory": "Dataset234_Preclin",
+        "trainer": "nnUNetTrainerNoMirroring"
     },
-
+    "clin_ct_body": {
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Dataset696_BodyContour.zip",
+        "filename": "Dataset696_BodyContour.zip",
+        "directory": "Dataset696_BodyContour",
+        "trainer": "nnUNetTrainer"
+    },
 }
 
 
@@ -94,9 +111,11 @@ def check_cuda() -> str:
         str: The device to run predictions on, either "cpu" or "cuda".
     """
     if not torch.cuda.is_available():
-        print(f"{constants.ANSI_ORANGE}CUDA not available on this device. Predictions will be run on CPU.{constants.ANSI_RESET}")
+        print(
+            f"{constants.ANSI_ORANGE}CUDA not available on this device. Predictions will be run on CPU.{constants.ANSI_RESET}")
         return "cpu"
     else:
         device_count = torch.cuda.device_count()
-        print(f"{constants.ANSI_GREEN} CUDA is available on this device with {device_count} GPU(s). Predictions will be run on GPU.{constants.ANSI_RESET}")
+        print(
+            f"{constants.ANSI_GREEN} CUDA is available on this device with {device_count} GPU(s). Predictions will be run on GPU.{constants.ANSI_RESET}")
         return "cuda"

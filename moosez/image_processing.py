@@ -17,17 +17,18 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
+import multiprocessing
 import os
-import numpy as np
-import nibabel
+from multiprocessing import shared_memory
+
 import SimpleITK as sitk
+import dask.array as da
+import nibabel
+import numpy as np
+import pandas as pd
+
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
     CHUNK_FILENAMES
-import dask.array as da
-from mpire import WorkerPool
-import pandas as pd
-import multiprocessing
-from multiprocessing import shared_memory
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -96,7 +97,7 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         np_array[:] = image_data[:]
 
         pool = multiprocessing.Pool(processes=num_chunks)
-        pool.map(split_and_save, [(shm.name, image_data.shape, image_affine, chunk_index, chunk_path) 
+        pool.map(split_and_save, [(shm.name, image_data.shape, image_affine, chunk_index, chunk_path)
                                   for chunk_index, chunk_path in zip(chunk_indices, chunk_paths)])
         pool.close()
         pool.join()
@@ -108,8 +109,6 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
     else:
         resampled_image_path = out_image_path
         nibabel.save(image, resampled_image_path)
-
-
 
 
 class NiftiPreprocessor:

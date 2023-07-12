@@ -61,7 +61,6 @@ def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) ->
     return moose_compliant_subjects
 
 
-
 def check_file_for_nnunet_compatibility(filename: str, input_dir: str) -> None:
     """
     Checks if the file is nnUNet compatible. If not, compresses the file and renames it to include the required tag.
@@ -87,7 +86,6 @@ def check_file_for_nnunet_compatibility(filename: str, input_dir: str) -> None:
             # Rename the file to include the required tag
             new_filename_with_zeroes = new_filename.replace('.nii.gz', '_0000.nii.gz')
             os.rename(os.path.join(input_dir, new_filename), os.path.join(input_dir, new_filename_with_zeroes))
-
 
 
 def make_nnunet_compatible(input_dir: str) -> None:

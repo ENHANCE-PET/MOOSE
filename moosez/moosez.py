@@ -17,9 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import argparse
+import glob
 import logging
 import os
-import glob
 import time
 from datetime import datetime
 
@@ -32,11 +32,11 @@ from moosez import display
 from moosez import download
 from moosez import file_utilities
 from moosez import image_conversion
+from moosez import image_processing
 from moosez import input_validation
 from moosez import predict
 from moosez import resources
 from moosez.image_processing import ImageResampler
-from moosez import image_processing
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -63,6 +63,7 @@ def main():
                                  "clin_pt_fdg_tumor",
                                  "clin_ct_all",
                                  "clin_fdg_pt_ct_all",
+                                 "clin_ct_body",
                                  "preclin_mr_all"], required=True)
     args = parser.parse_args()
 
