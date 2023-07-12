@@ -18,8 +18,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-from mpire import WorkerPool
-
+import dask
 import SimpleITK as sitk
 import dask.array as da
 import nibabel
@@ -58,18 +57,22 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df.to_csv(out_csv)
 
 
-def split_and_save(shared_image: tuple, chunk_index: tuple, image_chunk_path: str) -> None:
+def split_and_save(image_chunk: da.Array, image_affine, image_chunk_path: str) -> None:
     """
-    Split the image into chunks and save each part.
+    Get a chunk of the image and save it.
 
     Args:
-        shared_image: (image_data, image_affine) tuple.
-        chunk_index: List of tuples containing start and end indices for each chunk.
+        image_chunk: Dask array chunk.
+        image_affine: Image affine transformation.
         image_chunk_path: The path to save the image chunk.
     """
-    image_data, image_affine = shared_image
-    chunk_part = nibabel.Nifti1Image(image_data[:, :, chunk_index[0]:chunk_index[1]], image_affine)
+    chunk_part = nibabel.Nifti1Image(image_chunk, image_affine)
     nibabel.save(chunk_part, image_chunk_path)
+
+
+@dask.delayed
+def delayed_split_and_save(image_chunk, image_affine, image_chunk_path):
+    split_and_save(image_chunk, image_affine, image_chunk_path)
 
 
 def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False) -> None:
@@ -82,7 +85,7 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         large_image: Indicates whether the image classifies as large or not.
     """
     image_shape = image.shape
-    image_data = image.get_fdata()
+    image_data = da.from_array(image.get_fdata(), chunks=(image_shape[0], image_shape[1], image_shape[2] // 3))
     image_affine = image.affine
 
     if large_image:
@@ -96,15 +99,12 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         save_dir = os.path.dirname(out_image_path)
         chunk_paths = [os.path.join(save_dir, filename) for filename in filenames]
 
-        chunk_data = []
-        for chunk_index, chunk_path in zip(chunk_indices, chunk_paths):
-            chunk_data.append({"chunk_index": chunk_index, "image_chunk_path": chunk_path})
+        tasks = []
+        for i, chunk_path in enumerate(chunk_paths):
+            tasks.append(delayed_split_and_save(image_data[:, :, chunk_indices[i][0]:chunk_indices[i][1]].compute(),
+                                                image_affine, chunk_path))
 
-        shared_data = (image_data, image_affine)
-
-        # Replace the parallel processing with a basic loop
-        for chunk in chunk_data:
-            split_and_save(shared_data, chunk['chunk_index'], chunk['image_chunk_path'])
+        dask.compute(*tasks)
 
     else:
         resampled_image_path = out_image_path
