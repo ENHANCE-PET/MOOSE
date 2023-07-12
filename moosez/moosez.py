@@ -21,6 +21,7 @@ import glob
 import logging
 import os
 import time
+import emoji
 from datetime import datetime
 
 import SimpleITK
@@ -86,7 +87,7 @@ def main():
     logging.info('- Model name: ' + model_name)
     logging.info(' ')
     print(' ')
-    print(f'{constants.ANSI_VIOLET} NOTE:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
     print(' ')
     modalities = display.expectations(model_name)
     accelerator = resources.check_cuda()
@@ -96,7 +97,7 @@ def main():
     # ----------------------------------
 
     print('')
-    print(f'{constants.ANSI_VIOLET} MODEL DOWNLOAD:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":arrow_down:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     print('')
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
@@ -107,7 +108,7 @@ def main():
     # ----------------------------------
 
     print('')
-    print(f'{constants.ANSI_VIOLET} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":white_check_mark:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' STANDARDIZING INPUT DATA TO NIFTI:')
