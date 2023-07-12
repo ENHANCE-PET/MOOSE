@@ -93,6 +93,9 @@ ORGAN_INDICES = {
         3: "lung_upper_lobe_right",
         4: "lung_middle_lobe_right",
         5: "lung_lower_lobe_right"
+    },
+    "clin_ct_body": {
+        1: "whole-body"
     }
     # More index-to-name dictionaries for other models...
 }
