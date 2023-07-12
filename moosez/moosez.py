@@ -138,9 +138,10 @@ def main():
     spinner = Halo(text=' Initiating', spinner='dots')
     spinner.start()
     start_total_time = time.time()
-    for subject in moose_compliant_subjects:
+    num_subjects = len(moose_compliant_subjects)
+    for i, subject in enumerate(moose_compliant_subjects):
         # SETTING UP DIRECTORY STRUCTURE
-        spinner.text = f' Setting up directory structure for {os.path.basename(subject)}...'
+        spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {os.path.basename(subject)}...'
         logging.info(' ')
         logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:'
                      f'{constants.ANSI_RESET}')
@@ -150,11 +151,11 @@ def main():
         logging.info(f" MOOSE directory for subject {os.path.basename(subject)} at: {moose_dir}")
 
         # ORGANISE DATA ACCORDING TO MODALITY
-        spinner.text = f' Organising data according to modality for {os.path.basename(subject)}...'
+        spinner.text = f'[{i + 1}/{num_subjects}] Organising data according to modality for {os.path.basename(subject)}...'
         file_utilities.organise_files_by_modality([subject], modalities, moose_dir)
 
         # PREPARE THE DATA FOR PREDICTION
-        spinner.text = f' Preparing data for prediction for {os.path.basename(subject)}...'
+        spinner.text = f'[{i + 1}/{num_subjects}] Preparing data for prediction for {os.path.basename(subject)}...'
         for input_dir in input_dirs:
             input_validation.make_nnunet_compatible(input_dir)
         logging.info(f" {constants.ANSI_GREEN}Data preparation complete using {model_name} for subject "
@@ -165,7 +166,7 @@ def main():
         logging.info(' ')
         logging.info(' RUNNING PREDICTION:')
         logging.info(' ')
-        spinner.text = f' Running prediction for {os.path.basename(subject)} using {model_name}...'
+        spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_name}...'
 
         for input_dir in input_dirs:
             predict.predict(model_name, input_dir, output_dir, accelerator)
@@ -173,17 +174,18 @@ def main():
 
         end_time = time.time()
         elapsed_time = end_time - start_time
-        spinner.text = f' {constants.ANSI_GREEN}Prediction done for {os.path.basename(subject)} using {model_name}!' \
+        spinner.text = f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {model_name}!' \
                        f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}'
         time.sleep(3)
-
+        logging.info(
+            f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {model_name}!' f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}')
         # ----------------------------------
         # EXTRACT PET ACTIVITY
         # ----------------------------------
         pet_file = file_utilities.find_pet_file(subject)
         if pet_file is not None:
             pet_image = SimpleITK.ReadImage(pet_file)
-            spinner.text = f' Extracting PET activity for {os.path.basename(subject)}...'
+            spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {os.path.basename(subject)}...'
             multilabel_file = glob.glob(os.path.join(output_dir, constants.MULTILABEL_PREFIX + '*nii*'))[0]
             multilabel_image = SimpleITK.ReadImage(multilabel_file)
             resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
@@ -191,7 +193,7 @@ def main():
                                                                          is_label_image=True)
             out_csv = os.path.join(stats_dir, os.path.basename(subject) + '_pet_activity.csv')
             image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model_name, out_csv)
-            spinner.text = f'{constants.ANSI_GREEN} PET activity extracted for {os.path.basename(subject)}! ' \
+            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {os.path.basename(subject)}! ' \
                            f'{constants.ANSI_RESET}'
             time.sleep(3)
 
