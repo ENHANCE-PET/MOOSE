@@ -1,17 +1,17 @@
 from setuptools import setup, find_packages
-
+from emoji import emojize
 
 setup(
     name='moosez',
     version='2.1.33',
-    author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer',
-    author_email='Lalith.shiyamsundar@meduniwien.ac.at | Sebastian.Gutschmayer@meduniwien.ac.at',
-    description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
+    author=emojize('Lalith Kumar Shiyam Sundar 👨‍🔬 | Sebastian Gutschmayer 👨‍🔬'),
+    author_email=emojize('Lalith.shiyamsundar@meduniwien.ac.at 📧 | Sebastian.Gutschmayer@meduniwien.ac.at 📧'),
+    description=emojize('An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks 🧠 🏥'),
     python_requires='>=3.9',
-    long_description='mooseZ is an AI-inference engine based on nnUNet, designed for 3D clinical and preclinical'
+    long_description=emojize('mooseZ is an AI-inference engine based on nnUNet, designed for 3D clinical and preclinical'
                      ' whole-body segmentation tasks. It serves models tailored towards different modalities such'
                      ' as PET, CT, and MR. mooseZ provides fast and accurate segmentation results, making it a '
-                     'reliable tool for medical imaging applications.',
+                     'reliable tool for medical imaging applications. 🌐'),
     url='https://github.com/QIMP-Team/mooseZ',
     license='Apache 2.0',
     classifiers=[
@@ -51,7 +51,8 @@ setup(
         'dask',
         'rich',
         'pandas',
-        'dicom2nifti~=2.4.8'
+        'dicom2nifti~=2.4.8',
+        'emoji',
     ],
     entry_points={
         'console_scripts': [
