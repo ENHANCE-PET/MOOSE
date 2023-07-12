@@ -121,7 +121,7 @@ def organise_files_by_modality(moose_compliant_subjects: list, modalities: list,
 
 def find_pet_file(folder):
     # Searching for files with 'PET' in their name and ending with either .nii or .nii.gz
-    pet_files = glob.glob(os.path.join(folder, '*PET*.nii*'))
+    pet_files = glob.glob(os.path.join(folder, 'PET*.nii*'))
 
     if len(pet_files) == 1:
         return pet_files[0]
