@@ -58,7 +58,7 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df.to_csv(out_csv)
 
 
-def split_and_save(shared_image: tuple, chunk_index: list, image_chunk_path: str) -> None:
+def split_and_save(shared_image: tuple, chunk_index: tuple, image_chunk_path: str) -> None:
     """
     Split the image into chunks and save each part.
 
@@ -102,11 +102,14 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
 
         shared_data = (image_data, image_affine)
 
-        with WorkerPool(n_jobs=num_chunks, shared_objects=shared_data) as pool:
-            pool.map(split_and_save, chunk_data)
+        # Replace the parallel processing with a basic loop
+        for chunk in chunk_data:
+            split_and_save(shared_data, chunk['chunk_index'], chunk['image_chunk_path'])
+
     else:
         resampled_image_path = out_image_path
         nibabel.save(image, resampled_image_path)
+
 
 class NiftiPreprocessor:
     """
