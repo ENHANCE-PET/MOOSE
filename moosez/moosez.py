@@ -97,7 +97,7 @@ def main():
     # ----------------------------------
 
     print('')
-    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":arrow_down:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     print('')
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
@@ -108,7 +108,7 @@ def main():
     # ----------------------------------
 
     print('')
-    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":white_check_mark:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":magnifying_glass_tilted_left:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' STANDARDIZING INPUT DATA TO NIFTI:')
@@ -130,7 +130,7 @@ def main():
     # -------------------------------------------------
 
     print('')
-    print(f'{constants.ANSI_VIOLET} PERFORMING PREDICTION:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":crystal_ball:")} PREDICT:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' PERFORMING PREDICTION:')

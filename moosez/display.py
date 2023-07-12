@@ -18,7 +18,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import logging
-
+import emoji
 import pyfiglet
 
 from moosez import constants
@@ -76,7 +76,7 @@ def citation():
         Display manuscript citation
         :return:
         """
-    print(f"{constants.ANSI_VIOLET} CITATION:{constants.ANSI_RESET}")
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{constants.ANSI_RESET}')
     print(" ")
     print(
         " Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT "
