@@ -66,6 +66,7 @@ def split_and_save(args):
     chunk = np_array[:, :, chunk_index[0]:chunk_index[1]]
     chunk_image = nibabel.Nifti1Image(chunk, image_affine)
     nibabel.save(chunk_image, image_chunk_path)
+    existing_shm.close()  # Close shared memory after use
 
 
 def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False) -> None:
