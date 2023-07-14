@@ -70,10 +70,10 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
     },
     "clin_pt_fdg_tumor": {
-        "url": "https://example.com/fdg_tumor_model.zip",
-        "filename": "clin_pt_fdg_tumor_model.zip",
-        "directory": "clin_pt_fdg_tumor_model",
-        "trainer": "nnUNetTrainer_2000epochs_NoMirroring"
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Dataset789_Tumors.zip",
+        "filename": "Dataset789_Tumors.zip",
+        "directory": "Dataset789_Tumors",
+        "trainer": "nnUNetTrainerDA5"
     },
     "clin_ct_all": {
         "url": "https://example.com/ct_all_model.zip",

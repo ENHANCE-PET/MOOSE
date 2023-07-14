@@ -24,7 +24,7 @@ project_root = file_utilities.get_virtual_env_root()
 
 NNUNET_RESULTS_FOLDER = os.path.join(project_root, 'models', 'nnunet_trained_models')
 MOOSEZ_MODEL_FOLDER = os.path.join(NNUNET_RESULTS_FOLDER, 'nnUNet', '3d_fullres')
-ALLOWED_MODALITIES = ['CT', 'FDG_PT', 'MR']
+ALLOWED_MODALITIES = ['CT', 'PT', 'MR']
 TEMP_FOLDER = 'temp'
 
 # COLOR CODES
@@ -96,6 +96,26 @@ ORGAN_INDICES = {
     },
     "clin_ct_body": {
         1: "whole-body"
+    },
+    "clin_pt_fdg_tumor": {
+        1: "spleen",
+        2: "kidney_right",
+        3: "kidney_left",
+        4: "gallbladder",
+        5: "liver",
+        6: "stomach",
+        7: "aorta",
+        8: "inferior_vena_cava",
+        9: "portal_vein_and_splenic_vein",
+        10: "pancreas",
+        11: "adrenal_gland_right",
+        12: "adrenal_gland_left",
+        13: "lung_upper_lobe_left",
+        14: "lung_lower_lobe_left",
+        15: "lung_upper_lobe_right",
+        16: "lung_middle_lobe_right",
+        17: "lung_lower_lobe_right",
+        18: "Tumor"
     }
     # More index-to-name dictionaries for other models...
 }

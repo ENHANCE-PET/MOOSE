@@ -18,6 +18,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import logging
+
 import emoji
 import pyfiglet
 
@@ -55,7 +56,7 @@ def expected_modality(model_name: str) -> dict:
         "clin_ct_fat": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Fat"},
         "clin_ct_vessels": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vessels"},
         "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
-        "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "FDG-PET", "Tissue of interest": "Tumor"},
+        "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "PET", "Tissue of interest": "Tumor"},
         "clin_ct_all": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "All regions"},
         "clin_fdg_pt_ct_all": {"Imaging": "Clinical", "Modality": "FDG-PET-CT", "Tissue of interest": "All regions"},
         "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body"},
