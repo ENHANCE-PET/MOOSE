@@ -105,7 +105,7 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
 
     if len(file_utilities.get_files(output_dir, '.nii.gz')) > 1:
         merge_image_parts(output_dir, resampled_image_shape, resampled_image_affine)
-    postprocess(original_image_files[0], output_dir)
+    postprocess(original_image_files[0], output_dir, model_name)
 
     shutil.rmtree(temp_input_dir)
 
@@ -135,24 +135,33 @@ def preprocess(original_image_directory: str, model_name: str):
     return temp_folder, resampled_image, moose_image_object
 
 
-def postprocess(original_image, output_dir):
+def postprocess(original_image, output_dir, model_name):
     """
     Postprocesses the predicted images.
     :param original_image: The path to the original image.
     :param output_dir: The output directory containing the label image.
+    :param model_name: The name of the model.
     :return: None
     """
     # [1] Resample the predicted image to the original image's voxel spacing
     predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
-    multilabel_image = os.path.join(output_dir, constants.MULTILABEL_PREFIX + os.path.basename(original_image))
     original_header = nib.load(original_image).header
     native_spacing = original_header.get_zooms()
     native_size = original_header.get_data_shape()
     resampled_prediction = ImageResampler.resample_segmentations(input_image_path=predicted_image,
                                                                  desired_spacing=native_spacing,
                                                                  desired_size=native_size)
+    multilabel_image = os.path.join(output_dir, constants.MULTILABEL_PREFIX + os.path.basename(original_image))
     image_processing.write_image(resampled_prediction, multilabel_image, False)
+    # if model name has tumor in it, run logic below
+    if 'tumor' in model_name:
+        multilabel_image = os.path.join(output_dir, 'TUMOR-'+constants.MULTILABEL_PREFIX + os.path.basename(original_image))
+        resampled_prediction = nib.Nifti1Image((resampled_prediction.get_fdata() == constants.TUMOR_LABEL).
+                                               astype(np.uint8), resampled_prediction.affine)
+        image_processing.write_image(resampled_prediction, multilabel_image, False)
     os.remove(predicted_image)
+
+
 
 
 def count_output_files(output_dir):

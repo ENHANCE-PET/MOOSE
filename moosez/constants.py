@@ -52,6 +52,10 @@ MARGIN_PADDING = 20
 INTERPOLATION = 'bspline'
 CHUNK_THRESHOLD = 200
 
+# POSTPROCESSING PARAMETERS
+
+TUMOR_LABEL = 12
+
 # FILE NAMES PREFIX
 
 ORGANS_MULTILABEL_PREFIX = 'Organs-Multilabel-'
@@ -98,24 +102,7 @@ ORGAN_INDICES = {
         1: "whole-body"
     },
     "clin_pt_fdg_tumor": {
-        1: "spleen",
-        2: "kidney_right",
-        3: "kidney_left",
-        4: "gallbladder",
-        5: "liver",
-        6: "stomach",
-        7: "aorta",
-        8: "inferior_vena_cava",
-        9: "portal_vein_and_splenic_vein",
-        10: "pancreas",
-        11: "adrenal_gland_right",
-        12: "adrenal_gland_left",
-        13: "lung_upper_lobe_left",
-        14: "lung_lower_lobe_left",
-        15: "lung_upper_lobe_right",
-        16: "lung_middle_lobe_right",
-        17: "lung_lower_lobe_right",
-        18: "Tumor"
+        1: "Tumor"
     }
     # More index-to-name dictionaries for other models...
 }
