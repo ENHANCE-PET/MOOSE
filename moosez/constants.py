@@ -94,7 +94,19 @@ ORGAN_INDICES = {
         1: "whole-body"
     },
     "clin_pt_fdg_tumor": {
-        1: "Tumor"
+        "spleen": 1,
+        "kidneys": 2,
+        "gallbladder": 3,
+        "liver": 4,
+        "stomach": 5,
+        "aorta": 6,
+        "inferior_vena_cava": 7,
+        "portal_vein_and_splenic_vein": 8,
+        "pancreas": 9,
+        "adrenal_glands": 10,
+        "lungs": 11,
+        "tumor": 12
     }
     # More index-to-name dictionaries for other models...
 }
+
