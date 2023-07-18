@@ -38,6 +38,7 @@ from moosez import input_validation
 from moosez import predict
 from moosez import resources
 from moosez.image_processing import ImageResampler
+from moosez.resources import MODELS
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -187,9 +188,7 @@ def main():
         if pet_file is not None:
             pet_image = SimpleITK.ReadImage(pet_file)
             spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {os.path.basename(subject)}...'
-            multilabel_file = glob.glob(os.path.join(output_dir, constants.MULTILABEL_PREFIX + '*nii*'))[0]
-            if 'tumor' in model_name:
-                multilabel_file = glob.glob(os.path.join(output_dir, 'TUMOR' + '*nii*'))[0]
+            multilabel_file = glob.glob(os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
             multilabel_image = SimpleITK.ReadImage(multilabel_file)
             resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
                                                                          moving_image=multilabel_image,
