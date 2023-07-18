@@ -130,8 +130,13 @@ def preprocess(original_image_directory: str, model_name: str):
     resampled_image = ImageResampler.resample_image(moose_img_object=moose_image_object,
                                                     interpolation=constants.INTERPOLATION,
                                                     desired_spacing=desired_spacing)
-    image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
-                                 moose_image_object.is_large)
+    # if model name has tumor in it, run logic below
+    if "tumor" in model_name:
+        image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
+                                     False, False)
+    else:
+        image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
+                                     moose_image_object.is_large, False)
     return temp_folder, resampled_image, moose_image_object
 
 
@@ -153,7 +158,7 @@ def postprocess(original_image, output_dir, model_name):
                                                                  desired_size=native_size)
     multilabel_image = os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] +
                                     os.path.basename(original_image))
-    image_processing.write_image(resampled_prediction, multilabel_image, False)
+    image_processing.write_image(resampled_prediction, multilabel_image, False, True)
     os.remove(predicted_image)
 
 

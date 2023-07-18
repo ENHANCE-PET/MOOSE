@@ -75,7 +75,7 @@ def delayed_split_and_save(image_chunk, image_affine, image_chunk_path):
     split_and_save(image_chunk, image_affine, image_chunk_path)
 
 
-def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False) -> None:
+def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False, is_label: bool = False) -> None:
     """
     Writes an image either as a single file or multiple files depending on the image size.
 
@@ -83,6 +83,7 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         image: The image to save.
         out_image_path: The path to save the image.
         large_image: Indicates whether the image classifies as large or not.
+        is_label: Indicates whether the image is a label or not.
     """
     image_shape = image.shape
     image_data = da.from_array(image.get_fdata(), chunks=(image_shape[0], image_shape[1], image_shape[2] // 3))
@@ -107,9 +108,13 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         dask.compute(*tasks)
 
     else:
-        resampled_image_path = out_image_path
-        image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine)
-        nibabel.save(image_as_uint8, resampled_image_path)
+        if is_label:
+            resampled_image_path = out_image_path
+            image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine)
+            nibabel.save(image_as_uint8, resampled_image_path)
+        else:
+            resampled_image_path = out_image_path
+            nibabel.save(image, resampled_image_path)
 
 
 class NiftiPreprocessor:
