@@ -158,7 +158,16 @@ def postprocess(original_image, output_dir, model_name):
                                                                  desired_size=native_size)
     multilabel_image = os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] +
                                     os.path.basename(original_image))
-    image_processing.write_image(resampled_prediction, multilabel_image, False, True)
+    # if model_name has tumor in it, run logic below
+    if "tumor" in model_name:
+        resampled_prediction_data = resampled_prediction.get_fdata()
+        resampled_prediction_data[resampled_prediction_data != constants.TUMOR_LABEL] = 0
+        resampled_prediction_data[resampled_prediction_data == constants.TUMOR_LABEL] = 1
+        resampled_prediction_new = nib.Nifti1Image(resampled_prediction_data, resampled_prediction.affine,
+                                                   resampled_prediction.header)
+        image_processing.write_image(resampled_prediction_new, multilabel_image, False, True)
+    else:
+        image_processing.write_image(resampled_prediction, multilabel_image, False, True)
     os.remove(predicted_image)
 
 
