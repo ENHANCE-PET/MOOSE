@@ -50,21 +50,31 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     :param input_path: str, Directory OR filename to convert to nii.gz
     :param output_directory: str, optional output directory to write the image to.
     """
+
+    if not os.path.exists(input_path):
+        print(f"Input path {input_path} does not exist.")
+        return
+
+    # Processing a directory
     if os.path.isdir(input_path):
         dicom_info = create_dicom_lookup(input_path)
         nifti_dir = dcm2niix(input_path)
         rename_nifti_files(nifti_dir, dicom_info)
         return
-    elif os.path.isfile(input_path):
-        if input_path.endswith('.nii.gz') or input_path.endswith('.nii'):
+
+    # Processing a file
+    if os.path.isfile(input_path):
+        # Ignore hidden or already processed files
+        _, filename = os.path.split(input_path)
+        if filename.startswith('.') or filename.endswith(('.nii.gz', '.nii')):
             return
-        output_image = SimpleITK.ReadImage(input_path)
-        output_image_basename = f"{os.path.splitext(os.path.basename(input_path))[0]}.nii"
-    else:
-        return
+        else:
+            output_image = SimpleITK.ReadImage(input_path)
+            output_image_basename = f"{os.path.splitext(filename)[0]}.nii"
 
     if output_directory is None:
         output_directory = os.path.dirname(input_path)
+
     output_image_path = os.path.join(output_directory, output_image_basename)
     SimpleITK.WriteImage(output_image, output_image_path)
 
