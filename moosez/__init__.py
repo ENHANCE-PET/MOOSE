@@ -7,3 +7,4 @@ from . import input_validation
 from . import moosez
 from . import predict
 from . import resources
+from .moosez import moose

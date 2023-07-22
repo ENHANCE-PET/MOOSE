@@ -109,7 +109,8 @@ def main():
     # ----------------------------------
 
     print('')
-    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":magnifying_glass_tilted_left:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
+    print(
+        f'{constants.ANSI_VIOLET} {emoji.emojize(":magnifying_glass_tilted_left:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' STANDARDIZING INPUT DATA TO NIFTI:')
@@ -206,6 +207,10 @@ def main():
     spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
                     f'{len(moose_compliant_subjects)} datasets: {round(total_elapsed_time, 1)} min'
                     f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
+
+
+def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str):
+    predict.predict(model_name, input_dir, output_dir, accelerator)
 
 
 if __name__ == '__main__':
