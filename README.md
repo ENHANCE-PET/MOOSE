@@ -351,12 +351,13 @@ This research was supported by:
 - [x] Create a working `moose_uninstaller.sh` [@LalithShiyam](https://github.com/LalithShiyam)
 - [x] Create a docker image (`moose_16072022.tar`) for the current version of moose v0.1.0 [@LalithShiyam](https://github.com/LalithShiyam)
 
-**MOOSEv0.2.0: Feb 25, 2023 release candidate** 
+**MOOSEv2.0: Sep 9, 2023 release candidate** 
 
-- [ ] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)[@LalithShiyam](https://github.com/LalithShiyam)
-- [ ] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)[@LalithShiyam](https://github.com/LalithShiyam)
-- [ ] Prune/Compress the models for faster inference: (PRs welcome)[@davidiommi](https://github.com/davidiommi) 
-- [ ] Reduce memory requirement (No more 256 GB, ideally 32 GB) for MOOSE during inference: (PRs welcome) [@dhaberl](https://github.com/dhaberl)[@Keyn34](https://github.com/Keyn34)
+- [x] Enable `moose` to accept non-dicom inputs (e.g. nifti/analyze/mha)[@LalithShiyam](https://github.com/LalithShiyam)
+- [x] Allow users to select the choose segmentation compartments (Organs, Bones, Fat-muscle, Brain, Psoas)[@LalithShiyam](https://github.com/LalithShiyam)
+- [x] Prune/Compress the models for faster inference: (PRs welcome)[@davidiommi](https://github.com/davidiommi) 
+- [x] Reduce memory requirement (No more 256 GB, ideally 32 GB) for MOOSE during inference: (PRs welcome) [@dhaberl](https://github.com/dhaberl)[@Keyn34](https://github.com/Keyn34)
+- [x] Make moosev2 as a pip package compatible with all OS.
 
 ## 🦌 MOOSE: An ENHANCE-PET Project
 
