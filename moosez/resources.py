@@ -120,7 +120,7 @@ def expected_modality(model_name: str) -> dict:
     return {"Error": "Requested model is not available. Please check the model name."}
 
 
-# This function maps the model name to the task number.
+# This function maps the model name to the task number. This is the number that comes after DatasetXXXX.
 # It checks for known model names and returns the associated task number, this is ABSOLUTELY NEEDED FOR NNUNETV2
 # If the provided model name doesn't match any known model, it raises an exception.
 #
