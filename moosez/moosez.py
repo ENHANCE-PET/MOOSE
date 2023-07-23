@@ -210,7 +210,15 @@ def main():
 
 
 def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str):
+    model_path = constants.NNUNET_RESULTS_FOLDER
+    file_utilities.create_directory(model_path)
+    download.model(model_name, model_path)
+    input_validation.make_nnunet_compatible(input_dir)
+    spinner = Halo(text=f'{constants.ANSI_VIOLET} Running prediction...{constants.ANSI_RESET}',
+                   spinner='dots')
+    spinner.start()
     predict.predict(model_name, input_dir, output_dir, accelerator)
+    spinner.succeed(f'{constants.ANSI_GREEN}Prediction done! {constants.ANSI_RESET}')
 
 
 if __name__ == '__main__':
