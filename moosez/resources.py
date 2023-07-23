@@ -90,10 +90,10 @@ MODELS = {
 }
 
 
-# This function returns a dictionary indicating the expected modality for a given model.
-# The returned dictionary includes details about the imaging technique, the type of tissue to be segmented, and
-# the model name.
-# If the model is not found, it logs an error message and returns an error message.
+# This function returns a dictionary indicating the expected modality for a given model_name, the imaging technique,
+# the type of tissue to be segmented. The model_name should be the same as the unique identifier mentioned in the
+# MODELS dictionary above and the AVAILABLE_MODELS list.
+# If the model_name is not found, it logs an error message and returns an error message.
 #
 # If you add your own model, update this function to return the expected modality dictionary for your model.
 
@@ -120,11 +120,11 @@ def expected_modality(model_name: str) -> dict:
     return {"Error": "Requested model is not available. Please check the model name."}
 
 
-# This function maps the model name to the task number. This is the number that comes after DatasetXXXX.
-# If your model folder is Dataset123, then the task number is 123.
-# It checks for known model names and returns the associated task number, this is ABSOLUTELY NEEDED FOR NNUNETV2
-# If the provided model name doesn't match any known model, it raises an exception.
-#
+# This function maps the model name to the task number. This is the number that comes after Dataset in DatasetXXXX,
+# after nnunetv2 training. If your model folder is Dataset123, then the task number is 123.
+# It checks for known model names and returns the associated task number, this is ABSOLUTELY NEEDED for the moosez to
+# work. If the provided model name doesn't match any known model, it raises an exception.
+
 # When adding your own model, update this function to return the task number associated with your model.
 
 def map_model_name_to_task_number(model_name: str):
