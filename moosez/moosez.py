@@ -38,7 +38,7 @@ from moosez import input_validation
 from moosez import predict
 from moosez import resources
 from moosez.image_processing import ImageResampler
-from moosez.resources import MODELS
+from moosez.resources import MODELS, AVAILABLE_MODELS
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -54,19 +54,7 @@ def main():
                         required=True)
 
     parser.add_argument("-m", "--model_name", type=str, help="Name of the model to use for segmentation",
-                        choices=["clin_ct_bones",
-                                 "clin_ct_ribs",
-                                 "clin_ct_vertebrae",
-                                 "clin_ct_muscles",
-                                 "clin_ct_lungs",
-                                 "clin_ct_fat",
-                                 "clin_ct_vessels",
-                                 "clin_ct_organs",
-                                 "clin_pt_fdg_tumor",
-                                 "clin_ct_all",
-                                 "clin_fdg_pt_ct_all",
-                                 "clin_ct_body",
-                                 "preclin_mr_all"], required=True)
+                        choices=AVAILABLE_MODELS, required=True)
     args = parser.parse_args()
 
     parent_folder = os.path.abspath(args.main_directory)

@@ -31,43 +31,7 @@ from moosez import file_utilities
 from moosez import image_processing
 from moosez.image_processing import ImageResampler
 from moosez.image_processing import NiftiPreprocessor
-from moosez.resources import MODELS
-
-
-def map_model_name_to_task_number(model_name: str):
-    """
-    Maps the model name to the task number.
-    :param model_name: The name of the model.
-    :return: The task number.
-    """
-    if model_name == "clin_ct_bones":
-        return 201
-    elif model_name == "clin_ct_ribs":
-        return 202
-    elif model_name == "clin_ct_vertebrae":
-        return 203
-    elif model_name == "clin_ct_muscles":
-        return 204
-    elif model_name == "clin_ct_lungs":
-        return 333
-    elif model_name == "clin_ct_fat":
-        return 206
-    elif model_name == "clin_ct_vessels":
-        return 207
-    elif model_name == "clin_ct_organs":
-        return 123
-    elif model_name == "clin_pt_fdg_tumor":
-        return 789
-    elif model_name == "clin_ct_all":
-        return 210
-    elif model_name == "clin_fdg_pt_ct_all":
-        return 211
-    elif model_name == "preclin_mr_all":
-        return 234
-    elif model_name == "clin_ct_body":
-        return 696
-    else:
-        raise Exception(f"Error: The model name '{model_name}' is not valid.")
+from moosez.resources import MODELS, map_model_name_to_task_number
 
 
 def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):

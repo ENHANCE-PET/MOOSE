@@ -23,7 +23,7 @@ import emoji
 import pyfiglet
 
 from moosez import constants
-
+from moosez import resources
 
 def logo():
     """
@@ -39,38 +39,6 @@ def logo():
     print(result)
     print(text)
     print(' ')
-
-
-def expected_modality(model_name: str) -> dict:
-    """
-    Display expected modality for the model.
-    :param model_name: The name of the model.
-    :return: The expected modality for the model.
-    """
-    models = {
-        "clin_ct_bones": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Bones"},
-        "clin_ct_ribs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Ribs"},
-        "clin_ct_vertebrae": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vertebral bodies"},
-        "clin_ct_muscles": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Muscles"},
-        "clin_ct_lungs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Lungs"},
-        "clin_ct_fat": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Fat"},
-        "clin_ct_vessels": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vessels"},
-        "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
-        "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "PET", "Tissue of interest": "Tumor"},
-        "clin_ct_all": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "All regions"},
-        "clin_fdg_pt_ct_all": {"Imaging": "Clinical", "Modality": "FDG-PET-CT", "Tissue of interest": "All regions"},
-        "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body"},
-        "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
-    }
-
-    if model_name in models:
-        model = models[model_name]
-        model["Model name"] = model_name
-        return model
-
-    logging.error(" Requested model is not available. Please check the model name.")
-    return {"Error": "Requested model is not available. Please check the model name."}
-
 
 def citation():
     """
@@ -91,7 +59,7 @@ def expectations(model_name: str) -> list:
     :param model_name: The name of the model.
     :return: list of modalities
     """
-    model_info = expected_modality(model_name)
+    model_info = resources.expected_modality(model_name)
     modality = model_info['Modality']
 
     # check for special case where 'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'
