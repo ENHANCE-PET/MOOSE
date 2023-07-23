@@ -121,6 +121,7 @@ def expected_modality(model_name: str) -> dict:
 
 
 # This function maps the model name to the task number. This is the number that comes after DatasetXXXX.
+# If your model folder is Dataset123, then the task number is 123.
 # It checks for known model names and returns the associated task number, this is ABSOLUTELY NEEDED FOR NNUNETV2
 # If the provided model name doesn't match any known model, it raises an exception.
 #
