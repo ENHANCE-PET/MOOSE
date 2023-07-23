@@ -195,7 +195,7 @@ Want to power-up your medical image segmentation tasks? :zap: Join the MooseZ co
 By adding your custom models to MooseZ, you can enjoy:
 
 - :fast_forward: **Increased Speed** - MooseZ is optimized for fast performance. Use it to get your results faster!
-- :floppy_disk: **Reduced Memory** - MooseZ is designed to be efficient and lean, so it uses less memory compared to the native `nnUNetv2`!
+- :floppy_disk: **Reduced Memory** - MooseZ is designed to be efficient and lean, so it uses less memory!
 
 So why wait? Make your models fly with MooseZ :airplane:
 
