@@ -133,10 +133,14 @@ Then, call the `moose` function to run predictions. The `moose` function takes f
 Here's an example of how to call the `moose` function:
 
  ```python
- moose("model_name", "input_dir", "output_dir", "accelerator")
+ model_name = 'clin_ct_organs'
+ input_dir = '/home/Documents/your_project/data/input'
+ output_dir = '/home/Documents/your_project/data/output'
+ accelerator = 'cuda'
+ moose(model_name, input_dir, output_dir, accelerator)
  ```
 
-Remember to replace `"model_name"`, `"input_dir"`, `"output_dir"`, and `"accelerator"` with the actual values you want to use.
+Remember to replace `model_name`, `input_dir`, `output_dir`, and `accelerator` with the actual values you want to use.
 
 That's it! MOOSE 2.0 will now process the images in the input directory and save the output in the output directory. Enjoy using MOOSE 2.0 as a library in your Python projects!
 
