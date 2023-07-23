@@ -217,7 +217,7 @@ So why wait? Make your models fly with MooseZ :airplane:
 
 That's it! You've successfully contributed your own model to the MooseZ community! :confetti_ball:
 
-With your contribution, MooseZ becomes a stronger and more robust tool for medical image segmentation! :muscle:
+With your contribution 🙋, MooseZ becomes a stronger and more robust tool for medical image segmentation! :muscle:
 
 
 ## A Note on QIMP Python Packages: The 'Z' Factor 📚🚀
