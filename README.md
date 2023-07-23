@@ -146,6 +146,8 @@ That's it! MOOSE 2.0 will now process the images in the input directory and save
 
 ## Directory Structure and Naming Conventions for MOOSE 📂🏷️
 
+### Applicable only for batch mode ⚠️
+
 Using MOOSE 2.0 optimally requires your data to be structured according to specific conventions. MOOSE 2.0 supports both DICOM and NIFTI formats. For DICOM files, MOOSE infers the modality from the DICOM tags and checks if the given modality is suitable for the chosen segmentation model. However, for NIFTI files, users need to ensure that the files are named with the correct modality as a suffix.
 
 ### Required Directory Structure 🌳
