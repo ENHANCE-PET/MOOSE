@@ -20,11 +20,11 @@ import os
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import requests
-from rich.progress import Progress
-
+from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
+from rich.console import Console
 from moosez import constants
 from moosez import resources
-
+import zipfile
 
 def binary(system_info, url):
     """
@@ -53,24 +53,48 @@ def model(model_name, model_path):
 
     if not os.path.exists(directory):
         logging.info(f" Downloading {directory}")
-        # show progress using rich
+
+        # Show progress using rich
         response = requests.get(url, stream=True)
         total_size = int(response.headers.get("Content-Length", 0))
         chunk_size = 1024 * 10
 
-        with Progress() as progress:
+        console = Console()
+        progress = Progress(
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(bar_width=None),
+            "[progress.percentage]{task.percentage:>3.0f}%",
+            "•",
+            FileSizeColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+            console=console,
+            expand=True
+        )
+
+        with progress:
             task = progress.add_task(f"[white] Downloading {model_name}...", total=total_size)
             for chunk in response.iter_content(chunk_size=chunk_size):
                 open(filename, "ab").write(chunk)
                 progress.update(task, advance=chunk_size)
 
         # Unzip the model
-        import zipfile
-        with Progress() as progress:
+        progress = Progress(
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(bar_width=None),
+            "[progress.percentage]{task.percentage:>3.0f}%",
+            "•",
+            FileSizeColumn(),
+            TransferSpeedColumn(),
+            TimeRemainingColumn(),
+            console=console,
+            expand=True
+        )
+
+        with progress:
             with zipfile.ZipFile(filename, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
                 task = progress.add_task(f"[white] Extracting {model_name}...", total=total_size)
-                # Get the parent directory of 'directory'
                 parent_directory = os.path.dirname(directory)
                 for file in zip_ref.infolist():
                     zip_ref.extract(file, parent_directory)
@@ -84,6 +108,7 @@ def model(model_name, model_path):
         print(f"{constants.ANSI_GREEN} {os.path.basename(directory)} - download complete. {constants.ANSI_RESET}")
         logging.info(f" {os.path.basename(directory)} - download complete.")
     else:
-        print(f"{constants.ANSI_GREEN} A local instance of {os.path.basename(directory)} has been detected. "
-              f"{constants.ANSI_RESET}")
+        print(
+            f"{constants.ANSI_GREEN} A local instance of {os.path.basename(directory)} has been detected. {constants.ANSI_RESET}")
         logging.info(f" A local instance of {os.path.basename(directory)} has been detected.")
+

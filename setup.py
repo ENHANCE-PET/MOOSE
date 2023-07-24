@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='moosez',
-    version='2.2.4',
+    version='2.2.5',
     author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer',
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
