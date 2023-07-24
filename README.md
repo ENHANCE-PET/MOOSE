@@ -7,17 +7,20 @@
 
 Unveiling a new dimension in 3D medical image segmentation: MOOSE 2.0 🚀
 
-Crafted meticulously from the core principles of data-centric AI, MOOSE 2.0 is our response to the demands of both preclinical and clinical imaging. 
+Crafted meticulously from the core principles of data-centric AI, MOOSE 2.0 is our response to the demands of both preclinical and clinical imaging.
 
-✨ It's Leaner: We've hacked away the fluff and made MOOSE 2.0 leaner than ever before. This bad boy doesn't need heavy-duty computing. With less than 32GB of RAM, compatibility across OS, and the flexibility to work with or without NVIDIA GPUs, MOOSE 2.0 fits right into any environment. 🔬
+:sparkles: **It's Leaner**: We've hacked away the fluff and made MOOSE 2.0 leaner than ever before. This bad boy doesn't need heavy-duty computing. With less than 32GB of RAM, compatibility across OS, and the flexibility to work with or without NVIDIA GPUs, MOOSE 2.0 fits right into any environment. :microscope:
 
-💥 It's Meaner: The QIMPies have poured their hearts and souls into building this beast from scratch. With the speed clocking 5x faster than its predecessor, MOOSE 2.0 cuts through the noise and gets down to business instantly. It serves up a range of segmentation models designed for both clinical and preclinical settings. No more waiting, no more compromises. It's Mean Machine time! ⚡
+:boom: **It's Meaner**: The QIMPies have poured their hearts and souls into building this beast from scratch. With the speed clocking 5x faster than its predecessor, MOOSE 2.0 cuts through the noise and gets down to business instantly. It serves up a range of segmentation models designed for both clinical and preclinical settings. No more waiting, no more compromises. It's Mean Machine time! :zap:
 
-🔥 It's Stronger: MOOSE 2.0 is powered by the sheer strength of Data-centric AI principles. With a whopping 2.5k datasets, that's ~60x times more data than our first model, we're packing a punch. MOOSE 2.0 comes with the strength and knowledge gained from an array of data that's simply unparalleled. The result? Better precision, improved outcomes, and a tool you can trust. 💼
+:fire: **It's Stronger**: MOOSE 2.0 is powered by the sheer strength of Data-centric AI principles. With a whopping 2.5k datasets, that's ~60x times more data than our first model, we're packing a punch. MOOSE 2.0 comes with the strength and knowledge gained from an array of data that's simply unparalleled. The result? Better precision, improved outcomes, and a tool you can trust. :briefcase:
+
+:bell: :loudspeaker: :boom: And now, it's even more **versatile**, with MOOSE 2.0, you now have the flexibility to use it as a powerful command-line tool for batch processing, or as a library package for individual processing in your Python projects. The choice is yours! :sunglasses:
 
 Accommodating an array of modalities including PET, CT, and MRI, MOOSE 2.0 stands at the cusp of a paradigm shift. It’s not just an upgrade; it’s our commitment to making MOOSE 2.0 your go-to for segmentation tasks.
 
 Join us as we embark on this journey.
+
 
 ## Requirements ✅
 
@@ -82,7 +85,9 @@ Happy exploring! 🚀🔬
 
 ## Usage Guide 📚
 
-Embarking on your journey with MOOSE 2.0 is straightforward and easy. Our command-line tool requires only two arguments: the directory path where your subject images are stored, and the segmentation model name you wish to use. Here's how you can get started:
+### Command-line tool for batch processing :computer: 
+
+Embarking on your journey with MOOSE 2.0 is straightforward and easy. Our command-line tool for batch processing requires only two arguments: the directory path where your subject images are stored, and the segmentation model name you wish to use. Here's how you can get started:
 
 ```bash
 moosez -d <path_to_image_dir> -m <model_name>
@@ -108,7 +113,40 @@ moosez -h
 
 This command will provide you with all the help and additional information you might need.
 
+### Using MOOSE 2.0 as a Library :books:
+
+MOOSE 2.0 can also be imported and used as a library in your own Python projects. Here's how you can do it:
+
+First, import the `moose` function from the `moosez` package in your python script:
+
+ ```python
+ from moosez import moose
+ ```
+
+Then, call the `moose` function to run predictions. The `moose` function takes four arguments:
+
+1. `model_name`: The name of the model to use for the predictions.
+2. `input_dir`: The directory containing the images (in nifti, either .nii or .nii.gz) to process.
+3. `output_dir`: The directory where the output will be saved.
+4. `accelerator`: The type of accelerator to use (e.g., "cpu", "cuda").
+
+Here's an example of how to call the `moose` function:
+
+ ```python
+ model_name = 'clin_ct_organs'
+ input_dir = '/home/Documents/your_project/data/input'
+ output_dir = '/home/Documents/your_project/data/output'
+ accelerator = 'cuda'
+ moose(model_name, input_dir, output_dir, accelerator)
+ ```
+
+Remember to replace `model_name`, `input_dir`, `output_dir`, and `accelerator` with the actual values you want to use.
+
+That's it! MOOSE 2.0 will now process the images in the input directory and save the output in the output directory. Enjoy using MOOSE 2.0 as a library in your Python projects!
+
 ## Directory Structure and Naming Conventions for MOOSE 📂🏷️
+
+### Applicable only for batch mode ⚠️
 
 Using MOOSE 2.0 optimally requires your data to be structured according to specific conventions. MOOSE 2.0 supports both DICOM and NIFTI formats. For DICOM files, MOOSE infers the modality from the DICOM tags and checks if the given modality is suitable for the chosen segmentation model. However, for NIFTI files, users need to ensure that the files are named with the correct modality as a suffix.
 
@@ -149,6 +187,44 @@ When using NIFTI files, you should name the file with the appropriate modality a
 For instance, if you have chosen the `model_name` as `clin_ct_organs`, the CT scan for subject 'S2' in NIFTI format, should have the modality tag 'CT_' attached to the file name, e.g. `CT_S2.nii`. In the directory shown above, every subject will be processed by `moosez` except S4.
 
 **Remember:** Adhering to these file naming and directory structure conventions ensures smooth and efficient processing with MOOSE 2.0. Happy segmenting! 🚀
+
+## :tada: Add and contribute Your Own nnUNetv2 Models to MooseZ :rocket:
+
+Want to power-up your medical image segmentation tasks? :zap: Join the MooseZ community and contribute your own `nnUNetv2` models! :medal:
+
+By adding your custom models to MooseZ, you can enjoy:
+
+- :fast_forward: **Increased Speed** - MooseZ is optimized for fast performance. Use it to get your results faster!
+- :floppy_disk: **Reduced Memory** - MooseZ is designed to be efficient and lean, so it uses less memory!
+
+So why wait? Make your models fly with MooseZ :airplane:
+
+## How to Contribute Your Model :hammer_and_wrench:
+
+1. **Prepare Your Model** :file_folder:
+
+    Train your model using `nnUNetv2` and get it ready for the big leagues!
+
+2. **Update AVAILABLE_MODELS List** :pencil2:
+
+    Include your model's unique identifier to the `AVAILABLE_MODELS` list in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L29) file. The model name should follow a specific syntax: 'clin' or 'preclin' (indicating Clinical or Preclinical), modality tag (like 'ct', 'pt', 'mr'), and then the tissue of interest.
+
+3. **Update MODELS Dictionary** :clipboard:
+
+    Add a new entry to the `MODELS` dictionary in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L49) file. Fill in the corresponding details (like URL, filename, directory, trainer type, voxel spacing, and multilabel prefix). 
+
+4. **Update expected_modality Function** :memo:
+
+    Update the `expected_modality` function in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L100) file to return the imaging technique, modality, and tissue of interest for your model.
+
+5. **Update map_model_name_to_task_number Function** :world_map:
+
+    Modify the `map_model_name_to_task_number` function in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L130) file to return the task number associated with your model.
+
+That's it! You've successfully contributed your own model to the MooseZ community! :confetti_ball:
+
+With your contribution 🙋, MooseZ becomes a stronger and more robust tool for medical image segmentation! :muscle:
+
 
 ## A Note on QIMP Python Packages: The 'Z' Factor 📚🚀
 
