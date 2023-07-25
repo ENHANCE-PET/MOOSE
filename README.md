@@ -223,7 +223,7 @@ So why wait? Make your models fly with MooseZ :airplane:
 
 6. **Update `ORGAN_INDICES` in `constants.py`** 🧠
 
-   Append the `ORGAN_INDICES` dictionary with your label intensity to region mapping. This is particularly important if you would like to have your stats from the PET images based on your CT masks.
+   Append the `ORGAN_INDICES` dictionary in the [constants.py](https://github.com/LalithShiyam/MOOSE/blob/3f5f9537365a41478060c96815c38c3824353bb9/moosez/constants.py#L66C1-L66C14) with your label intensity to region mapping. This is particularly important if you would like to have your stats from the PET images based on your CT masks.
 
 That's it! You've successfully contributed your own model to the MooseZ community! :confetti_ball:
 
