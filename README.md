@@ -190,7 +190,7 @@ For instance, if you have chosen the `model_name` as `clin_ct_organs`, the CT sc
 
 ## :tada: Add and contribute Your Own nnUNetv2 Models to MooseZ :rocket:
 
-Want to power-up your medical image segmentation tasks? :zap: Join the MooseZ community and contribute your own `nnUNetv2` models! :medal:
+Want to power-up your medical image segmentation tasks? :zap: Join the MooseZ community and contribute your own `nnUNetv2` models! 🥇:
 
 By adding your custom models to MooseZ, you can enjoy:
 
@@ -220,6 +220,10 @@ So why wait? Make your models fly with MooseZ :airplane:
 5. **Update map_model_name_to_task_number Function** :world_map:
 
     Modify the `map_model_name_to_task_number` function in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L130) file to return the task number associated with your model.
+
+6. **Update `ORGAN_INDICES` in `constants.py`** 🧠
+
+   Append the `ORGAN_INDICES` dictionary with your label intensity to region mapping. This is particularly important if you would like to have your stats from the PET images based on your CT masks.
 
 That's it! You've successfully contributed your own model to the MooseZ community! :confetti_ball:
 
