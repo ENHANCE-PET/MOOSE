@@ -80,11 +80,11 @@ MODELS = {
         "multilabel_prefix": "Preclin_MR_all_"
     },
     "clin_ct_body": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Dataset696_BodyContour.zip",
-        "filename": "Dataset696_BodyContour.zip",
-        "directory": "Dataset696_BodyContour",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_body_28072023.zip",
+        "filename": "Dataset001_PUMA.zip",
+        "directory": "Dataset001_PUMA",
         "trainer": "nnUNetTrainer",
-        "voxel_spacing": [1.5, 1.5, 1.5],
+        "voxel_spacing": [6, 6, 6],
         "multilabel_prefix": "CT_Body_"
     },
 }
@@ -107,7 +107,7 @@ def expected_modality(model_name: str) -> dict:
         "clin_ct_lungs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Lungs"},
         "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
         "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "PET", "Tissue of interest": "Tumor"},
-        "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body"},
+        "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body, Extremities"},
         "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
     }
 
@@ -134,15 +134,15 @@ def map_model_name_to_task_number(model_name: str):
     :return: The task number.
     """
     if model_name == "clin_ct_lungs":
-        return 333
+        return '333'
     elif model_name == "clin_ct_organs":
-        return 123
+        return '123'
     elif model_name == "clin_pt_fdg_tumor":
-        return 789
+        return '789'
     elif model_name == "preclin_mr_all":
-        return 234
+        return '234'
     elif model_name == "clin_ct_body":
-        return 696
+        return '001'
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
