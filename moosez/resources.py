@@ -64,7 +64,7 @@ MODELS = {
         "multilabel_prefix": "CT_Organs_"
     },
     "clin_pt_fdg_tumor": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Dataset789_Tumors.zip",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_pt_fdg_tumor_1_5_20072023.zip",
         "filename": "Dataset789_Tumors.zip",
         "directory": "Dataset789_Tumors",
         "trainer": "nnUNetTrainerDA5",
