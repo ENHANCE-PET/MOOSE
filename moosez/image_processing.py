@@ -602,7 +602,6 @@ def mip_3d(img, angle):
     return mip_rotated
 
 
-
 def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
     # Load the images
     pet_img = load_nii(pet_path)
@@ -631,8 +630,8 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
 
     # Create MIPs for a range of angles and store them
     angles = list(range(0, 360, rotation_step))
-    pet_mip_images_futures = client.map(mip_3d, [pet_img_color_future]*len(angles), angles)
-    mask_mip_images_futures = client.map(mip_3d, [mask_img_color_future]*len(angles), angles)
+    pet_mip_images_futures = client.map(mip_3d, [pet_img_color_future] * len(angles), angles)
+    mask_mip_images_futures = client.map(mip_3d, [mask_img_color_future] * len(angles), angles)
 
     pet_mip_images = client.gather(pet_mip_images_futures)
     mask_mip_images = client.gather(mask_mip_images_futures)
@@ -646,4 +645,3 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
 
     # Save as gif
     imageio.mimsave(gif_path, mip_images)
-
