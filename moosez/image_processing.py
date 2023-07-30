@@ -589,15 +589,15 @@ def mip_3d(img, angle):
     rot_img = rotate(img, angle, axes=(1, 2), reshape=False)
 
     # Create Maximum Intensity Projection along the first axis
-    mip = np.max(rot_img, axis=0)
+    mip = np.max(rot_img, axis=1)
 
     # Invert the mip
     mip_inverted = np.max(mip) - mip
 
     # Rotate MIP 90 degrees anti-clockwise
-    mip_rotated = rotate(mip_inverted, 90)
+    mip_flipped = np.flip(mip_inverted, axis=0)
 
-    return mip_rotated
+    return mip_flipped
 
 
 def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5, output_spacing=(2, 2, 2)):
