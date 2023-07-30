@@ -65,8 +65,8 @@ MODELS = {
     },
     "clin_pt_fdg_tumor": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_pt_fdg_tumor_3_30072023.zip",
-        "filename": "Dataset789_Tumor_3mm.zip",
-        "directory": "Dataset789_Tumor_3mm",
+        "filename": "Dataset789_Tumor_3.zip",
+        "directory": "Dataset789_Tumor_3",
         "trainer": "nnUNetTrainerDA5",
         "voxel_spacing": [3, 3, 3],
         "multilabel_prefix": "PT_FDG_Tumor_"

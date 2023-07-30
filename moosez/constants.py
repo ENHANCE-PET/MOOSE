@@ -61,6 +61,10 @@ RESAMPLED_MASK_FILE_NAME = 'resampled_mask.nii.gz'
 CHUNK_FILENAMES = ["chunk01_0000.nii.gz", "chunk02_0000.nii.gz", "chunk03_0000.nii.gz"]
 CHUNK_PREFIX = 'chunk'
 
+# DISPLAY PARAMETERS
+
+MIP_ROTATION_STEP = 10
+
 # ORGAN INDICES
 
 ORGAN_INDICES = {

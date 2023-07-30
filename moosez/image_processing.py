@@ -18,13 +18,17 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-import dask
 import SimpleITK as sitk
 import dask.array as da
 import nibabel
 import numpy as np
 import pandas as pd
-
+import nibabel as nib
+import warnings
+from scipy.ndimage import rotate
+import imageio
+import dask
+from dask.distributed import Client
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
     CHUNK_FILENAMES
 
@@ -555,3 +559,58 @@ class ImageResampler:
         if output_image_path is not None:
             sitk.WriteImage(resampled_image, output_image_path)
         return resampled_image
+
+
+def mip_3d(img, angle):
+    # Rotate the image
+    rot_img = rotate(img, angle, axes=(0, 1), reshape=False)
+
+    # Create Maximum Intensity Projection along the first axis
+    mip = np.max(rot_img, axis=0)
+
+    # Rotate MIP 90 degrees anti-clockwise
+    mip_rotated = rotate(mip, 90)
+
+    return mip_rotated
+
+
+def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
+    # Load the images
+    pet_nii = nib.load(pet_path)
+    mask_nii = nib.load(mask_path)
+
+    pet_img = pet_nii.get_fdata()
+    mask_img = mask_nii.get_fdata()
+
+    # Normalize the PET image to its maximum intensity
+    pet_img = pet_img / np.max(pet_img)
+
+    # Create color versions of the images
+    pet_img_color = np.stack((pet_img, pet_img, pet_img), axis=-1)  # Grey-scale so all color channels are the same
+    mask_img_color = np.stack((0.5 * mask_img, np.zeros_like(mask_img), 0.5 * mask_img),
+                              axis=-1)  # Purple color on the first and last channels (RGB)
+
+    # Apply the mask to the PET image (the mask values will replace the corresponding voxel values in the PET image)
+    overlay_img = np.where(mask_img_color > 0, mask_img_color, pet_img_color)
+
+    # Suppress warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        # Create a Dask client
+        client = Client(dashboard_address=None)
+
+    # Scatter the data to the workers
+    overlay_img_future = client.scatter(overlay_img, broadcast=True)
+
+    # Create MIPs for a range of angles and store them
+    angles = list(range(0, 360, rotation_step))
+    mip_images_futures = client.map(mip_3d, [overlay_img_future]*len(angles), angles)
+
+    mip_images = client.gather(mip_images_futures)
+
+    # Normalize the image array to 0-255
+    mip_images = [(255 * (im - np.min(im)) / (np.max(im) - np.min(im))).astype(np.uint8) for im in mip_images]
+
+    # Save as gif
+    imageio.mimsave(gif_path, mip_images)

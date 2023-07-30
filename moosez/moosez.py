@@ -188,6 +188,17 @@ def main():
                            f'{constants.ANSI_RESET}'
             time.sleep(3)
 
+        # if model name has tumor
+        if 'tumor' in model_name:
+            multilabel_file = glob.glob(os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
+            image_processing.create_rotational_mip_gif(pet_path=pet_file,
+                                                       mask_path=multilabel_file,
+                                                       gif_path=os.path.join(output_dir,
+                                                                             os.path.basename(subject) +
+                                                                             '_rotational_mip.gif'),
+                                                       rotation_step=constants.MIP_ROTATION_STEP)
+
+
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
     time_per_dataset = total_elapsed_time / len(moose_compliant_subjects)
