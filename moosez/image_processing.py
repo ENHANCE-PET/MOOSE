@@ -26,8 +26,10 @@ import pandas as pd
 import nibabel as nib
 import warnings
 from scipy.ndimage import rotate
+from skimage import exposure
 import imageio
 import dask
+import cv2
 from dask.distributed import Client
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
     CHUNK_FILENAMES
@@ -79,7 +81,8 @@ def delayed_split_and_save(image_chunk, image_affine, image_chunk_path):
     split_and_save(image_chunk, image_affine, image_chunk_path)
 
 
-def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False, is_label: bool = False) -> None:
+def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False,
+                is_label: bool = False) -> None:
     """
     Writes an image either as a single file or multiple files depending on the image size.
 
@@ -561,6 +564,28 @@ class ImageResampler:
         return resampled_image
 
 
+def load_nii(path):
+    # Load the images
+    nii = nib.load(path)
+    img = nii.get_fdata()
+
+    return img
+
+
+def normalize_img(img):
+    # Normalize the image to its maximum intensity
+    img = img / np.max(img)
+
+    return img
+
+
+def equalize_hist(img):
+    # Apply histogram equalization
+    img_eq = exposure.equalize_adapthist(img)
+
+    return img_eq
+
+
 def mip_3d(img, angle):
     # Rotate the image
     rot_img = rotate(img, angle, axes=(0, 1), reshape=False)
@@ -568,30 +593,30 @@ def mip_3d(img, angle):
     # Create Maximum Intensity Projection along the first axis
     mip = np.max(rot_img, axis=0)
 
+    # Invert the mip
+    mip_inverted = np.max(mip) - mip
+
     # Rotate MIP 90 degrees anti-clockwise
-    mip_rotated = rotate(mip, 90)
+    mip_rotated = rotate(mip_inverted, 90)
 
     return mip_rotated
 
 
+
 def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
     # Load the images
-    pet_nii = nib.load(pet_path)
-    mask_nii = nib.load(mask_path)
+    pet_img = load_nii(pet_path)
+    mask_img = load_nii(mask_path)
 
-    pet_img = pet_nii.get_fdata()
-    mask_img = mask_nii.get_fdata()
+    # Normalize the PET image
+    pet_img = normalize_img(pet_img)
 
-    # Normalize the PET image to its maximum intensity
-    pet_img = pet_img / np.max(pet_img)
+    # Apply histogram equalization to PET image
+    pet_img = equalize_hist(pet_img)
 
     # Create color versions of the images
-    pet_img_color = np.stack((pet_img, pet_img, pet_img), axis=-1)  # Grey-scale so all color channels are the same
-    mask_img_color = np.stack((0.5 * mask_img, np.zeros_like(mask_img), 0.5 * mask_img),
-                              axis=-1)  # Purple color on the first and last channels (RGB)
-
-    # Apply the mask to the PET image (the mask values will replace the corresponding voxel values in the PET image)
-    overlay_img = np.where(mask_img_color > 0, mask_img_color, pet_img_color)
+    pet_img_color = np.stack((pet_img, pet_img, pet_img), axis=-1)  # RGB
+    mask_img_color = np.stack((0.5 * mask_img, np.zeros_like(mask_img), 0.5 * mask_img), axis=-1)  # RGB, purple color
 
     # Suppress warnings
     with warnings.catch_warnings():
@@ -601,16 +626,24 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
         client = Client(dashboard_address=None)
 
     # Scatter the data to the workers
-    overlay_img_future = client.scatter(overlay_img, broadcast=True)
+    pet_img_color_future = client.scatter(pet_img_color, broadcast=True)
+    mask_img_color_future = client.scatter(mask_img_color, broadcast=True)
 
     # Create MIPs for a range of angles and store them
     angles = list(range(0, 360, rotation_step))
-    mip_images_futures = client.map(mip_3d, [overlay_img_future]*len(angles), angles)
+    pet_mip_images_futures = client.map(mip_3d, [pet_img_color_future]*len(angles), angles)
+    mask_mip_images_futures = client.map(mip_3d, [mask_img_color_future]*len(angles), angles)
 
-    mip_images = client.gather(mip_images_futures)
+    pet_mip_images = client.gather(pet_mip_images_futures)
+    mask_mip_images = client.gather(mask_mip_images_futures)
+
+    # Blend the PET and mask MIPs
+    overlay_mip_images = [cv2.addWeighted(pet_mip, 0.7, mask_mip, 0.3, 0)
+                          for pet_mip, mask_mip in zip(pet_mip_images, mask_mip_images)]
 
     # Normalize the image array to 0-255
-    mip_images = [(255 * (im - np.min(im)) / (np.max(im) - np.min(im))).astype(np.uint8) for im in mip_images]
+    mip_images = [(255 * (im - np.min(im)) / (np.max(im) - np.min(im))).astype(np.uint8) for im in overlay_mip_images]
 
     # Save as gif
     imageio.mimsave(gif_path, mip_images)
+
