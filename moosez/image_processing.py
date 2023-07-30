@@ -32,7 +32,7 @@ import dask
 import cv2
 from dask.distributed import Client
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
-    CHUNK_FILENAMES
+    CHUNK_FILENAMES, DISPLAY_VOXEL_SPACING
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -566,10 +566,8 @@ class ImageResampler:
 
 def load_nii(path):
     # Load the images
-    nii = nib.load(path)
-    img = nii.get_fdata()
-
-    return img
+    sitk_img = sitk.ReadImage(path)
+    return sitk_img
 
 
 def normalize_img(img):
@@ -588,7 +586,7 @@ def equalize_hist(img):
 
 def mip_3d(img, angle):
     # Rotate the image
-    rot_img = rotate(img, angle, axes=(0, 1), reshape=False)
+    rot_img = rotate(img, angle, axes=(1, 2), reshape=False)
 
     # Create Maximum Intensity Projection along the first axis
     mip = np.max(rot_img, axis=0)
@@ -602,20 +600,29 @@ def mip_3d(img, angle):
     return mip_rotated
 
 
-def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
+def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5, output_spacing=(2, 2, 2)):
     # Load the images
-    pet_img = load_nii(pet_path)
-    mask_img = load_nii(mask_path)
+    sitk_pet_img = load_nii(pet_path)
+    sitk_mask_img = load_nii(mask_path)
+
+    # Resample the images
+    resampler = ImageResampler()
+    sitk_pet_img_resampled = resampler.resample_image_SimpleITK_DASK(sitk_pet_img, 'linear', DISPLAY_VOXEL_SPACING)
+    sitk_mask_img_resampled = resampler.resample_image_SimpleITK_DASK(sitk_mask_img, 'nearest', DISPLAY_VOXEL_SPACING)
+
+    # Convert back to numpy array
+    pet_img_resampled = sitk.GetArrayFromImage(sitk_pet_img_resampled)
+    mask_img_resampled = sitk.GetArrayFromImage(sitk_mask_img_resampled)
 
     # Normalize the PET image
-    pet_img = normalize_img(pet_img)
+    pet_img_resampled = normalize_img(pet_img_resampled)
 
     # Apply histogram equalization to PET image
-    pet_img = equalize_hist(pet_img)
+    pet_img_resampled = equalize_hist(pet_img_resampled)
 
     # Create color versions of the images
-    pet_img_color = np.stack((pet_img, pet_img, pet_img), axis=-1)  # RGB
-    mask_img_color = np.stack((0.5 * mask_img, np.zeros_like(mask_img), 0.5 * mask_img), axis=-1)  # RGB, purple color
+    pet_img_color = np.stack((pet_img_resampled, pet_img_resampled, pet_img_resampled), axis=-1)  # RGB
+    mask_img_color = np.stack((0.5 * mask_img_resampled, np.zeros_like(mask_img_resampled), 0.5 * mask_img_resampled), axis=-1)  # RGB, purple color
 
     # Create a Dask client with default settings
     client = Client()
@@ -634,7 +641,7 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
     mask_mip_images = client.gather(mask_mip_images_futures)
 
     # Blend the PET and mask MIPs
-    overlay_mip_images = [cv2.addWeighted(pet_mip, 0.7, mask_mip, 0.3, 0)
+    overlay_mip_images = [cv2.addWeighted(pet_mip, 0.7, mask_mip.astype(pet_mip.dtype), 0.3, 0)
                           for pet_mip, mask_mip in zip(pet_mip_images, mask_mip_images)]
 
     # Normalize the image array to 0-255
@@ -645,6 +652,6 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
 
     # Cleanup
     client.close()
-    del pet_img, mask_img, pet_img_color, mask_img_color, pet_mip_images, mask_mip_images, overlay_mip_images, \
-        mip_images
+    del sitk_pet_img, sitk_mask_img, pet_img_resampled, mask_img_resampled, pet_img_color, mask_img_color, pet_mip_images, mask_mip_images, overlay_mip_images, mip_images
+
 

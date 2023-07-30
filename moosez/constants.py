@@ -64,6 +64,7 @@ CHUNK_PREFIX = 'chunk'
 # DISPLAY PARAMETERS
 
 MIP_ROTATION_STEP = 20
+DISPLAY_VOXEL_SPACING = (3, 3, 3)
 
 # ORGAN INDICES
 
@@ -103,5 +104,3 @@ ORGAN_INDICES = {
     }
     # More index-to-name dictionaries for other models...
 }
-
-
