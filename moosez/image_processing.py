@@ -617,12 +617,8 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
     pet_img_color = np.stack((pet_img, pet_img, pet_img), axis=-1)  # RGB
     mask_img_color = np.stack((0.5 * mask_img, np.zeros_like(mask_img), 0.5 * mask_img), axis=-1)  # RGB, purple color
 
-    # Suppress warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-
-        # Create a Dask client
-        client = Client(dashboard_address=None)
+    # Create a Dask client with default settings
+    client = Client()
 
     # Scatter the data to the workers
     pet_img_color_future = client.scatter(pet_img_color, broadcast=True)
@@ -633,6 +629,7 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
     pet_mip_images_futures = client.map(mip_3d, [pet_img_color_future] * len(angles), angles)
     mask_mip_images_futures = client.map(mip_3d, [mask_img_color_future] * len(angles), angles)
 
+    # Gather the images
     pet_mip_images = client.gather(pet_mip_images_futures)
     mask_mip_images = client.gather(mask_mip_images_futures)
 
@@ -645,3 +642,9 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5):
 
     # Save as gif
     imageio.mimsave(gif_path, mip_images)
+
+    # Cleanup
+    client.close()
+    del pet_img, mask_img, pet_img_color, mask_img_color, pet_mip_images, mask_mip_images, overlay_mip_images, \
+        mip_images
+
