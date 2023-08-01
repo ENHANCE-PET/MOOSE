@@ -32,7 +32,7 @@ import dask
 import cv2
 from dask.distributed import Client
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
-    CHUNK_FILENAMES, DISPLAY_VOXEL_SPACING
+    CHUNK_FILENAMES, DISPLAY_VOXEL_SPACING, FRAME_DURATION
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -648,7 +648,7 @@ def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5, ou
     mip_images = [(255 * (im - np.min(im)) / (np.max(im) - np.min(im))).astype(np.uint8) for im in overlay_mip_images]
 
     # Save as gif
-    imageio.mimsave(gif_path, mip_images)
+    imageio.mimsave(gif_path, mip_images, duration=FRAME_DURATION)
 
     # Cleanup
     client.close()

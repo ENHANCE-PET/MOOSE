@@ -188,15 +188,18 @@ def main():
                            f'{constants.ANSI_RESET}'
             time.sleep(3)
 
-        # if model name has tumor
+        # if model name has tumor calculate the fused MIP, because it is much more useful
         if 'tumor' in model_name:
             multilabel_file = glob.glob(os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
+            spinner.text = f'[{i + 1}/{num_subjects}] Calculating fused MIP of PET and tumor image for {os.path.basename(subject)}...'
             image_processing.create_rotational_mip_gif(pet_path=pet_file,
                                                        mask_path=multilabel_file,
                                                        gif_path=os.path.join(output_dir,
                                                                              os.path.basename(subject) +
                                                                              '_rotational_mip.gif'),
                                                        rotation_step=constants.MIP_ROTATION_STEP)
+            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] Fused MIP of PET and tumor image calculated' \
+                           f' for {os.path.basename(subject)}! ' \
 
 
     end_total_time = time.time()
