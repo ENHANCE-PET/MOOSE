@@ -199,7 +199,8 @@ def main():
                                                                              os.path.basename(subject) +
                                                                              '_rotational_mip.gif'),
                                                        rotation_step=constants.MIP_ROTATION_STEP)
-            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] Fused MIP of PET and tumor image calculated' \
+            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] Fused MIP of PET image and tumor mask ' \
+                           f'calculated' \
                            f' for {os.path.basename(subject)}! '
             time.sleep(3)
 
