@@ -80,7 +80,7 @@ MODELS = {
         "multilabel_prefix": "Preclin_MR_all_"
     },
     "clin_ct_body": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_body_28072023.zip",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Dataset001_PUMA.zip",
         "filename": "Dataset001_PUMA.zip",
         "directory": "Dataset001_PUMA",
         "trainer": "nnUNetTrainer",
@@ -107,7 +107,7 @@ def expected_modality(model_name: str) -> dict:
         "clin_ct_lungs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Lungs"},
         "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
         "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "PET", "Tissue of interest": "Tumor"},
-        "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body, Extremities"},
+        "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body, Arms, legs, head"},
         "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
     }
 

@@ -97,8 +97,10 @@ ORGAN_INDICES = {
         5: "lung_lower_lobe_right"
     },
     "clin_ct_body": {
-        1: "Extremities",
-        2: "Torso"
+        1: "Legs",
+        2: "Body",
+        3: "Head",
+        4: "Arms"
     },
     "clin_pt_fdg_tumor": {
         1: "tumor"
