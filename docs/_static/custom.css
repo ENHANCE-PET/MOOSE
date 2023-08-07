@@ -1,0 +1,8 @@
+html.writer-html4 .rst-content dl:not(.docutils) .descclassname,
+html.writer-html4 .rst-content dl:not(.docutils) .descname,
+html.writer-html4 .rst-content dl:not(.docutils) .sig-name,
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) .descclassname,
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) .descname,
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) .sig-name {
+    color: #9400D3 !important;  /* Neon violet */
+}
