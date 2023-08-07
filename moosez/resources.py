@@ -73,8 +73,8 @@ MODELS = {
     },
     "preclin_mr_all": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_mr_all_07082023.zip",
-        "filename": "Dataset234_Preclin.zip",
-        "directory": "Dataset234_Preclin",
+        "filename": "Dataset234_preclin_mr.zip",
+        "directory": "Dataset234_preclin_mr",
         "trainer": "nnUNetTrainer",
         "voxel_spacing": [0.1756799966096878, 0.1756799966096878, 0.1756799966096878],
         "multilabel_prefix": "Preclin_MR_all_"
