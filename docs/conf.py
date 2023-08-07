@@ -60,6 +60,9 @@ html_theme_options = {
     "dark_mode_theme": "darkly",  # Optional: Set the dark mode theme to "darkly"
 }
 
+html_css_files = [
+    'custom.css',
+]
 
 
 
