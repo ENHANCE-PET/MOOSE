@@ -18,7 +18,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx', 
     'sphinx.ext.viewcode',
-    'sphinx.ext.linkcode',  # Add this line for direct linking to GitHub source
+    'sphinx.ext.linkcode', 
+    'sphinx_rtd_dark_mode', # Add this line for direct linking to GitHub source
 ]
 
 # Intersphinx mapping for external libraries
@@ -52,3 +53,14 @@ def linkcode_resolve(domain, info):
         return None
     filename = info['module'].replace('.', '/')
     return f"https://github.com/LalithShiyam/MOOSE/blob/main/{filename}.py"
+
+
+html_theme_options = {
+    "style_nav_header_background": "#343131",  # Optional: Change the navbar header color
+    "dark_mode_theme": "darkly",  # Optional: Set the dark mode theme to "darkly"
+}
+
+
+
+
+
