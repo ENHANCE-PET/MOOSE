@@ -48,3 +48,11 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ['_static']
+html_context = {
+    "display_github": True,
+    "github_user": "LalithShiyam",  # Your GitHub username
+    "github_repo": "MOOSE",        # Your GitHub repository name
+    "github_version": "main",      # Your preferred branch, tag, or commit
+    "conf_py_path": "/",           # Path in your repository to the docs
+}
+
