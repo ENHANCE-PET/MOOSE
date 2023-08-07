@@ -1,0 +1,4 @@
+/* Adjust the color of code blocks or other specific elements */
+.code-block-class-name {
+    color: #ECECEC; /* or any other light color */
+}
