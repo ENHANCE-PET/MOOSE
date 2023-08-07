@@ -25,10 +25,14 @@ import pyfiglet
 from moosez import constants
 from moosez import resources
 
+
 def logo():
     """
     Display MOOSE logo
-    :return:
+
+    This function displays the MOOSE logo using the pyfiglet library and ANSI color codes.
+
+    :return: None
     """
     print(' ')
     logo_color_code = constants.ANSI_VIOLET
@@ -40,11 +44,15 @@ def logo():
     print(text)
     print(' ')
 
+
 def citation():
     """
-        Display manuscript citation
-        :return:
-        """
+    Display manuscript citation
+
+    This function displays the manuscript citation for the MOOSE project.
+
+    :return: None
+    """
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{constants.ANSI_RESET}')
     print(" ")
     print(
@@ -55,9 +63,15 @@ def citation():
 
 def expectations(model_name: str) -> list:
     """
-    Display expected modality for the model. This is used to check if the user has provided the correct modality.
+    Display expected modality for the model.
+
+    This function displays the expected modality for the given model name. It also checks for a special case where
+    'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
+
     :param model_name: The name of the model.
-    :return: list of modalities
+    :type model_name: str
+    :return: A list of modalities.
+    :rtype: list
     """
     model_info = resources.expected_modality(model_name)
     modality = model_info['Modality']

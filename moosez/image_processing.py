@@ -33,17 +33,23 @@ import cv2
 from dask.distributed import Client
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
     CHUNK_FILENAMES, DISPLAY_VOXEL_SPACING, FRAME_DURATION
+from typing import Tuple
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
     """
-    Get the intensity statistics of a NIFTI image file
-    :param image: Source image from which the intensity statistics are calculated
-    :param mask_image: Multilabel mask image
-    :param model_name: Name of the model
-    :param out_csv: Path to the output csv file
-    :return None
-     """
+    Get the intensity statistics of a NIFTI image file.
+
+    :param image: The source image from which the intensity statistics are calculated.
+    :type image: sitk.Image
+    :param mask_image: The multilabel mask image.
+    :type mask_image: sitk.Image
+    :param model_name: The name of the model.
+    :type model_name: str
+    :param out_csv: The path to the output CSV file.
+    :type out_csv: str
+    :return: None
+    """
     intensity_statistics = sitk.LabelIntensityStatisticsImageFilter()
     intensity_statistics.Execute(mask_image, image)
     stats_list = [(intensity_statistics.GetMean(i), intensity_statistics.GetStandardDeviation(i),
@@ -63,34 +69,51 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df.to_csv(out_csv)
 
 
-def split_and_save(image_chunk: da.Array, image_affine, image_chunk_path: str) -> None:
+def split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
     """
     Get a chunk of the image and save it.
 
-    Args:
-        image_chunk: Dask array chunk.
-        image_affine: Image affine transformation.
-        image_chunk_path: The path to save the image chunk.
+    :param image_chunk: The Dask array chunk.
+    :type image_chunk: da.Array
+    :param image_affine: The image affine transformation.
+    :type image_affine: np.ndarray
+    :param image_chunk_path: The path to save the image chunk.
+    :type image_chunk_path: str
+    :return: None
     """
     chunk_part = nibabel.Nifti1Image(image_chunk, image_affine)
     nibabel.save(chunk_part, image_chunk_path)
 
 
 @dask.delayed
-def delayed_split_and_save(image_chunk, image_affine, image_chunk_path):
-    split_and_save(image_chunk, image_affine, image_chunk_path)
+def delayed_split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
+    """
+    Delayed function to get a chunk of the image and save it.
 
+    :param image_chunk: The Dask array chunk.
+    :type image_chunk: da.Array
+    :param image_affine: The image affine transformation.
+    :type image_affine: np.ndarray
+    :param image_chunk_path: The path to save the image chunk.
+    :type image_chunk_path: str
+    :return: None
+    """
+    split_and_save(image_chunk, image_affine, image_chunk_path)
 
 def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False,
                 is_label: bool = False) -> None:
     """
     Writes an image either as a single file or multiple files depending on the image size.
 
-    Args:
-        image: The image to save.
-        out_image_path: The path to save the image.
-        large_image: Indicates whether the image classifies as large or not.
-        is_label: Indicates whether the image is a label or not.
+    :param image: The image to save.
+    :type image: nibabel.Nifti1Image
+    :param out_image_path: The path to save the image.
+    :type out_image_path: str
+    :param large_image: Indicates whether the image classifies as large or not.
+    :type large_image: bool
+    :param is_label: Indicates whether the image is a label or not.
+    :type is_label: bool
+    :return: None
     """
     image_shape = image.shape
     image_data = da.from_array(image.get_fdata(), chunks=(image_shape[0], image_shape[1], image_shape[2] // 3))
@@ -142,7 +165,7 @@ class NiftiPreprocessor:
 
     def __init__(self, image: nibabel.Nifti1Image):
         """
-        Constructs all the necessary attributes for the ImageProcessor object.
+        Constructs all the necessary attributes for the NiftiPreprocessor object.
 
         Parameters:
         -----------
@@ -152,9 +175,6 @@ class NiftiPreprocessor:
         self.image = image
         self.original_header = image.header.copy()
         self.is_large = self._is_large_image(image.shape)
-        # if not self._is_orthonormal(self.image):
-        #     print('Image is not orthonormal. Making it orthonormal.')
-        #     self.image = self._make_orthonormal(self.image)
         self.sitk_image = self._convert_to_sitk(self.image)
 
     @staticmethod
@@ -274,7 +294,6 @@ class NiftiPreprocessor:
 
         return sitk_image
 
-
 class ImageResampler:
     @staticmethod
     def chunk_along_axis(axis: int) -> int:
@@ -282,14 +301,11 @@ class ImageResampler:
         Determines the maximum number of evenly-sized chunks that the axis can be split into.
         Each chunk is at least of size CHUNK_THRESHOLD.
 
-        Args:
-            axis (int): Length of the axis.
-
-        Returns:
-            int: The maximum number of evenly-sized chunks.
-
-        Raises:
-            ValueError: If axis is negative or if CHUNK_THRESHOLD is less than or equal to 0.
+        :param axis: Length of the axis.
+        :type axis: int
+        :return: The maximum number of evenly-sized chunks.
+        :rtype: int
+        :raises ValueError: If axis is negative or if CHUNK_THRESHOLD is less than or equal to 0.
         """
         # Check for negative input values
         if axis < 0:
@@ -317,15 +333,18 @@ class ImageResampler:
         """
         Resamples a dask array chunk.
 
-        Args:
-            image_chunk: The chunk (part of an image) to be resampled.
-            input_spacing: The original spacing of the chunk (part of an image).
-            interpolation_method: SimpleITK interpolation type.
-            output_spacing: Spacing of the newly resampled chunk.
-            output_size: Size of the newly resampled chunk.
-
-        Returns:
-            resampled_array: The resampled chunk (part of an image).
+        :param image_chunk: The chunk (part of an image) to be resampled.
+        :type image_chunk: da.array
+        :param input_spacing: The original spacing of the chunk (part of an image).
+        :type input_spacing: tuple
+        :param interpolation_method: SimpleITK interpolation type.
+        :type interpolation_method: int
+        :param output_spacing: Spacing of the newly resampled chunk.
+        :type output_spacing: tuple
+        :param output_size: Size of the newly resampled chunk.
+        :type output_size: tuple
+        :return: The resampled chunk (part of an image).
+        :rtype: da.array
         """
         sitk_image_chunk = sitk.GetImageFromArray(image_chunk)
         sitk_image_chunk.SetSpacing(input_spacing)
@@ -349,14 +368,17 @@ class ImageResampler:
         """
         Resamples a sitk_image using Dask and SimpleITK.
 
-        Args:
-            sitk_image: The SimpleITK image to be resampled.
-            interpolation: nearest|linear|bspline.
-            output_spacing: The desired output spacing of the resampled sitk_image.
-            output_size: The new size to use.
-
-        Returns:
-            resampled_image: The resampled sitk_image as SimpleITK.Image.
+        :param sitk_image: The SimpleITK image to be resampled.
+        :type sitk_image: sitk.Image
+        :param interpolation: nearest|linear|bspline.
+        :type interpolation: str
+        :param output_spacing: The desired output spacing of the resampled sitk_image.
+        :type output_spacing: tuple
+        :param output_size: The new size to use.
+        :type output_size: tuple
+        :return: The resampled sitk_image as SimpleITK.Image.
+        :rtype: sitk.Image
+        :raises ValueError: If the interpolation method is not supported.
         """
         if interpolation == 'nearest':
             interpolation_method = sitk.sitkNearestNeighbor
@@ -392,7 +414,7 @@ class ImageResampler:
         resampled_image.SetDirection(sitk_image.GetDirection())
 
         return resampled_image
-
+    
     @staticmethod
     def resample_image_SimpleITK(sitk_image: sitk.Image, interpolation: str,
                                  output_spacing: tuple = (1.5, 1.5, 1.5),
@@ -400,14 +422,17 @@ class ImageResampler:
         """
         Resamples an image to a new spacing using SimpleITK.
 
-        Args:
-            sitk_image: The input image.
-            interpolation: nearest | linear | bspline.
-            output_size: The new size to use.
-            output_spacing: The new spacing to use.
-
-        Returns:
-            resampled_image: The resampled image as SimpleITK.Image.
+        :param sitk_image: The input image.
+        :type sitk_image: SimpleITK.Image
+        :param interpolation: The interpolation method to use. Supported methods are 'nearest', 'linear', and 'bspline'.
+        :type interpolation: str
+        :param output_spacing: The new spacing to use. Default is (1.5, 1.5, 1.5).
+        :type output_spacing: tuple
+        :param output_size: The new size to use. Default is None.
+        :type output_size: tuple
+        :return: The resampled image as SimpleITK.Image.
+        :rtype: SimpleITK.Image
+        :raises ValueError: If the interpolation method is not supported.
         """
         if interpolation == 'nearest':
             interpolation_method = sitk.sitkNearestNeighbor
@@ -438,14 +463,16 @@ class ImageResampler:
         """
         Resamples an image to a new spacing.
 
-        Args:
-            moose_img_object: The moose_img_object to be resampled.
-            interpolation: The interpolation method to use.
-            desired_spacing: The new spacing to use.
-            desired_size: The new size to use.
-
-        Returns:
-            resampled_image: The resampled image as nibabel.Nifti1Image.
+        :param moose_img_object: The moose_img_object to be resampled.
+        :type moose_img_object: MooseImage
+        :param interpolation: The interpolation method to use. Supported methods are 'nearest', 'linear', and 'bspline'.
+        :type interpolation: str
+        :param desired_spacing: The new spacing to use.
+        :type desired_spacing: tuple
+        :param desired_size: The new size to use. Default is None.
+        :type desired_size: tuple
+        :return: The resampled image as nibabel.Nifti1Image.
+        :rtype: nibabel.Nifti1Image
         """
 
         image_header = moose_img_object.original_header
@@ -482,17 +509,18 @@ class ImageResampler:
 
     @staticmethod
     def resample_segmentations(input_image_path: str, desired_spacing: tuple,
-                               desired_size: tuple) -> nibabel.Nifti1Image:
+                            desired_size: tuple) -> nibabel.Nifti1Image:
         """
         Resamples an image to a new spacing.
 
-        Args:
-            input_image_path: Path to the input image.
-            desired_spacing: The new spacing to use.
-            desired_size: The new size to use.
-
-        Returns:
-            resampled_image: The resampled image as nibabel.Nifti1Image.
+        :param input_image_path: Path to the input image.
+        :type input_image_path: str
+        :param desired_spacing: The new spacing to use.
+        :type desired_spacing: tuple
+        :param desired_size: The new size to use.
+        :type desired_size: tuple
+        :return: The resampled image as nibabel.Nifti1Image.
+        :rtype: nibabel.Nifti1Image
         """
         # Load the image and get necessary information
         input_image = nibabel.load(input_image_path)
@@ -541,13 +569,20 @@ class ImageResampler:
 
     @staticmethod
     def reslice_identity(reference_image: sitk.Image, moving_image: sitk.Image,
-                         output_image_path: str = None, is_label_image: bool = False) -> sitk.Image:
+                     output_image_path: str = None, is_label_image: bool = False) -> sitk.Image:
         """
-        Reslice an image to the same space as another image
-        :param reference_image: The reference image
-        :param moving_image: The image to reslice to the reference image
-        :param output_image_path: Path to the resliced image
-        :param is_label_image: Determines if the image is a label image. Default is False
+        Reslices an image to the same space as another image.
+
+        :param reference_image: The reference image.
+        :type reference_image: SimpleITK.Image
+        :param moving_image: The image to reslice to the reference image.
+        :type moving_image: SimpleITK.Image
+        :param output_image_path: Path to the resliced image. Default is None.
+        :type output_image_path: str
+        :param is_label_image: Determines if the image is a label image. Default is False.
+        :type is_label_image: bool
+        :return: The resliced image as SimpleITK.Image.
+        :rtype: SimpleITK.Image
         """
         resampler = sitk.ResampleImageFilter()
         resampler.SetReferenceImage(reference_image)
@@ -564,27 +599,59 @@ class ImageResampler:
         return resampled_image
 
 
-def load_nii(path):
-    # Load the images
+def load_nii(path: str) -> sitk.Image:
+    """
+    Loads a NIfTI image from a file.
+
+    :param path: The path to the NIfTI file.
+    :type path: str
+    :return: The loaded image as SimpleITK.Image.
+    :rtype: SimpleITK.Image
+    """
     sitk_img = sitk.ReadImage(path)
     return sitk_img
 
 
-def normalize_img(img):
+def normalize_img(img: np.ndarray) -> np.ndarray:
+    """
+    Normalizes an image to its maximum intensity.
+
+    :param img: The input image.
+    :type img: numpy.ndarray
+    :return: The normalized image as numpy.ndarray.
+    :rtype: numpy.ndarray
+    """
     # Normalize the image to its maximum intensity
     img = img / np.max(img)
 
     return img
 
 
-def equalize_hist(img):
-    # Apply histogram equalization
+def equalize_hist(img: np.ndarray) -> np.ndarray:
+    """
+    Applies histogram equalization to an image.
+
+    :param img: The input image.
+    :type img: numpy.ndarray
+    :return: The equalized image as numpy.ndarray.
+    :rtype: numpy.ndarray
+    """
     img_eq = exposure.equalize_adapthist(img)
 
     return img_eq
 
 
-def mip_3d(img, angle):
+def mip_3d(img: np.ndarray, angle: float) -> np.ndarray:
+    """
+    Creates a Maximum Intensity Projection (MIP) of a 3D image.
+
+    :param img: The input image.
+    :type img: numpy.ndarray
+    :param angle: The angle to rotate the image by.
+    :type angle: float
+    :return: The MIP of the rotated image as numpy.ndarray.
+    :rtype: numpy.ndarray
+    """
     # Rotate the image
     rot_img = rotate(img, angle, axes=(1, 2), reshape=False)
 
@@ -600,7 +667,23 @@ def mip_3d(img, angle):
     return mip_flipped
 
 
-def create_rotational_mip_gif(pet_path, mask_path, gif_path, rotation_step=5, output_spacing=(2, 2, 2)):
+def create_rotational_mip_gif(pet_path: str, mask_path: str, gif_path: str, rotation_step: int = 5, output_spacing: Tuple[int, int, int] = (2, 2, 2)) -> None:
+    """
+    Creates a Maximum Intensity Projection (MIP) GIF of a PET image and its corresponding mask, rotating the image by a specified angle at each step.
+
+    :param pet_path: The path to the PET image file.
+    :type pet_path: str
+    :param mask_path: The path to the mask image file.
+    :type mask_path: str
+    :param gif_path: The path to save the output GIF file.
+    :type gif_path: str
+    :param rotation_step: The angle to rotate the image by at each step.
+    :type rotation_step: int
+    :param output_spacing: The output voxel spacing of the resampled image.
+    :type output_spacing: Tuple[int, int, int]
+    :return: None
+    :rtype: None
+    """
     # Load the images
     sitk_pet_img = load_nii(pet_path)
     sitk_mask_img = load_nii(mask_path)

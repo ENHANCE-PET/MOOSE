@@ -29,8 +29,11 @@ import zipfile
 def binary(system_info, url):
     """
     Downloads the binary for the current system.
+
     :param system_info: A dictionary containing the system information.
+    :type system_info: dict
     :param url: The url to download the binary from.
+    :type url: str
     """
     binary_name = "{}_{}_{}".format(system_info["os_type"], system_info["cpu_architecture"], system_info["cpu_brand"])
     print("Binary to download: " + binary_name)
@@ -43,8 +46,11 @@ def binary(system_info, url):
 def model(model_name, model_path):
     """
     Downloads the model for the current system.
+
     :param model_name: The name of the model to download.
+    :type model_name: str
     :param model_path: The path to store the model.
+    :type model_path: str
     """
     model_info = resources.MODELS[model_name]
     url = model_info["url"]
@@ -111,4 +117,3 @@ def model(model_name, model_path):
         print(
             f"{constants.ANSI_GREEN} A local instance of {os.path.basename(directory)} has been detected. {constants.ANSI_RESET}")
         logging.info(f" A local instance of {os.path.basename(directory)} has been detected.")
-
