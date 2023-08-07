@@ -20,7 +20,7 @@ formats:
 
 # Optionally specify a custom Python version
 python:
-  version: 3.10
+  version: 3.8
 
 # Optionally specify a custom build environment
 build:
