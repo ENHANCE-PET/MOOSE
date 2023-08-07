@@ -21,6 +21,8 @@ Accommodating an array of modalities including PET, CT, and MRI, MOOSE 2.0 stand
 
 Join us as we embark on this journey.
 
+[![Documentation Status](https://readthedocs.org/projects/moosez/badge/?version=latest)](https://moosez.readthedocs.io/en/latest/?badge=latest)
+
 
 ## Requirements ✅
 
