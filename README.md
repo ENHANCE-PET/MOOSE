@@ -4,6 +4,7 @@
 
 
 ## MOOSE 2.0 🫎 - Leaner. Meaner. Stronger 💪
+[![Documentation Status](https://readthedocs.org/projects/moosez/badge/?version=latest)](https://moosez.readthedocs.io/en/latest/?badge=latest)
 
 Unveiling a new dimension in 3D medical image segmentation: MOOSE 2.0 🚀
 
@@ -20,8 +21,6 @@ Crafted meticulously from the core principles of data-centric AI, MOOSE 2.0 is o
 Accommodating an array of modalities including PET, CT, and MRI, MOOSE 2.0 stands at the cusp of a paradigm shift. It’s not just an upgrade; it’s our commitment to making MOOSE 2.0 your go-to for segmentation tasks.
 
 Join us as we embark on this journey.
-
-[![Documentation Status](https://readthedocs.org/projects/moosez/badge/?version=latest)](https://moosez.readthedocs.io/en/latest/?badge=latest)
 
 
 ## Requirements ✅
