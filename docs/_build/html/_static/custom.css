@@ -1,4 +1,3 @@
-.descclassname,
-.descname {
-    color: #ECECEC; /* Adjust the color to your liking */
+.descclassname, .descname, .sig-prename, .sig-name {
+    color: #ECECEC !important; /* Adjust the color to your liking */
 }
