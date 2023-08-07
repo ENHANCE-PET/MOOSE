@@ -1,3 +1,4 @@
+sphinxcontrib-napoleon
 Sphinx
 sphinx_rtd_theme
 nnunetv2
