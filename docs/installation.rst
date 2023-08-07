@@ -26,7 +26,7 @@ Installation from Source
 
    .. code-block:: bash
 
-      cd moosez
+      cd MOOSE
 
 3. Install the package:
 
