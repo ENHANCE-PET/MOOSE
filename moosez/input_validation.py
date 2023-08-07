@@ -20,29 +20,34 @@
 import logging
 import multiprocessing
 import os
-
+from typing import List
 import nibabel as nib
 
 from moosez import constants
 
 
-def check_directory_exists(directory_path: str):
+def check_directory_exists(directory_path: str) -> None:
     """
     Checks if the specified directory exists.
+
     :param directory_path: The path to the directory.
+    :type directory_path: str
     :raises: Exception if the directory does not exist.
     """
     if not os.path.isdir(directory_path):
         raise Exception(f"Error: The directory '{directory_path}' does not exist.")
 
 
-def select_moose_compliant_subjects(subject_paths: list, modality_tags: list) -> list:
+def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: List[str]) -> List[str]:
     """
     Selects the subjects that have the files that have names that are compliant with the moosez.
+
     :param subject_paths: The path to the list of subjects that are present in the parent directory.
-    :param modality_tags: The list of appropriate modality prefixes that should be attached to the files for them to be moose
-    compliant.
+    :type subject_paths: List[str]
+    :param modality_tags: The list of appropriate modality prefixes that should be attached to the files for them to be moose compliant.
+    :type modality_tags: List[str]
     :return: The list of subject paths that are moose compliant.
+    :rtype: List[str]
     """
     # go through each subject in the parent directory
     moose_compliant_subjects = []
@@ -65,12 +70,12 @@ def check_file_for_nnunet_compatibility(filename: str, input_dir: str) -> None:
     """
     Checks if the file is nnUNet compatible. If not, compresses the file and renames it to include the required tag.
 
-    Parameters:
-        filename (str): The name of the file to check.
-        input_dir (str): The path to the directory containing the file.
-
-    Returns:
-        None
+    :param filename: The name of the file to check.
+    :type filename: str
+    :param input_dir: The path to the directory containing the file.
+    :type input_dir: str
+    :return: None
+    :rtype: None
     """
     if filename.endswith('.nii.gz') and not filename.endswith('_0000.nii.gz'):
         # Rename the file to include the required tag
@@ -93,11 +98,10 @@ def make_nnunet_compatible(input_dir: str) -> None:
     Checks the files in the specified directory to ensure they comply with the nnUNet requirements. If a file does not
     comply, it is compressed (if it is not already) and renamed to include the required tag.
 
-    Parameters:
-        input_dir (str): The path to the directory containing the files to check.
-
-    Returns:
-        None
+    :param input_dir: The path to the directory containing the files to check.
+    :type input_dir: str
+    :return: None
+    :rtype: None
     """
     with multiprocessing.Pool() as pool:
         # Map the check_file() function to each file in the directory

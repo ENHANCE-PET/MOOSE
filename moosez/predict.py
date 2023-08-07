@@ -32,16 +32,22 @@ from moosez import image_processing
 from moosez.image_processing import ImageResampler
 from moosez.image_processing import NiftiPreprocessor
 from moosez.resources import MODELS, map_model_name_to_task_number
+from typing import Tuple, List, Any
 
-
-def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
+def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str) -> None:
     """
     Runs the prediction using nnunet_predict.
+
     :param model_name: The name of the model.
+    :type model_name: str
     :param input_dir: The input directory.
+    :type input_dir: str
     :param output_dir: The output directory.
+    :type output_dir: str
     :param accelerator: The accelerator to use.
+    :type accelerator: str
     :return: None
+    :rtype: None
     """
     task_number = map_model_name_to_task_number(model_name)
     # set the environment variables
@@ -74,12 +80,16 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str):
     shutil.rmtree(temp_input_dir)
 
 
-def preprocess(original_image_directory: str, model_name: str):
+def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib.Nifti1Image, Any]:
     """
     Preprocesses the original images.
+
     :param original_image_directory: The directory containing the original images.
+    :type original_image_directory: str
     :param model_name: The name of the model.
-    :return: temp_folder: The path to the temp folder.
+    :type model_name: str
+    :return: A tuple containing the path to the temp folder, the resampled image, and the moose_image_object.
+    :rtype: Tuple[str, nib.Nifti1Image, Any]
     """
     # create the temp directory
     temp_folder = os.path.join(original_image_directory, constants.TEMP_FOLDER)
@@ -104,13 +114,18 @@ def preprocess(original_image_directory: str, model_name: str):
     return temp_folder, resampled_image, moose_image_object
 
 
-def postprocess(original_image, output_dir, model_name):
+def postprocess(original_image: str, output_dir: str, model_name: str) -> None:
     """
     Postprocesses the predicted images.
+
     :param original_image: The path to the original image.
+    :type original_image: str
     :param output_dir: The output directory containing the label image.
+    :type output_dir: str
     :param model_name: The name of the model.
+    :type model_name: str
     :return: None
+    :rtype: None
     """
     # [1] Resample the predicted image to the original image's voxel spacing
     predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
@@ -135,27 +150,31 @@ def postprocess(original_image, output_dir, model_name):
     os.remove(predicted_image)
 
 
-def count_output_files(output_dir):
+def count_output_files(output_dir: str) -> int:
     """
     Counts the number of files in the specified output directory.
-    Parameters:
-        output_dir (str): The path to the output directory.
-    Returns:
-        The number of files in the output directory.
+
+    :param output_dir: The path to the output directory.
+    :type output_dir: str
+    :return: The number of files in the output directory.
+    :rtype: int
     """
     return len([name for name in os.listdir(output_dir) if
                 os.path.isfile(os.path.join(output_dir, name)) and name.endswith('.nii.gz')])
 
 
-def monitor_output_directory(output_dir, total_files, spinner):
+def monitor_output_directory(output_dir: str, total_files: int, spinner: Halo) -> None:
     """
     Continuously monitors the specified output directory for new files and updates the progress bar accordingly.
-    Parameters:
-        output_dir (str): The path to the output directory.
-        total_files (int): The total number of files that are expected to be generated in the output directory.
-        spinner (Halo): The spinner that displays the progress of the segmentation process.
-    Returns:
-        None
+
+    :param output_dir: The path to the output directory.
+    :type output_dir: str
+    :param total_files: The total number of files that are expected to be generated in the output directory.
+    :type total_files: int
+    :param spinner: The spinner that displays the progress of the segmentation process.
+    :type spinner: Halo
+    :return: None
+    :rtype: None
     """
     files_processed = count_output_files(output_dir)
     while files_processed < total_files:
@@ -166,31 +185,34 @@ def monitor_output_directory(output_dir, total_files, spinner):
         files_processed = new_files_processed
 
 
-def split_and_save(shared_image_data, z_index, image_chunk_path):
+def split_and_save(shared_image_data: Tuple[np.ndarray, np.ndarray], z_index: List[Tuple[int, int]], image_chunk_path: str) -> None:
     """
     Split the image and save each part.
 
-    Args:
-        shared_image_data: image_data (np.ndarray): The voxel data of the image and image_affine (np.ndarray):
-        The affine transformation associated with the data.
-        z_index (list): List of tuples containing start and end indices for z-axis split.
-        image_chunk_path: The path to save the image part.
+    :param shared_image_data: A tuple containing the voxel data of the image and the affine transformation associated with the data.
+    :type shared_image_data: Tuple[np.ndarray, np.ndarray]
+    :param z_index: A list of tuples containing start and end indices for z-axis split.
+    :type z_index: List[Tuple[int, int]]
+    :param image_chunk_path: The path to save the image part.
+    :type image_chunk_path: str
+    :return: None
+    :rtype: None
     """
     image_data, image_affine = shared_image_data
     image_part = nib.Nifti1Image(image_data[:, :, z_index[0]:z_index[1]], image_affine)
     nib.save(image_part, image_chunk_path)
 
 
-def handle_large_image(image: nib.Nifti1Image, save_dir):
+def handle_large_image(image: nib.Nifti1Image, save_dir: str) -> List[str]:
     """
     Split a large image into parts and save them.
 
-    Args:
-        image: The NIBABEL image.
-        save_dir: Directory to save the image parts.
-
-    Returns:
-        list: List of paths of the original or split image parts.
+    :param image: The NIBABEL image.
+    :type image: nib.Nifti1Image
+    :param save_dir: Directory to save the image parts.
+    :type save_dir: str
+    :return: List of paths of the original or split image parts.
+    :rtype: List[str]
     """
 
     image_shape = image.shape
@@ -226,17 +248,18 @@ def handle_large_image(image: nib.Nifti1Image, save_dir):
         return [resampled_image_path]
 
 
-def merge_image_parts(save_dir, original_image_shape, original_image_affine):
+def merge_image_parts(save_dir: str, original_image_shape: Tuple[int, int, int], original_image_affine: np.ndarray) -> str:
     """
     Combine the split image parts back into a single image.
 
-    Args:
-        save_dir (str): Directory where the image parts are saved.
-        original_image_shape (tuple): The shape of the original image.
-        original_image_affine (np.ndarray): The affine transformation of the original image.
-
-    Returns:
-        merged_image_path (str): Path to the merged image.
+    :param save_dir: Directory where the image parts are saved.
+    :type save_dir: str
+    :param original_image_shape: The shape of the original image.
+    :type original_image_shape: Tuple[int, int, int]
+    :param original_image_affine: The affine transformation of the original image.
+    :type original_image_affine: np.ndarray
+    :return: Path to the merged image.
+    :rtype: str
     """
     # Create an empty array with the original image's shape
     merged_image_data = np.zeros(original_image_shape, dtype=np.uint8)
