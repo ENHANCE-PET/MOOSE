@@ -32,5 +32,5 @@ build:
 
 # Optionally specify a custom requirements file
 #python:
-#  install:
-#    - requirements.txt
+install:
+  - requirements.txt
