@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>moosez package &mdash; MOOSE 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            MOOSE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">moosez package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-moosez.constants">moosez.constants module</a><ul>
+<li><a class="reference internal" href="#moosez.constants.ORGAN_INDICES"><code class="docutils literal notranslate"><span class="pre">ORGAN_INDICES</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.display">moosez.display module</a><ul>
+<li><a class="reference internal" href="#moosez.display.citation"><code class="docutils literal notranslate"><span class="pre">citation()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.display.expectations"><code class="docutils literal notranslate"><span class="pre">expectations()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.display.logo"><code class="docutils literal notranslate"><span class="pre">logo()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.download">moosez.download module</a><ul>
+<li><a class="reference internal" href="#moosez.download.binary"><code class="docutils literal notranslate"><span class="pre">binary()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.download.model"><code class="docutils literal notranslate"><span class="pre">model()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.file_utilities">moosez.file_utilities module</a><ul>
+<li><a class="reference internal" href="#moosez.file_utilities.copy_file"><code class="docutils literal notranslate"><span class="pre">copy_file()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.copy_files_to_destination"><code class="docutils literal notranslate"><span class="pre">copy_files_to_destination()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.create_directory"><code class="docutils literal notranslate"><span class="pre">create_directory()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.find_pet_file"><code class="docutils literal notranslate"><span class="pre">find_pet_file()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.get_files"><code class="docutils literal notranslate"><span class="pre">get_files()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.get_virtual_env_root"><code class="docutils literal notranslate"><span class="pre">get_virtual_env_root()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.moose_folder_structure"><code class="docutils literal notranslate"><span class="pre">moose_folder_structure()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.organise_files_by_modality"><code class="docutils literal notranslate"><span class="pre">organise_files_by_modality()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.file_utilities.select_files_by_modality"><code class="docutils literal notranslate"><span class="pre">select_files_by_modality()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.image_conversion">moosez.image_conversion module</a><ul>
+<li><a class="reference internal" href="#moosez.image_conversion.create_dicom_lookup"><code class="docutils literal notranslate"><span class="pre">create_dicom_lookup()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_conversion.dcm2niix"><code class="docutils literal notranslate"><span class="pre">dcm2niix()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_conversion.is_dicom_file"><code class="docutils literal notranslate"><span class="pre">is_dicom_file()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_conversion.non_nifti_to_nifti"><code class="docutils literal notranslate"><span class="pre">non_nifti_to_nifti()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_conversion.read_dicom_folder"><code class="docutils literal notranslate"><span class="pre">read_dicom_folder()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_conversion.remove_accents"><code class="docutils literal notranslate"><span class="pre">remove_accents()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_conversion.rename_nifti_files"><code class="docutils literal notranslate"><span class="pre">rename_nifti_files()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_conversion.standardize_to_nifti"><code class="docutils literal notranslate"><span class="pre">standardize_to_nifti()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.image_processing">moosez.image_processing module</a><ul>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler"><code class="docutils literal notranslate"><span class="pre">ImageResampler</span></code></a><ul>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler.chunk_along_axis"><code class="docutils literal notranslate"><span class="pre">ImageResampler.chunk_along_axis()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler.resample_chunk_SimpleITK"><code class="docutils literal notranslate"><span class="pre">ImageResampler.resample_chunk_SimpleITK()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler.resample_image"><code class="docutils literal notranslate"><span class="pre">ImageResampler.resample_image()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler.resample_image_SimpleITK"><code class="docutils literal notranslate"><span class="pre">ImageResampler.resample_image_SimpleITK()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler.resample_image_SimpleITK_DASK"><code class="docutils literal notranslate"><span class="pre">ImageResampler.resample_image_SimpleITK_DASK()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler.resample_segmentations"><code class="docutils literal notranslate"><span class="pre">ImageResampler.resample_segmentations()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.ImageResampler.reslice_identity"><code class="docutils literal notranslate"><span class="pre">ImageResampler.reslice_identity()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#moosez.image_processing.NiftiPreprocessor"><code class="docutils literal notranslate"><span class="pre">NiftiPreprocessor</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.create_rotational_mip_gif"><code class="docutils literal notranslate"><span class="pre">create_rotational_mip_gif()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.equalize_hist"><code class="docutils literal notranslate"><span class="pre">equalize_hist()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.get_intensity_statistics"><code class="docutils literal notranslate"><span class="pre">get_intensity_statistics()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.load_nii"><code class="docutils literal notranslate"><span class="pre">load_nii()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.mip_3d"><code class="docutils literal notranslate"><span class="pre">mip_3d()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.normalize_img"><code class="docutils literal notranslate"><span class="pre">normalize_img()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.split_and_save"><code class="docutils literal notranslate"><span class="pre">split_and_save()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.image_processing.write_image"><code class="docutils literal notranslate"><span class="pre">write_image()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.input_validation">moosez.input_validation module</a><ul>
+<li><a class="reference internal" href="#moosez.input_validation.check_directory_exists"><code class="docutils literal notranslate"><span class="pre">check_directory_exists()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.input_validation.check_file_for_nnunet_compatibility"><code class="docutils literal notranslate"><span class="pre">check_file_for_nnunet_compatibility()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.input_validation.make_nnunet_compatible"><code class="docutils literal notranslate"><span class="pre">make_nnunet_compatible()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.input_validation.select_moose_compliant_subjects"><code class="docutils literal notranslate"><span class="pre">select_moose_compliant_subjects()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.moosez">moosez.moosez module</a><ul>
+<li><a class="reference internal" href="#moosez.moosez.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.moosez.moose"><code class="docutils literal notranslate"><span class="pre">moose()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.predict">moosez.predict module</a><ul>
+<li><a class="reference internal" href="#moosez.predict.count_output_files"><code class="docutils literal notranslate"><span class="pre">count_output_files()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.predict.handle_large_image"><code class="docutils literal notranslate"><span class="pre">handle_large_image()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.predict.merge_image_parts"><code class="docutils literal notranslate"><span class="pre">merge_image_parts()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.predict.monitor_output_directory"><code class="docutils literal notranslate"><span class="pre">monitor_output_directory()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.predict.postprocess"><code class="docutils literal notranslate"><span class="pre">postprocess()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.predict.predict"><code class="docutils literal notranslate"><span class="pre">predict()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.predict.preprocess"><code class="docutils literal notranslate"><span class="pre">preprocess()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.predict.split_and_save"><code class="docutils literal notranslate"><span class="pre">split_and_save()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez.resources">moosez.resources module</a><ul>
+<li><a class="reference internal" href="#moosez.resources.check_cuda"><code class="docutils literal notranslate"><span class="pre">check_cuda()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.resources.expected_modality"><code class="docutils literal notranslate"><span class="pre">expected_modality()</span></code></a></li>
+<li><a class="reference internal" href="#moosez.resources.map_model_name_to_task_number"><code class="docutils literal notranslate"><span class="pre">map_model_name_to_task_number()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-moosez">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MOOSE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">moosez package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/moosez.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="moosez-package">
+<h1>moosez package<a class="headerlink" href="#moosez-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-moosez.constants">
+<span id="moosez-constants-module"></span><h2>moosez.constants module<a class="headerlink" href="#module-moosez.constants" title="Permalink to this heading"></a></h2>
+<p>This module contains the constants that are used in the moosez.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 2.0.0.</span></p>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="moosez.constants.ORGAN_INDICES">
+<span class="sig-prename descclassname"><span class="pre">moosez.constants.</span></span><span class="sig-name descname"><span class="pre">ORGAN_INDICES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'clin_ct_body':</span> <span class="pre">{1:</span> <span class="pre">'Legs',</span> <span class="pre">2:</span> <span class="pre">'Body',</span> <span class="pre">3:</span> <span class="pre">'Head',</span> <span class="pre">4:</span> <span class="pre">'Arms'},</span> <span class="pre">'clin_ct_lungs':</span> <span class="pre">{1:</span> <span class="pre">'lung_upper_lobe_left',</span> <span class="pre">2:</span> <span class="pre">'lung_lower_lobe_left',</span> <span class="pre">3:</span> <span class="pre">'lung_upper_lobe_right',</span> <span class="pre">4:</span> <span class="pre">'lung_middle_lobe_right',</span> <span class="pre">5:</span> <span class="pre">'lung_lower_lobe_right'},</span> <span class="pre">'clin_ct_organs':</span> <span class="pre">{1:</span> <span class="pre">'spleen',</span> <span class="pre">2:</span> <span class="pre">'kidney_right',</span> <span class="pre">3:</span> <span class="pre">'kidney_left',</span> <span class="pre">4:</span> <span class="pre">'gallbladder',</span> <span class="pre">5:</span> <span class="pre">'liver',</span> <span class="pre">6:</span> <span class="pre">'stomach',</span> <span class="pre">7:</span> <span class="pre">'aorta',</span> <span class="pre">8:</span> <span class="pre">'inferior_vena_cava',</span> <span class="pre">9:</span> <span class="pre">'portal_vein_and_splenic_vein',</span> <span class="pre">10:</span> <span class="pre">'pancreas',</span> <span class="pre">11:</span> <span class="pre">'adrenal_gland_right',</span> <span class="pre">12:</span> <span class="pre">'adrenal_gland_left',</span> <span class="pre">13:</span> <span class="pre">'lung_upper_lobe_left',</span> <span class="pre">14:</span> <span class="pre">'lung_lower_lobe_left',</span> <span class="pre">15:</span> <span class="pre">'lung_upper_lobe_right',</span> <span class="pre">16:</span> <span class="pre">'lung_middle_lobe_right',</span> <span class="pre">17:</span> <span class="pre">'lung_lower_lobe_right'},</span> <span class="pre">'clin_pt_fdg_tumor':</span> <span class="pre">{1:</span> <span class="pre">'tumor'}}</span></em><a class="headerlink" href="#moosez.constants.ORGAN_INDICES" title="Permalink to this definition"></a></dt>
+<dd><p>This module contains the constants that are used in the moosez.</p>
+<p>Constants are values that are fixed and do not change during the execution of a program. They are used to store values that are used repeatedly throughout the program, such as file paths, folder names, and display parameters.</p>
+<p>This module contains the following constants:</p>
+<ul class="simple">
+<li><p><cite>NNUNET_RESULTS_FOLDER</cite>: A constant that stores the path to the folder that contains the trained models for the nnUNet algorithm.</p></li>
+<li><p><cite>MOOSEZ_MODEL_FOLDER</cite>: A constant that stores the path to the folder that contains the 3D full resolution model for the moosez algorithm.</p></li>
+<li><p><cite>ALLOWED_MODALITIES</cite>: A constant that stores a list of allowed modalities for the moosez algorithm.</p></li>
+<li><p><cite>TEMP_FOLDER</cite>: A constant that stores the name of the temporary folder used by the moosez algorithm.</p></li>
+<li><p><cite>ANSI_ORANGE</cite>: A constant that stores the ANSI color code for orange.</p></li>
+<li><p><cite>ANSI_GREEN</cite>: A constant that stores the ANSI color code for green.</p></li>
+<li><p><cite>ANSI_VIOLET</cite>: A constant that stores the ANSI color code for violet.</p></li>
+<li><p><cite>ANSI_RESET</cite>: A constant that stores the ANSI color code for resetting the color.</p></li>
+<li><p><cite>TRACER_FDG</cite>: A constant that stores the name of the tracer used by the moosez algorithm.</p></li>
+<li><p><cite>SEGMENTATIONS_FOLDER</cite>: A constant that stores the name of the folder that contains the segmentations generated by the moosez algorithm.</p></li>
+<li><p><cite>STATS_FOLDER</cite>: A constant that stores the name of the folder that contains the statistics generated by the moosez algorithm.</p></li>
+<li><p><cite>MATRIX_THRESHOLD</cite>: A constant that stores the matrix threshold used by the moosez algorithm.</p></li>
+<li><p><cite>Z_AXIS_THRESHOLD</cite>: A constant that stores the z-axis threshold used by the moosez algorithm.</p></li>
+<li><p><cite>MARGIN_PADDING</cite>: A constant that stores the margin padding used by the moosez algorithm.</p></li>
+<li><p><cite>INTERPOLATION</cite>: A constant that stores the interpolation method used by the moosez algorithm.</p></li>
+<li><p><cite>CHUNK_THRESHOLD</cite>: A constant that stores the chunk threshold used by the moosez algorithm.</p></li>
+<li><p><cite>TUMOR_LABEL</cite>: A constant that stores the label used for tumors by the moosez algorithm.</p></li>
+<li><p><cite>RESAMPLED_IMAGE_FILE_NAME</cite>: A constant that stores the name of the resampled image file used by the moosez algorithm.</p></li>
+<li><p><cite>RESAMPLED_MASK_FILE_NAME</cite>: A constant that stores the name of the resampled mask file used by the moosez algorithm.</p></li>
+<li><p><cite>CHUNK_FILENAMES</cite>: A constant that stores the names of the chunk files used by the moosez algorithm.</p></li>
+<li><p><cite>CHUNK_PREFIX</cite>: A constant that stores the prefix used for chunk files by the moosez algorithm.</p></li>
+<li><p><cite>MIP_ROTATION_STEP</cite>: A constant that stores the MIP rotation step used by the moosez algorithm.</p></li>
+<li><p><cite>DISPLAY_VOXEL_SPACING</cite>: A constant that stores the display voxel spacing used by the moosez algorithm.</p></li>
+<li><p><cite>FRAME_DURATION</cite>: A constant that stores the frame duration used by the moosez algorithm.</p></li>
+<li><p><cite>ORGAN_INDICES</cite>: A constant that stores a dictionary of index-to-name mappings for various organs used by the moosez algorithm.</p></li>
+</ul>
+<p>This module is imported by other modules in the moosez package and the constants are used throughout the package to provide fixed values that are used repeatedly.</p>
+</dd></dl>
+
+</section>
+<section id="module-moosez.display">
+<span id="moosez-display-module"></span><h2>moosez.display module<a class="headerlink" href="#module-moosez.display" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.display.citation">
+<span class="sig-prename descclassname"><span class="pre">moosez.display.</span></span><span class="sig-name descname"><span class="pre">citation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#moosez.display.citation" title="Permalink to this definition"></a></dt>
+<dd><p>Display manuscript citation</p>
+<p>This function displays the manuscript citation for the MOOSE project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.display.expectations">
+<span class="sig-prename descclassname"><span class="pre">moosez.display.</span></span><span class="sig-name descname"><span class="pre">expectations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#moosez.display.expectations" title="Permalink to this definition"></a></dt>
+<dd><p>Display expected modality for the model.</p>
+<p>This function displays the expected modality for the given model name. It also checks for a special case where
+‘FDG-PET-CT’ should be split into ‘FDG-PET’ and ‘CT’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_name</strong> (<em>str</em>) – The name of the model.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of modalities.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.display.logo">
+<span class="sig-prename descclassname"><span class="pre">moosez.display.</span></span><span class="sig-name descname"><span class="pre">logo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#moosez.display.logo" title="Permalink to this definition"></a></dt>
+<dd><p>Display MOOSE logo</p>
+<p>This function displays the MOOSE logo using the pyfiglet library and ANSI color codes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-moosez.download">
+<span id="moosez-download-module"></span><h2>moosez.download module<a class="headerlink" href="#module-moosez.download" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.download.binary">
+<span class="sig-prename descclassname"><span class="pre">moosez.download.</span></span><span class="sig-name descname"><span class="pre">binary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moosez.download.binary" title="Permalink to this definition"></a></dt>
+<dd><p>Downloads the binary for the current system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system_info</strong> (<em>dict</em>) – A dictionary containing the system information.</p></li>
+<li><p><strong>url</strong> (<em>str</em>) – The url to download the binary from.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.download.model">
+<span class="sig-prename descclassname"><span class="pre">moosez.download.</span></span><span class="sig-name descname"><span class="pre">model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moosez.download.model" title="Permalink to this definition"></a></dt>
+<dd><p>Downloads the model for the current system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model to download.</p></li>
+<li><p><strong>model_path</strong> (<em>str</em>) – The path to store the model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-moosez.file_utilities">
+<span id="moosez-file-utilities-module"></span><h2>moosez.file_utilities module<a class="headerlink" href="#module-moosez.file_utilities" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.copy_file">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">copy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.file_utilities.copy_file" title="Permalink to this definition"></a></dt>
+<dd><p>Copies a file to the specified destination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> (<em>str</em>) – The path to the file to be copied.</p></li>
+<li><p><strong>destination</strong> (<em>str</em>) – The path to the destination directory.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.copy_files_to_destination">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">copy_files_to_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.file_utilities.copy_files_to_destination" title="Permalink to this definition"></a></dt>
+<dd><p>Copies the files inside the list to the destination directory in a parallel fashion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files</strong> (<em>list</em>) – The list of files to be copied.</p></li>
+<li><p><strong>destination</strong> (<em>str</em>) – The path to the destination directory.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.create_directory">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">create_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.file_utilities.create_directory" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a directory at the specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>directory_path</strong> (<em>str</em>) – The path to the directory.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.find_pet_file">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">find_pet_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#moosez.file_utilities.find_pet_file" title="Permalink to this definition"></a></dt>
+<dd><p>Finds the PET file in the specified folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>folder</strong> (<em>str</em>) – The path to the folder.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The path to the PET file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.get_files">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">get_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wildcard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#moosez.file_utilities.get_files" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the list of files in the directory with the specified wildcard.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>directory</strong> (<em>str</em>) – The directory path.</p></li>
+<li><p><strong>wildcard</strong> (<em>str</em>) – The wildcard to be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The list of files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.get_virtual_env_root">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">get_virtual_env_root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#moosez.file_utilities.get_virtual_env_root" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the root directory of the virtual environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The root directory of the virtual environment.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.moose_folder_structure">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">moose_folder_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#moosez.file_utilities.moose_folder_structure" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the moose folder structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent_directory</strong> (<em>str</em>) – The path to the parent directory.</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model.</p></li>
+<li><p><strong>modalities</strong> (<em>list</em>) – The list of modalities.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the paths to the moose directory, input directories, output directory, and stats directory.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.organise_files_by_modality">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">organise_files_by_modality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moose_compliant_subjects</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moose_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.file_utilities.organise_files_by_modality" title="Permalink to this definition"></a></dt>
+<dd><p>Organises the files by modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moose_compliant_subjects</strong> (<em>list</em>) – The list of moose-compliant subjects paths.</p></li>
+<li><p><strong>modalities</strong> (<em>list</em>) – The list of modalities.</p></li>
+<li><p><strong>moose_dir</strong> (<em>str</em>) – The path to the moose directory.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.file_utilities.select_files_by_modality">
+<span class="sig-prename descclassname"><span class="pre">moosez.file_utilities.</span></span><span class="sig-name descname"><span class="pre">select_files_by_modality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moose_compliant_subjects</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality_tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#moosez.file_utilities.select_files_by_modality" title="Permalink to this definition"></a></dt>
+<dd><p>Selects the files with the selected modality tag from the moose-compliant folders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moose_compliant_subjects</strong> (<em>list</em>) – The list of moose-compliant subjects paths.</p></li>
+<li><p><strong>modality_tag</strong> (<em>str</em>) – The modality tag to be selected.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The list of selected files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-moosez.image_conversion">
+<span id="moosez-image-conversion-module"></span><h2>moosez.image_conversion module<a class="headerlink" href="#module-moosez.image_conversion" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.create_dicom_lookup">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">create_dicom_lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dicom_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#moosez.image_conversion.create_dicom_lookup" title="Permalink to this definition"></a></dt>
+<dd><p>Create a lookup dictionary from DICOM files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dicom_dir</strong> (<em>str</em>) – The directory where DICOM files are stored.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary where the key is the anticipated filename that dicom2nifti will produce and
+the value is the modality of the DICOM series.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.dcm2niix">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">dcm2niix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#moosez.image_conversion.dcm2niix" title="Permalink to this definition"></a></dt>
+<dd><p>Converts DICOM images into NIfTI images using dcm2niix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_path</strong> (<em>str</em>) – The path to the folder containing the DICOM files to convert.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The path to the folder containing the converted NIfTI files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.is_dicom_file">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">is_dicom_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#moosez.image_conversion.is_dicom_file" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if a file is a DICOM file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – The path to the file to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the file is a DICOM file, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.non_nifti_to_nifti">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">non_nifti_to_nifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.image_conversion.non_nifti_to_nifti" title="Permalink to this definition"></a></dt>
+<dd><p>Converts any image format known to ITK to NIFTI</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">param input_path<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The path to the directory or filename to convert to nii.gz.</p>
+</dd>
+<dt class="field-even">type input_path<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">param output_directory<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional. The output directory to write the image to. If not specified, the output image will be written to the same directory as the input image.</p>
+</dd>
+<dt class="field-even">type output_directory<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">return<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+<dt class="field-even">rtype<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>FileNotFoundError if the input path does not exist.</p>
+</dd>
+</dl>
+<p>Usage:
+This function can be used to convert any image format known to ITK to NIFTI. If the input path is a directory, the function will convert all images in the directory to NIFTI format. If the input path is a file, the function will convert the file to NIFTI format. The output image will be written to the specified output directory, or to the same directory as the input image if no output directory is specified.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.read_dicom_folder">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">read_dicom_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="headerlink" href="#moosez.image_conversion.read_dicom_folder" title="Permalink to this definition"></a></dt>
+<dd><p>Reads a folder of DICOM files and returns the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>folder_path</strong> (<em>str</em>) – str
+The path to the folder containing the DICOM files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SimpleITK.Image
+The image obtained from the DICOM files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.remove_accents">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">remove_accents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unicode_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#moosez.image_conversion.remove_accents" title="Permalink to this definition"></a></dt>
+<dd><p>Removes accents and special characters from a Unicode filename.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>unicode_filename</strong> (<em>str</em>) – The Unicode filename to clean.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The cleaned filename.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.rename_nifti_files">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">rename_nifti_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nifti_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dicom_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.image_conversion.rename_nifti_files" title="Permalink to this definition"></a></dt>
+<dd><p>Rename NIfTI files based on a lookup dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nifti_dir</strong> (<em>str</em>) – The directory where NIfTI files are stored.</p></li>
+<li><p><strong>dicom_info</strong> (<em>dict</em>) – A dictionary where the key is the anticipated filename that dicom2nifti will produce and
+the value is the modality of the DICOM series.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_conversion.standardize_to_nifti">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_conversion.</span></span><span class="sig-name descname"><span class="pre">standardize_to_nifti</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.image_conversion.standardize_to_nifti" title="Permalink to this definition"></a></dt>
+<dd><p>Converts all non-NIfTI images in a parent directory and its subdirectories to NIfTI format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parent_dir</strong> (<em>str</em>) – The path to the parent directory containing the images to convert.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-moosez.image_processing">
+<span id="moosez-image-processing-module"></span><h2>moosez.image_processing module<a class="headerlink" href="#module-moosez.image_processing" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">ImageResampler</span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler.chunk_along_axis">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chunk_along_axis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler.chunk_along_axis" title="Permalink to this definition"></a></dt>
+<dd><p>Determines the maximum number of evenly-sized chunks that the axis can be split into.
+Each chunk is at least of size CHUNK_THRESHOLD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<em>int</em>) – Length of the axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The maximum number of evenly-sized chunks.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If axis is negative or if CHUNK_THRESHOLD is less than or equal to 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler.resample_chunk_SimpleITK">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resample_chunk_SimpleITK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_chunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler.resample_chunk_SimpleITK" title="Permalink to this definition"></a></dt>
+<dd><p>Resamples a dask array chunk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_chunk</strong> (<em>da.array</em>) – The chunk (part of an image) to be resampled.</p></li>
+<li><p><strong>input_spacing</strong> (<em>tuple</em>) – The original spacing of the chunk (part of an image).</p></li>
+<li><p><strong>interpolation_method</strong> (<em>int</em>) – SimpleITK interpolation type.</p></li>
+<li><p><strong>output_spacing</strong> (<em>tuple</em>) – Spacing of the newly resampled chunk.</p></li>
+<li><p><strong>output_size</strong> (<em>tuple</em>) – Size of the newly resampled chunk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resampled chunk (part of an image).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>da.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler.resample_image">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resample_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moose_img_object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Nifti1Image</span></span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler.resample_image" title="Permalink to this definition"></a></dt>
+<dd><p>Resamples an image to a new spacing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moose_img_object</strong> (<em>MooseImage</em>) – The moose_img_object to be resampled.</p></li>
+<li><p><strong>interpolation</strong> (<em>str</em>) – The interpolation method to use. Supported methods are ‘nearest’, ‘linear’, and ‘bspline’.</p></li>
+<li><p><strong>desired_spacing</strong> (<em>tuple</em>) – The new spacing to use.</p></li>
+<li><p><strong>desired_size</strong> (<em>tuple</em>) – The new size to use. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resampled image as nibabel.Nifti1Image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nibabel.Nifti1Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler.resample_image_SimpleITK">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resample_image_SimpleITK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sitk_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.5,</span> <span class="pre">1.5,</span> <span class="pre">1.5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler.resample_image_SimpleITK" title="Permalink to this definition"></a></dt>
+<dd><p>Resamples an image to a new spacing using SimpleITK.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sitk_image</strong> (<em>SimpleITK.Image</em>) – The input image.</p></li>
+<li><p><strong>interpolation</strong> (<em>str</em>) – The interpolation method to use. Supported methods are ‘nearest’, ‘linear’, and ‘bspline’.</p></li>
+<li><p><strong>output_spacing</strong> (<em>tuple</em>) – The new spacing to use. Default is (1.5, 1.5, 1.5).</p></li>
+<li><p><strong>output_size</strong> (<em>tuple</em>) – The new size to use. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resampled image as SimpleITK.Image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the interpolation method is not supported.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler.resample_image_SimpleITK_DASK">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resample_image_SimpleITK_DASK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sitk_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.5,</span> <span class="pre">1.5,</span> <span class="pre">1.5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler.resample_image_SimpleITK_DASK" title="Permalink to this definition"></a></dt>
+<dd><p>Resamples a sitk_image using Dask and SimpleITK.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sitk_image</strong> (<em>sitk.Image</em>) – The SimpleITK image to be resampled.</p></li>
+<li><p><strong>interpolation</strong> (<em>str</em>) – nearest|linear|bspline.</p></li>
+<li><p><strong>output_spacing</strong> (<em>tuple</em>) – The desired output spacing of the resampled sitk_image.</p></li>
+<li><p><strong>output_size</strong> (<em>tuple</em>) – The new size to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resampled sitk_image as SimpleITK.Image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sitk.Image</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the interpolation method is not supported.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler.resample_segmentations">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resample_segmentations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_image_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Nifti1Image</span></span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler.resample_segmentations" title="Permalink to this definition"></a></dt>
+<dd><p>Resamples an image to a new spacing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_image_path</strong> (<em>str</em>) – Path to the input image.</p></li>
+<li><p><strong>desired_spacing</strong> (<em>tuple</em>) – The new spacing to use.</p></li>
+<li><p><strong>desired_size</strong> (<em>tuple</em>) – The new size to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resampled image as nibabel.Nifti1Image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nibabel.Nifti1Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moosez.image_processing.ImageResampler.reslice_identity">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reslice_identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_image_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_label_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="headerlink" href="#moosez.image_processing.ImageResampler.reslice_identity" title="Permalink to this definition"></a></dt>
+<dd><p>Reslices an image to the same space as another image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_image</strong> (<em>SimpleITK.Image</em>) – The reference image.</p></li>
+<li><p><strong>moving_image</strong> (<em>SimpleITK.Image</em>) – The image to reslice to the reference image.</p></li>
+<li><p><strong>output_image_path</strong> (<em>str</em>) – Path to the resliced image. Default is None.</p></li>
+<li><p><strong>is_label_image</strong> (<em>bool</em>) – Determines if the image is a label image. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resliced image as SimpleITK.Image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="moosez.image_processing.NiftiPreprocessor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">NiftiPreprocessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Nifti1Image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moosez.image_processing.NiftiPreprocessor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for processing NIfTI images using nibabel and SimpleITK.</p>
+<section id="attributes">
+<h3>Attributes:<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<dl class="simple">
+<dt>image: nibabel.Nifti1Image</dt><dd><p>The NIfTI image to be processed.</p>
+</dd>
+<dt>original_header: nibabel Header</dt><dd><p>The original header information of the NIfTI image.</p>
+</dd>
+<dt>is_large: bool</dt><dd><p>Flag indicating if the image is classified as large.</p>
+</dd>
+<dt>sitk_image: SimpleITK.Image</dt><dd><p>The image converted into a SimpleITK object.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.create_rotational_mip_gif">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">create_rotational_mip_gif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pet_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gif_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(2,</span> <span class="pre">2,</span> <span class="pre">2)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.image_processing.create_rotational_mip_gif" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a Maximum Intensity Projection (MIP) GIF of a PET image and its corresponding mask, rotating the image by a specified angle at each step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pet_path</strong> (<em>str</em>) – The path to the PET image file.</p></li>
+<li><p><strong>mask_path</strong> (<em>str</em>) – The path to the mask image file.</p></li>
+<li><p><strong>gif_path</strong> (<em>str</em>) – The path to save the output GIF file.</p></li>
+<li><p><strong>rotation_step</strong> (<em>int</em>) – The angle to rotate the image by at each step.</p></li>
+<li><p><strong>output_spacing</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em>) – The output voxel spacing of the resampled image.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.equalize_hist">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">equalize_hist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#moosez.image_processing.equalize_hist" title="Permalink to this definition"></a></dt>
+<dd><p>Applies histogram equalization to an image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>numpy.ndarray</em>) – The input image.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The equalized image as numpy.ndarray.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.get_intensity_statistics">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">get_intensity_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_csv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.image_processing.get_intensity_statistics" title="Permalink to this definition"></a></dt>
+<dd><p>Get the intensity statistics of a NIFTI image file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>sitk.Image</em>) – The source image from which the intensity statistics are calculated.</p></li>
+<li><p><strong>mask_image</strong> (<em>sitk.Image</em>) – The multilabel mask image.</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model.</p></li>
+<li><p><strong>out_csv</strong> (<em>str</em>) – The path to the output CSV file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.load_nii">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">load_nii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="headerlink" href="#moosez.image_processing.load_nii" title="Permalink to this definition"></a></dt>
+<dd><p>Loads a NIfTI image from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to the NIfTI file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded image as SimpleITK.Image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.mip_3d">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">mip_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#moosez.image_processing.mip_3d" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a Maximum Intensity Projection (MIP) of a 3D image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>numpy.ndarray</em>) – The input image.</p></li>
+<li><p><strong>angle</strong> (<em>float</em>) – The angle to rotate the image by.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The MIP of the rotated image as numpy.ndarray.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.normalize_img">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">normalize_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#moosez.image_processing.normalize_img" title="Permalink to this definition"></a></dt>
+<dd><p>Normalizes an image to its maximum intensity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>numpy.ndarray</em>) – The input image.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The normalized image as numpy.ndarray.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.split_and_save">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">split_and_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_chunk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_affine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_chunk_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.image_processing.split_and_save" title="Permalink to this definition"></a></dt>
+<dd><p>Get a chunk of the image and save it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_chunk</strong> (<em>da.Array</em>) – The Dask array chunk.</p></li>
+<li><p><strong>image_affine</strong> (<em>np.ndarray</em>) – The image affine transformation.</p></li>
+<li><p><strong>image_chunk_path</strong> (<em>str</em>) – The path to save the image chunk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.image_processing.write_image">
+<span class="sig-prename descclassname"><span class="pre">moosez.image_processing.</span></span><span class="sig-name descname"><span class="pre">write_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Nifti1Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_image_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">large_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.image_processing.write_image" title="Permalink to this definition"></a></dt>
+<dd><p>Writes an image either as a single file or multiple files depending on the image size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>nibabel.Nifti1Image</em>) – The image to save.</p></li>
+<li><p><strong>out_image_path</strong> (<em>str</em>) – The path to save the image.</p></li>
+<li><p><strong>large_image</strong> (<em>bool</em>) – Indicates whether the image classifies as large or not.</p></li>
+<li><p><strong>is_label</strong> (<em>bool</em>) – Indicates whether the image is a label or not.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-moosez.input_validation">
+<span id="moosez-input-validation-module"></span><h2>moosez.input_validation module<a class="headerlink" href="#module-moosez.input_validation" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.input_validation.check_directory_exists">
+<span class="sig-prename descclassname"><span class="pre">moosez.input_validation.</span></span><span class="sig-name descname"><span class="pre">check_directory_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.input_validation.check_directory_exists" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the specified directory exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>directory_path</strong> (<em>str</em>) – The path to the directory.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>Exception if the directory does not exist.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.input_validation.check_file_for_nnunet_compatibility">
+<span class="sig-prename descclassname"><span class="pre">moosez.input_validation.</span></span><span class="sig-name descname"><span class="pre">check_file_for_nnunet_compatibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.input_validation.check_file_for_nnunet_compatibility" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the file is nnUNet compatible. If not, compresses the file and renames it to include the required tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – The name of the file to check.</p></li>
+<li><p><strong>input_dir</strong> (<em>str</em>) – The path to the directory containing the file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.input_validation.make_nnunet_compatible">
+<span class="sig-prename descclassname"><span class="pre">moosez.input_validation.</span></span><span class="sig-name descname"><span class="pre">make_nnunet_compatible</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.input_validation.make_nnunet_compatible" title="Permalink to this definition"></a></dt>
+<dd><p>Checks the files in the specified directory to ensure they comply with the nnUNet requirements. If a file does not
+comply, it is compressed (if it is not already) and renamed to include the required tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_dir</strong> (<em>str</em>) – The path to the directory containing the files to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.input_validation.select_moose_compliant_subjects">
+<span class="sig-prename descclassname"><span class="pre">moosez.input_validation.</span></span><span class="sig-name descname"><span class="pre">select_moose_compliant_subjects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality_tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#moosez.input_validation.select_moose_compliant_subjects" title="Permalink to this definition"></a></dt>
+<dd><p>Selects the subjects that have the files that have names that are compliant with the moosez.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>subject_paths</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The path to the list of subjects that are present in the parent directory.</p></li>
+<li><p><strong>modality_tags</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The list of appropriate modality prefixes that should be attached to the files for them to be moose compliant.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The list of subject paths that are moose compliant.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-moosez.moosez">
+<span id="moosez-moosez-module"></span><h2>moosez.moosez module<a class="headerlink" href="#module-moosez.moosez" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.moosez.main">
+<span class="sig-prename descclassname"><span class="pre">moosez.moosez.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#moosez.moosez.main" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.moosez.moose">
+<span class="sig-prename descclassname"><span class="pre">moosez.moosez.</span></span><span class="sig-name descname"><span class="pre">moose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accelerator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moosez.moosez.moose" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-moosez.predict">
+<span id="moosez-predict-module"></span><h2>moosez.predict module<a class="headerlink" href="#module-moosez.predict" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.count_output_files">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">count_output_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#moosez.predict.count_output_files" title="Permalink to this definition"></a></dt>
+<dd><p>Counts the number of files in the specified output directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_dir</strong> (<em>str</em>) – The path to the output directory.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of files in the output directory.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.handle_large_image">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">handle_large_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Nifti1Image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#moosez.predict.handle_large_image" title="Permalink to this definition"></a></dt>
+<dd><p>Split a large image into parts and save them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>nib.Nifti1Image</em>) – The NIBABEL image.</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – Directory to save the image parts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of paths of the original or split image parts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.merge_image_parts">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">merge_image_parts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_image_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_image_affine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#moosez.predict.merge_image_parts" title="Permalink to this definition"></a></dt>
+<dd><p>Combine the split image parts back into a single image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>str</em>) – Directory where the image parts are saved.</p></li>
+<li><p><strong>original_image_shape</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em>) – The shape of the original image.</p></li>
+<li><p><strong>original_image_affine</strong> (<em>np.ndarray</em>) – The affine transformation of the original image.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the merged image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.monitor_output_directory">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">monitor_output_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spinner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Halo</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.predict.monitor_output_directory" title="Permalink to this definition"></a></dt>
+<dd><p>Continuously monitors the specified output directory for new files and updates the progress bar accordingly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> (<em>str</em>) – The path to the output directory.</p></li>
+<li><p><strong>total_files</strong> (<em>int</em>) – The total number of files that are expected to be generated in the output directory.</p></li>
+<li><p><strong>spinner</strong> (<em>Halo</em>) – The spinner that displays the progress of the segmentation process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.postprocess">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.predict.postprocess" title="Permalink to this definition"></a></dt>
+<dd><p>Postprocesses the predicted images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>original_image</strong> (<em>str</em>) – The path to the original image.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – The output directory containing the label image.</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.predict">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accelerator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.predict.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Runs the prediction using nnunet_predict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model.</p></li>
+<li><p><strong>input_dir</strong> (<em>str</em>) – The input directory.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – The output directory.</p></li>
+<li><p><strong>accelerator</strong> (<em>str</em>) – The accelerator to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.preprocess">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_image_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Nifti1Image</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#moosez.predict.preprocess" title="Permalink to this definition"></a></dt>
+<dd><p>Preprocesses the original images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>original_image_directory</strong> (<em>str</em>) – The directory containing the original images.</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – The name of the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the path to the temp folder, the resampled image, and the moose_image_object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[str, nib.Nifti1Image, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.predict.split_and_save">
+<span class="sig-prename descclassname"><span class="pre">moosez.predict.</span></span><span class="sig-name descname"><span class="pre">split_and_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shared_image_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_chunk_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#moosez.predict.split_and_save" title="Permalink to this definition"></a></dt>
+<dd><p>Split the image and save each part.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shared_image_data</strong> (<em>Tuple</em><em>[</em><em>np.ndarray</em><em>, </em><em>np.ndarray</em><em>]</em>) – A tuple containing the voxel data of the image and the affine transformation associated with the data.</p></li>
+<li><p><strong>z_index</strong> (<em>List</em><em>[</em><em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em><em>]</em>) – A list of tuples containing start and end indices for z-axis split.</p></li>
+<li><p><strong>image_chunk_path</strong> (<em>str</em>) – The path to save the image part.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-moosez.resources">
+<span id="moosez-resources-module"></span><h2>moosez.resources module<a class="headerlink" href="#module-moosez.resources" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.resources.check_cuda">
+<span class="sig-prename descclassname"><span class="pre">moosez.resources.</span></span><span class="sig-name descname"><span class="pre">check_cuda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#moosez.resources.check_cuda" title="Permalink to this definition"></a></dt>
+<dd><p>This function checks if CUDA is available on the device and prints the device name and number of CUDA devices
+available on the device.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>str: The device to run predictions on, either “cpu” or “cuda”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.resources.expected_modality">
+<span class="sig-prename descclassname"><span class="pre">moosez.resources.</span></span><span class="sig-name descname"><span class="pre">expected_modality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#moosez.resources.expected_modality" title="Permalink to this definition"></a></dt>
+<dd><p>Display expected modality for the model.
+:param model_name: The name of the model.
+:return: The expected modality for the model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moosez.resources.map_model_name_to_task_number">
+<span class="sig-prename descclassname"><span class="pre">moosez.resources.</span></span><span class="sig-name descname"><span class="pre">map_model_name_to_task_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moosez.resources.map_model_name_to_task_number" title="Permalink to this definition"></a></dt>
+<dd><p>Maps the model name to the task number.
+:param model_name: The name of the model.
+:return: The task number.</p>
+</dd></dl>
+
+</section>
+<section id="module-moosez">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-moosez" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer, QIMP.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
