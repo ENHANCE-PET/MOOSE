@@ -8,6 +8,7 @@
 
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('..'))
 
 project = 'MOOSE'
@@ -20,25 +21,16 @@ release = '2.0'
 
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',  # Added intersphinx extension
-    'sphinx.ext.viewcode',    # Added viewcode extension
+    'sphinx.ext.intersphinx',  # add this line for intersphinx
     # ... any other extensions you might be using
 ]
 
-# intersphinx mapping
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'moosez': ('https://moosez.readthedocs.io/en/latest/', None)
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    # ... add other libraries if needed
 }
-
-# Linking to source code on GitHub
-def linkcode_resolve(domain, info):
-    if domain != 'py':
-        return None
-    if not info['module']:
-        return None
-    filename = info['module'].replace('.', '/')
-    return f"https://github.com/LalithShiyam/MOOSE/blob/main/{filename}.py"
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -48,11 +40,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ['_static']
+
+# GitHub linking
 html_context = {
-    "display_github": True,
+    "display_github": True,  # Add 'Edit on Github' link instead of 'View page source'
     "github_user": "LalithShiyam",  # Your GitHub username
     "github_repo": "MOOSE",        # Your GitHub repository name
     "github_version": "main",      # Your preferred branch, tag, or commit
-    "conf_py_path": "/",           # Path in your repository to the docs
+    "conf_py_path": "/docs/",      # Path in your repository to the docs
 }
-
