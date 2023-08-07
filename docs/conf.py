@@ -5,6 +5,8 @@
 
 import os
 import sys
+from sphinx.application import Sphinx
+
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -54,4 +56,12 @@ def linkcode_resolve(domain, info):
         return None
     filename = info['module'].replace('.', '/')
     return "https://github.com/LalithShiyam/MOOSE/blob/main/moosez/%s.py" % filename
+
+def fix_github_source_link(app: Sphinx, pagename: str, templatename: str, context: dict, doctree):
+    if "viewcode_target" in context:
+        context["viewcode_target"] = context["viewcode_target"].replace("/moosez/moosez/", "/moosez/")
+
+def setup(app: Sphinx):
+    app.connect("html-page-context", fix_github_source_link)
+
 
