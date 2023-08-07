@@ -4,7 +4,7 @@
 """
 This module contains the constants that are used in the moosez.
 
-.. moduleauthor:: Lalith Kumar Shiyam Sundar <lalith.sundar@meduniwien.ac.at>
+.. moduleauthor:: Lalith Kumar Shiyam Sundar <lalith.shiyamsundar@meduniwien.ac.at>
 .. versionadded:: 2.0.0
 """
 
