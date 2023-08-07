@@ -7,7 +7,6 @@ import os
 import sys
 from sphinx.application import Sphinx
 
-
 sys.path.insert(0, os.path.abspath('..'))
 
 project = 'MOOSE'
@@ -21,7 +20,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx', 
     'sphinx.ext.viewcode',
-    'sphinx.ext.linkcode',  # Add this line
 ]
 
 intersphinx_mapping = {
@@ -47,21 +45,10 @@ html_context = {
     "conf_py_path": "/docs/",
 }
 
-# Linkcode configuration -----------------------------------------------------
-
-def linkcode_resolve(domain, info):
-    if domain != 'py':
-        return None
-    if not info['module']:
-        return None
-    filename = info['module'].replace('.', '/')
-    return "https://github.com/LalithShiyam/MOOSE/blob/main/moosez/%s.py" % filename
-
+# Fixing the GitHub source link
 def fix_github_source_link(app: Sphinx, pagename: str, templatename: str, context: dict, doctree):
     if "viewcode_target" in context:
         context["viewcode_target"] = context["viewcode_target"].replace("/moosez/moosez/", "/moosez/")
 
 def setup(app: Sphinx):
     app.connect("html-page-context", fix_github_source_link)
-
-
