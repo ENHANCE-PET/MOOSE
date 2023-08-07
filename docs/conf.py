@@ -3,9 +3,6 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 import os
 import sys
 
@@ -17,26 +14,24 @@ author = 'Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer, QIMP'
 release = '2.0'
 
 # -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',  # add this line for intersphinx
-    # ... any other extensions you might be using
+    'sphinx.ext.intersphinx', 
+    'sphinx.ext.viewcode',
+    'sphinx.ext.linkcode',  # Add this line
 ]
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    # ... add other libraries if needed
 }
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ['_static']
@@ -44,8 +39,19 @@ html_static_path = ['_static']
 # GitHub linking
 html_context = {
     "display_github": True,  # Add 'Edit on Github' link instead of 'View page source'
-    "github_user": "LalithShiyam",  # Your GitHub username
-    "github_repo": "MOOSE",        # Your GitHub repository name
-    "github_version": "main",      # Your preferred branch, tag, or commit
-    "conf_py_path": "/docs/",      # Path in your repository to the docs
+    "github_user": "LalithShiyam",
+    "github_repo": "MOOSE",
+    "github_version": "main",
+    "conf_py_path": "/docs/",
 }
+
+# Linkcode configuration -----------------------------------------------------
+
+def linkcode_resolve(domain, info):
+    if domain != 'py':
+        return None
+    if not info['module']:
+        return None
+    filename = info['module'].replace('.', '/')
+    return "https://github.com/LalithShiyam/MOOSE/blob/main/moosez/%s.py" % filename
+
