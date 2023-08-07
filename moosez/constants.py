@@ -96,6 +96,24 @@ ORGAN_INDICES = {
     },
     "clin_pt_fdg_tumor": {
         1: "tumor"
+    },
+    "preclin_mr_all":{
+        1: "muscle",
+        2: "intestines",
+        3: "pancreas",
+        4: "brown_adipose_tissue",
+        5: "thyroid",
+        6: "spleen",
+        7: "bladder",
+        8: "outer_kidney",
+        9: "heart",
+        10: "inner_kidney",
+        11: "white_adipose_tissue",
+        12: "aorta",
+        13: "lung",
+        14: "stomach",
+        15: "brain",
+        16: "liver"
     }
     # More index-to-name dictionaries for other models...
 }

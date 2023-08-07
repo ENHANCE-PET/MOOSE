@@ -72,11 +72,11 @@ MODELS = {
         "multilabel_prefix": "PT_FDG_Tumor_"
     },
     "preclin_mr_all": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_mr_14062023.zip",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_mr_all_07082023.zip",
         "filename": "Dataset234_Preclin.zip",
         "directory": "Dataset234_Preclin",
-        "trainer": "nnUNetTrainerNoMirroring",
-        "voxel_spacing": [0.15, 0.15, 0.15],
+        "trainer": "nnUNetTrainer",
+        "voxel_spacing": [0.1756799966096878, 0.1756799966096878, 0.1756799966096878],
         "multilabel_prefix": "Preclin_MR_all_"
     },
     "clin_ct_body": {
