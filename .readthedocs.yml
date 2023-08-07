@@ -9,10 +9,6 @@ version: 2
 sphinx:
   configuration: docs/conf.py
 
-# Build documentation in the root directory with Sphinx
-#sphinx:
-#  configuration: conf.py
-
 # Optionally build your docs in additional formats such as PDF and EPUB
 formats:
   - htmlzip
@@ -21,16 +17,11 @@ formats:
 # Optionally specify a custom Python version
 python:
   version: 3.8
+  install:
+    - requirements.txt
 
 # Optionally specify a custom build environment
 build:
   image: latest
 
-# Optionally specify a custom build command
-#build:
-#  command: make docs
-
-# Optionally specify a custom requirements file
-#python:
-install:
-  - requirements.txt
+# Clean up any commented-out configurations to avoid confusion.
