@@ -4,7 +4,8 @@
 
 
 ## MOOSE 2.0 🫎 - Leaner. Meaner. Stronger 💪
-[![Documentation Status](https://readthedocs.org/projects/moosez/badge/?version=latest)](https://moosez.rtfd.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/moosez/badge/?version=latest)](https://moosez.rtfd.io/en/latest/?badge=latest) [![PyPI version](https://badge.fury.io/py/moosez.svg)](https://pypi.org/project/moosez/)
+
 
 Unveiling a new dimension in 3D medical image segmentation: MOOSE 2.0 🚀
 
