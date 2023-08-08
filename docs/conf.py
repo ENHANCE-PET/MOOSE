@@ -9,8 +9,8 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 project = 'MOOSE'
-copyright = '2023, Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer, QIMP'
-author = 'Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer, QIMP'
+copyright = '2023, Quantitative Imaging and Medical Physics Team, Medical University of Vienna'
+author = 'Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires'
 release = '2.0'
 
 # Extensions
