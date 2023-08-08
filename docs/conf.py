@@ -64,6 +64,7 @@ html_css_files = [
     'custom.css',
 ]
 
+html_logo = '_static/Moose-logo-new.png'
 
 
 
