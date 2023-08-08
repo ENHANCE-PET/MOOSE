@@ -214,12 +214,45 @@ def main():
                     f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
 
 
-def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str):
+def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) -> None:
+    """
+    Execute the MOOSE 2.0 image segmentation process.
+
+    This function carries out the following steps:
+    1. Sets the path for model results.
+    2. Creates the required directory for the model.
+    3. Downloads the model based on the provided `model_name`.
+    4. Validates and prepares the input directory to be compatible with nnUNet.
+    5. Executes the prediction process.
+
+    :param model_name: The name of the model to be used for predictions. This model will be downloaded and used 
+                       for the image segmentation process.
+    :type model_name: str
+
+    :param input_dir: Path to the directory containing the images (in nifti, either .nii or .nii.gz) to be processed.
+    :type input_dir: str
+
+    :param output_dir: Path to the directory where the segmented output will be saved.
+    :type output_dir: str
+
+    :param accelerator: Specifies the type of accelerator to be used. Common values include "cpu" and "cuda" for 
+                        GPU acceleration.
+    :type accelerator: str
+
+    :return: None
+    :rtype: None
+
+    :Example:
+
+    >>> moose('clin_ct_organs', '/path/to/input/images', '/path/to/save/output', 'cuda')
+
+    """
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
     input_validation.make_nnunet_compatible(input_dir)
     predict.predict(model_name, input_dir, output_dir, accelerator)
+
 
 
 if __name__ == '__main__':
