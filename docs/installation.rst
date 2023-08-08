@@ -1,40 +1,27 @@
-Installation Instructions
-=========================
+.. MOOSE documentation master file, created by
+   sphinx-quickstart on Mon Aug  7 11:07:15 2023.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-Prerequisites
--------------
-- Python 3.9 or above
-- pip (Python package installer)
+Welcome to MOOSE's documentation!
+=================================
 
-Installation with pip
----------------------
-To install moosez using pip, simply run:
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
 
-.. code-block:: bash
+   introduction
+   requirements
+   installation
+   usage_guide
+   conventions
+   contribute
+   qimp_philosophy
+   modules
 
-   pip install moosez
+Indices and tables
+==================
 
-Installation from Source
-------------------------
-1. Clone the repository:
-   
-   .. code-block:: bash
-
-      git clone https://github.com/LalithShiyam/MOOSE/
-
-2. Navigate to the directory:
-
-   .. code-block:: bash
-
-      cd MOOSE
-
-3. Install the package:
-
-   .. code-block:: bash
-
-      pip install .
-
-Troubleshooting
----------------
-
-Visit https://github.com/LalithShiyam/MOOSE/
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
