@@ -48,13 +48,26 @@ logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d
 def main():
     colorama.init()
 
-    parser = argparse.ArgumentParser()
+    # Argument parser
+    parser = argparse.ArgumentParser(description="MOOSE (Multi-organ objective segmentation) a data-centric AI solution that generates multilabel organ segmentations to facilitate systemic TB whole-person research.")
 
-    parser.add_argument("-d", "--main_directory", type=str, help="Main directory containing subject folders",
-                        required=True)
+    # Main directory containing subject folders
+    parser.add_argument(
+        "-d", "--main_directory", 
+        type=str, 
+        required=True,
+        help="Main directory containing subject folders"
+    )
 
-    parser.add_argument("-m", "--model_name", type=str, help="Name of the model to use for segmentation",
-                        choices=AVAILABLE_MODELS, required=True)
+    # Name of the model to use for segmentation
+    parser.add_argument(
+        "-m", "--model_name", 
+        type=str, 
+        choices=AVAILABLE_MODELS, 
+        required=True,
+        help="Name of the model to use for segmentation"
+    )
+
     args = parser.parse_args()
 
     parent_folder = os.path.abspath(args.main_directory)
