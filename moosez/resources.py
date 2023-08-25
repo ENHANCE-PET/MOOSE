@@ -30,7 +30,8 @@ AVAILABLE_MODELS = ["clin_ct_lungs",
                     "clin_ct_organs",
                     "clin_pt_fdg_tumor",
                     "clin_ct_body",
-                    "preclin_mr_all"]
+                    "preclin_mr_all",
+                    "clin_ct_ribs"]
 
 # This dictionary holds the pre-trained models available in MooseZ library.
 # Each key is a unique model identifier following a specific syntax mentioned above
@@ -87,6 +88,14 @@ MODELS = {
         "voxel_spacing": [6, 6, 6],
         "multilabel_prefix": "CT_Body_"
     },
+    "clin_ct_ribs": {
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_ribs_25082023.zip",
+        "filename": "Dataset444_Ribs.zip",
+        "directory": "Dataset444_Ribs",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [1.5, 1.5, 1.5],
+        "multilabel_prefix": "CT_Ribs_"
+    }
 }
 
 
@@ -109,6 +118,7 @@ def expected_modality(model_name: str) -> dict:
         "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "PET", "Tissue of interest": "Tumor"},
         "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body, Arms, legs, head"},
         "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
+        "clin_ct_ribs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Ribs"},
     }
 
     if model_name in models:
@@ -143,6 +153,8 @@ def map_model_name_to_task_number(model_name: str):
         return '234'
     elif model_name == "clin_ct_body":
         return '001'
+    elif model_name == "clin_ct_ribs":
+        return '444'
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 

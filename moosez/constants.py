@@ -114,6 +114,33 @@ ORGAN_INDICES = {
         14: "stomach",
         15: "brain",
         16: "liver"
+    },
+    "clin_ct_ribs": {
+        1: "rib_left_1",
+        2: "rib_left_2",
+        3: "rib_left_3",
+        4: "rib_left_4",
+        5: "rib_left_5",
+        6: "rib_left_6",
+        7: "rib_left_7",
+        8: "rib_left_8",
+        9: "rib_left_9",
+        10: "rib_left_10",
+        11: "rib_left_11",
+        12: "rib_left_12",
+        13: "rib_right_1",
+        14: "rib_right_2",
+        15: "rib_right_3",
+        16: "rib_right_4",
+        17: "rib_right_5",
+        18: "rib_right_6",
+        19: "rib_right_7",
+        20: "rib_right_8",
+        21: "rib_right_9",
+        22: "rib_right_10",
+        23: "rib_right_11",
+        24: "rib_right_12",
+        25: "sternum"
     }
     # More index-to-name dictionaries for other models...
 }
