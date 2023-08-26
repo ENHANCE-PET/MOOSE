@@ -30,7 +30,8 @@ def get_usage_message():
     usage_message = """
     Usage:
       moosez -d <MAIN_DIRECTORY> -m <MODEL_NAME>
-      moosez --help
+    Example:  
+      moosez -d /Documents/Data_to_moose/ -m clin_ct_organs
 
     Description:
       MOOSE (Multi-organ objective segmentation) - A data-centric AI solution that
