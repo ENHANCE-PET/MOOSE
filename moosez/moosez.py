@@ -50,7 +50,7 @@ def main():
 
     # Argument parser
     parser = argparse.ArgumentParser(
-    description=display.get_usage_message,
+    description=display.get_usage_message(),
     formatter_class=argparse.RawTextHelpFormatter,  # To retain the custom formatting
     add_help=False  # We'll add our own help option later
     )
