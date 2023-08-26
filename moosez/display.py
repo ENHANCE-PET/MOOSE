@@ -26,6 +26,20 @@ from moosez import constants
 from moosez import resources
 
 
+def get_usage_message():
+    usage_message = """
+    Usage:
+      moosez -d <MAIN_DIRECTORY> -m <MODEL_NAME>
+      moosez --help
+
+    Description:
+      MOOSE (Multi-organ objective segmentation) - A data-centric AI solution that
+      generates multilabel organ segmentations for systemic TB whole-person research.
+    """
+    return usage_message
+    
+
+
 def logo():
     """
     Display MOOSE logo
