@@ -23,6 +23,6 @@ python:
 
 # Optionally specify a custom build environment
 build:
-  image: latest
+  os: latest
 
 # Clean up any commented-out configurations to avoid confusion.
