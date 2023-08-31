@@ -33,7 +33,8 @@ AVAILABLE_MODELS = ["clin_ct_lungs",
                     "preclin_mr_all",
                     "clin_ct_ribs",
                     "clin_ct_muscles",
-                    "clin_ct_peripheral_bones"]
+                    "clin_ct_peripheral_bones",
+                    "clin_ct_fat"]
 
 # This dictionary holds the pre-trained models available in MooseZ library.
 # Each key is a unique model identifier following a specific syntax mentioned above
@@ -113,6 +114,14 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Peripheral-Bones_"
+    },
+    "clin_ct_fat":{
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_fat_31082023.zip",
+        "filename": "Dataset777_Fat.zip",
+        "directory": "Dataset777_Fat",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [1.5, 1.5, 1.5],
+        "multilabel_prefix": "CT_Fat_"
     }
 
 
@@ -140,7 +149,8 @@ def expected_modality(model_name: str) -> dict:
         "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
         "clin_ct_ribs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Ribs"},
         "clin_ct_muscles": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Muscles"},
-        "clin_ct_peripheral_bones": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Peripheral Bones"}
+        "clin_ct_peripheral_bones": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Peripheral Bones"},
+        "clin_ct_fat": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Fat"}
     }
 
     if model_name in models:
@@ -181,6 +191,8 @@ def map_model_name_to_task_number(model_name: str):
         return "555"
     elif model_name == "clin_ct_peripheral_bones":
         return "666"
+    elif model_name == "clin_ct_fat":
+        return "777"
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
