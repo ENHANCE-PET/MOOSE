@@ -189,6 +189,16 @@ ORGAN_INDICES = {
         32: "thyroid_left",
         33: "thyroid_right",
         34: "bladder"
+    },
+    "clin_ct_fat":{
+        1: "spinal_chord",
+        2: "skeletal_muscle",
+        3: "subcutaneous_fat",
+        4: "visceral_fat",
+        5: "thoracic_fat",
+        6: "eyes",
+        7: "testicles",
+        8: "prostate"
     }
     # More index-to-name dictionaries for other models...
 }
