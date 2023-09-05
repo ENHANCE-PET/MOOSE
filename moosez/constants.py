@@ -199,6 +199,36 @@ ORGAN_INDICES = {
         6: "eyes",
         7: "testicles",
         8: "prostate"
+    },
+    "clin_ct_vertebrae":{
+        1: "vertebra_C1",
+        2: "vertebra_C2",
+        3: "vertebra_C3",
+        4: "vertebra_C4",
+        5: "vertebra_C5",
+        6: "vertebra_C6",
+        7: "vertebra_C7",
+        8: "vertebra_T1",
+        9: "vertebra_T2",
+        10: "vertebra_T3",
+        11: "vertebra_T4",
+        12: "vertebra_T5",
+        13: "vertebra_T6",
+        14: "vertebra_T7",
+        15: "vertebra_T8",
+        16: "vertebra_T9",
+        17: "vertebra_T10",
+        18: "vertebra_T11",
+        19: "vertebra_T12",
+        20: "vertebra_L1",
+        21: "vertebra_L2",
+        22: "vertebra_L3",
+        23: "vertebra_L4",
+        24: "vertebra_L5",
+        25: "vertebra_S1",
+        26: "hip_left",
+        27: "hip_right",
+        28: "sacrum"
     }
     # More index-to-name dictionaries for other models...
 }
