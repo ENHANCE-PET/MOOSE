@@ -35,7 +35,8 @@ AVAILABLE_MODELS = ["clin_ct_lungs",
                     "clin_ct_muscles",
                     "clin_ct_peripheral_bones",
                     "clin_ct_fat",
-                    "clin_ct_vertebrae"]
+                    "clin_ct_vertebrae",
+                    "clin_ct_cardiac"]
 
 # This dictionary holds the pre-trained models available in MooseZ library.
 # Each key is a unique model identifier following a specific syntax mentioned above
@@ -131,8 +132,15 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Vertebrae_"
+    },
+    "clin_ct_cardiac":{
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_cardiac_10092023.zip",
+        "filename": "Dataset888_Cardiac.zip",
+        "directory": "Dataset888_Cardiac",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [1.5, 1.5, 1.5],
+        "multilabel_prefix": "CT_Cardiac_"
     }
-
 
 }
 
@@ -160,7 +168,8 @@ def expected_modality(model_name: str) -> dict:
         "clin_ct_muscles": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Muscles"},
         "clin_ct_peripheral_bones": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Peripheral Bones"},
         "clin_ct_fat": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Fat"},
-        "clin_ct_vertebrae": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vertebrae"}
+        "clin_ct_vertebrae": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vertebrae"},
+        "clin_ct_cardiac": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Cardiac"}
     }
 
     if model_name in models:
@@ -205,6 +214,8 @@ def map_model_name_to_task_number(model_name: str):
         return "777"
     elif model_name == "clin_ct_vertebrae":
         return "111"
+    elif model_name == "clin_ct_cardiac":
+        return "888"
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 

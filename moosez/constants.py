@@ -229,6 +229,18 @@ ORGAN_INDICES = {
         26: "hip_left",
         27: "hip_right",
         28: "sacrum"
+    },
+    "clin_ct_cardiac":{
+    1: "heart_myocardium",
+    2: "heart_atrium_left",
+    3: "heart_ventricle_left",
+    4: "heart_atrium_right",
+    5: "heart_ventricle_right",
+    6: "pulmonary_artery",
+    7: "iliac_artery_left",
+    8: "iliac_artery_right",
+    9: "iliac_vena_left",
+    10: "iliac_vena_right"
     }
     # More index-to-name dictionaries for other models...
 }
