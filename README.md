@@ -118,7 +118,7 @@ Need assistance along the way? Don't worry, we've got you covered. Simply type:
 moosez -h
 ```
 
-This command will provide you with all the help and additional information you might need.
+This command will provide you with all the help and the information about the available models and the regions it segments.
 
 ### Using MOOSE 2.0 as a Library :books:
 
