@@ -118,7 +118,7 @@ Need assistance along the way? Don't worry, we've got you covered. Simply type:
 moosez -h
 ```
 
-This command will provide you with all the help and the information about the available models and the regions it segments.
+This command will provide you with all the help and the information about the available [models](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/resources.py#L29) and the [regions](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/constants.py#L64) it segments.
 
 ### Using MOOSE 2.0 as a Library :books:
 
