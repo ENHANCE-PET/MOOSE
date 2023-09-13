@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='moosez',
-    version='2.2.30',
+    version='2.2.31',
     author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer',
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
-    python_requires='>=3.9',
+    python_requires='>=3.9.2',
     long_description='mooseZ is an AI-inference engine based on nnUNet, designed for 3D clinical and preclinical'
                      ' whole-body segmentation tasks. It serves models tailored towards different modalities such'
                      ' as PET, CT, and MR. mooseZ provides fast and accurate segmentation results, making it a '
