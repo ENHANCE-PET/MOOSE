@@ -20,7 +20,7 @@ Crafted meticulously from the core principles of data-centric AI, MOOSE 2.0 is o
 
 :boom: **It's Meaner**: The QIMPies have poured their hearts and souls into building this beast from scratch. With the speed clocking 5x faster than its predecessor, MOOSE 2.0 cuts through the noise and gets down to business instantly. It serves up a range of segmentation models designed for both clinical and preclinical settings. No more waiting, no more compromises. It's Mean Machine time! :zap:
 
-:fire: **It's Stronger**: MOOSE 2.0 is powered by the sheer strength of Data-centric AI principles. With a whopping 2.5k datasets, that's ~60x times more data than our first model, we're packing a punch. MOOSE 2.0 comes with the strength and knowledge gained from an array of data that's simply unparalleled. The result? Better precision, improved outcomes, and a tool you can trust. :briefcase:
+:fire: **It's Stronger**: MOOSE 2.0 is powered by the sheer strength of Data-centric AI principles. With a whopping 1.5k whole-body PET/CT datasets, that's ~40x times more data than our first model, we're packing a punch. MOOSE 2.0 comes with the strength and knowledge gained from an array of data that's simply unparalleled. The result? Better precision, improved outcomes, and a tool you can trust. :briefcase:
 
 :bell: :loudspeaker: :boom: And now, it's even more **versatile**, with MOOSE 2.0, you now have the flexibility to use it as a powerful command-line tool for batch processing, or as a library package for individual processing in your Python projects. The choice is yours! :sunglasses:
 
