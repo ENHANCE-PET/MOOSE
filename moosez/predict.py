@@ -66,7 +66,7 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str) 
               f' -f all -tr {trainer} --disable_tta -device {accelerator}'
 
     # Run the command
-    subprocess.run(command, shell=True, stdout=subprocess.DEVNULL, env=os.environ)
+    subprocess.run(command, shell=True, stdout=subprocess.DEVNULL, env=os.environ, stderr=subprocess.DEVNULL)
 
     original_image_files = file_utilities.get_files(input_dir, '.nii.gz')
 
