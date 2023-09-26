@@ -250,7 +250,11 @@ ORGAN_INDICES = {
         5: "colon",
         6: "urinary_bladder",
         7: "face"
-}
+    },
+    "precling_ct_legs":{
+    1: "right_leg_muscle",
+    2: "left_leg_muscle"
+    }
     # More index-to-name dictionaries for other models...
 }
 """
