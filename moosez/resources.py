@@ -128,10 +128,10 @@ MODELS = {
         "multilabel_prefix": "CT_Fat_"
     },
     "clin_ct_vertebrae":{
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_vertebrae_04092023.zip",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_vertebrae_da5_03102023.zip",
         "filename": "Dataset111_Vertebrae.zip",
         "directory": "Dataset111_Vertebrae",
-        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "trainer": "nnUNetTrainer_2000_epochs_DA5NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Vertebrae_"
     },
