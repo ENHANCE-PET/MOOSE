@@ -39,6 +39,7 @@ from moosez import predict
 from moosez import resources
 from moosez.image_processing import ImageResampler
 from moosez.resources import MODELS, AVAILABLE_MODELS
+from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -108,6 +109,8 @@ def main():
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
     print(' ')
     modalities = display.expectations(model_name)
+    custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
+    logging.info('- Custom trainer: ' + custom_trainer_status)
     accelerator = resources.check_cuda()
 
     # ----------------------------------
@@ -279,6 +282,8 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
+    custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
+    logging.info('- Custom trainer: ' + custom_trainer_status)
     input_validation.make_nnunet_compatible(input_dir)
     predict.predict(model_name, input_dir, output_dir, accelerator)
 
