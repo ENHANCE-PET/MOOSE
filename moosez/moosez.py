@@ -147,6 +147,12 @@ def main():
                 os.path.isdir(os.path.join(parent_folder, d))]
     moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities)
 
+    num_subjects = len(moose_compliant_subjects)
+
+    if num_subjects < 1:
+        print(f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/QIMP-Team/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
+        return
+
     # -------------------------------------------------
     # RUN PREDICTION ONLY FOR MOOSE COMPLIANT SUBJECTS
     # -------------------------------------------------
@@ -161,7 +167,7 @@ def main():
     spinner = Halo(text=' Initiating', spinner='dots')
     spinner.start()
     start_total_time = time.time()
-    num_subjects = len(moose_compliant_subjects)
+
     for i, subject in enumerate(moose_compliant_subjects):
         # SETTING UP DIRECTORY STRUCTURE
         spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {os.path.basename(subject)}...'
