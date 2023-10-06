@@ -53,7 +53,7 @@ setup(
         'dicom2nifti~=2.4.8',
         'emoji',
         'dask[distributed]',
-        'opencv-python',
+        'opencv-python-headless',
     ],
     entry_points={
         'console_scripts': [
