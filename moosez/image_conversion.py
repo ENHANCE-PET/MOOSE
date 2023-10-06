@@ -197,10 +197,10 @@ def create_dicom_lookup(dicom_dir: str) -> dict:
         if is_dicom_file(full_path):
             ds = pydicom.dcmread(full_path)
 
-            series_number = ds.SeriesNumber if 'SeriesNumber' in ds else None
-            series_description = ds.SeriesDescription if 'SeriesDescription' in ds else None
-            sequence_name = ds.SequenceName if 'SequenceName' in ds else None
-            protocol_name = ds.ProtocolName if 'ProtocolName' in ds else None
+            series_number = ds.SeriesNumber if 'SeriesNumber' in ds else False
+            series_description = ds.SeriesDescription if 'SeriesDescription' in ds else False
+            sequence_name = ds.SequenceName if 'SequenceName' in ds else False
+            protocol_name = ds.ProtocolName if 'ProtocolName' in ds else False
             series_instance_UID = ds.SeriesInstanceUID if 'SeriesInstanceUID' in ds else None
 
             if ds.Modality == 'PT':
@@ -208,13 +208,13 @@ def create_dicom_lookup(dicom_dir: str) -> dict:
             else:
                 modality = ds.Modality
 
-            if series_number is not None:
+            if series_number is not False:
                 base_filename = remove_accents(series_number)
-                if series_description is not None:
+                if series_description is not False:
                     anticipated_filename = f"{base_filename}_{remove_accents(series_description)}.nii"
-                elif sequence_name is not None:
+                elif sequence_name is not False:
                     anticipated_filename = f"{base_filename}_{remove_accents(sequence_name)}.nii"
-                elif protocol_name is not None:
+                elif protocol_name is not False:
                     anticipated_filename = f"{base_filename}_{remove_accents(protocol_name)}.nii"
             else:
                 anticipated_filename = f"{remove_accents(series_instance_UID)}.nii"
