@@ -252,9 +252,31 @@ ORGAN_INDICES = {
         6: "urinary_bladder",
         7: "face"
     },
-    "precling_ct_legs":{
+    "preclin_ct_legs":{
     1: "right_leg_muscle",
     2: "left_leg_muscle"
+    },
+    "clin_ct_all_bones_v1":{
+        1: "carpal",
+        2: "clavicle",
+        3: "femur",
+        4: "fibula",
+        5: "humerus",
+        6: "metacarpal",
+        7: "metatarsal",
+        8: "patella",
+        9: "pelvis",
+        10: "fingers",
+        11: "radius",
+        12: "ribcage",
+        13: "scapula",
+        14: "skull",
+        15: "spine",
+        16: "sternum",
+        17: "tarsal",
+        18: "tibia",
+        19: "toes",
+        20: "ulna"
     }
     # More index-to-name dictionaries for other models...
 }
