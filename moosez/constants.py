@@ -253,8 +253,8 @@ ORGAN_INDICES = {
         7: "face"
     },
     "preclin_ct_legs":{
-    1: "right_leg_muscle",
-    2: "left_leg_muscle"
+        1: "right_leg_muscle",
+        2: "left_leg_muscle"
     },
     "clin_ct_all_bones_v1":{
         1: "carpal",
@@ -277,6 +277,31 @@ ORGAN_INDICES = {
         18: "tibia",
         19: "toes",
         20: "ulna"
+    },
+    "clin_ct_PUMA":{
+        0: "background",
+        1: "Spleen",
+        2: "Kidneys",
+        3: "Gallbladder",
+        4: "Liver",
+        5: "Stomach",
+        6: "Pancreas",
+        7: "Adrenal Glands",
+        8: "Lungs",
+        9: "Heart",
+        10: "Vessels",
+        11: "Esophagus",
+        12: "Trachea",
+        13: "Small_bowel",
+        14: "Duodenum",
+        15: "Colon",
+        16: "Brain",
+        17: "Skeleton",
+        18: "Subcutaneous_fat",
+        19: "Visceral fat",
+        20: "Muscles",
+        21: "Bladder",
+        22: "Filler"
     }
     # More index-to-name dictionaries for other models...
 }
