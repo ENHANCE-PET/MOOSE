@@ -203,10 +203,7 @@ def create_dicom_lookup(dicom_dir: str) -> dict:
             protocol_name = ds.ProtocolName if 'ProtocolName' in ds else False
             series_instance_UID = ds.SeriesInstanceUID if 'SeriesInstanceUID' in ds else None
 
-            if ds.Modality == 'PT':
-                modality = 'PET'
-            else:
-                modality = ds.Modality
+            modality = ds.Modality
 
             if series_number is not False:
                 base_filename = remove_accents(series_number)
