@@ -3,6 +3,7 @@
 
 import logging
 import os
+import zipfile
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
@@ -20,11 +21,11 @@ import os
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import requests
-from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
-from rich.console import Console
 from moosez import constants
 from moosez import resources
-import zipfile
+from rich.console import Console
+from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
+
 
 def binary(system_info, url):
     """

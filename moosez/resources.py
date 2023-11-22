@@ -98,7 +98,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Ribs_"
     },
-    "clin_ct_muscles":{
+    "clin_ct_muscles": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_muscles_28082023.zip",
         "filename": "Dataset555_Muscles.zip",
         "directory": "Dataset555_Muscles",
@@ -106,7 +106,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Muscles_"
     },
-    "clin_ct_peripheral_bones":{
+    "clin_ct_peripheral_bones": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_peripheral_bones_28082023.zip",
         "filename": "Dataset666_Peripheral-Bones.zip",
         "directory": "Dataset666_Peripheral-Bones",
@@ -114,7 +114,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Peripheral-Bones_"
     },
-    "clin_ct_fat":{
+    "clin_ct_fat": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_fat_31082023.zip",
         "filename": "Dataset777_Fat.zip",
         "directory": "Dataset777_Fat",
@@ -122,7 +122,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Fat_"
     },
-    "clin_ct_vertebrae":{
+    "clin_ct_vertebrae": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_vertebrae_da5_03102023.zip",
         "filename": "Dataset111_Vertebrae.zip",
         "directory": "Dataset111_Vertebrae",
@@ -130,7 +130,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Vertebrae_"
     },
-    "clin_ct_cardiac":{
+    "clin_ct_cardiac": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_cardiac_10092023.zip",
         "filename": "Dataset888_Cardiac.zip",
         "directory": "Dataset888_Cardiac",
@@ -138,7 +138,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Cardiac_"
     },
-    "clin_ct_digestive":{
+    "clin_ct_digestive": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_digestive10092023.zip",
         "filename": "Dataset999_Digestive.zip",
         "directory": "Dataset999_Digestive",

@@ -183,7 +183,8 @@ def monitor_output_directory(output_dir: str, total_files: int, spinner: Halo) -
         files_processed = new_files_processed
 
 
-def split_and_save(shared_image_data: Tuple[np.ndarray, np.ndarray], z_index: List[Tuple[int, int]], image_chunk_path: str) -> None:
+def split_and_save(shared_image_data: Tuple[np.ndarray, np.ndarray], z_index: List[Tuple[int, int]],
+                   image_chunk_path: str) -> None:
     """
     Split the image and save each part.
 
@@ -246,7 +247,8 @@ def handle_large_image(image: nib.Nifti1Image, save_dir: str) -> List[str]:
         return [resampled_image_path]
 
 
-def merge_image_parts(save_dir: str, original_image_shape: Tuple[int, int, int], original_image_affine: np.ndarray) -> str:
+def merge_image_parts(save_dir: str, original_image_shape: Tuple[int, int, int],
+                      original_image_affine: np.ndarray) -> str:
     """
     Combine the split image parts back into a single image.
 

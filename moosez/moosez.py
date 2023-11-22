@@ -50,31 +50,31 @@ def main():
 
     # Argument parser
     parser = argparse.ArgumentParser(
-    description=display.get_usage_message(),
-    formatter_class=argparse.RawTextHelpFormatter,  # To retain the custom formatting
-    add_help=False  # We'll add our own help option later
+        description=display.get_usage_message(),
+        formatter_class=argparse.RawTextHelpFormatter,  # To retain the custom formatting
+        add_help=False  # We'll add our own help option later
     )
 
     # Main directory containing subject folders
     parser.add_argument(
-        "-d", "--main_directory", 
-        type=str, 
+        "-d", "--main_directory",
+        type=str,
         required=True,
         metavar="<MAIN_DIRECTORY>",
         help="Specify the main directory containing subject folders."
     )
-    
+
     # Name of the model to use for segmentation
     model_help_text = "Choose the model for segmentation from the following:\n" + "\n".join(AVAILABLE_MODELS)
     parser.add_argument(
-        "-m", "--model_name", 
-        type=str, 
-        choices=AVAILABLE_MODELS, 
+        "-m", "--model_name",
+        type=str,
+        choices=AVAILABLE_MODELS,
         required=True,
         metavar="<MODEL_NAME>",
         help=model_help_text
     )
-    
+
     # Custom help option
     parser.add_argument(
         "-h", "--help",
@@ -82,7 +82,6 @@ def main():
         default=argparse.SUPPRESS,
         help="Show this help message and exit."
     )
-
 
     args = parser.parse_args()
 
@@ -149,7 +148,8 @@ def main():
     num_subjects = len(moose_compliant_subjects)
 
     if num_subjects < 1:
-        print(f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/QIMP-Team/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
+        print(
+            f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/QIMP-Team/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
         return
 
     # -------------------------------------------------
@@ -286,7 +286,6 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     logging.info('- Custom trainer: ' + custom_trainer_status)
     input_validation.make_nnunet_compatible(input_dir)
     predict.predict(model_name, input_dir, output_dir, accelerator)
-
 
 
 if __name__ == '__main__':

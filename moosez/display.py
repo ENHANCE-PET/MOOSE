@@ -21,7 +21,6 @@ import logging
 
 import emoji
 import pyfiglet
-
 from moosez import constants
 from moosez import resources
 
@@ -38,7 +37,6 @@ def get_usage_message():
       generates multilabel organ segmentations for systemic TB whole-person research.
     """
     return usage_message
-    
 
 
 def logo():

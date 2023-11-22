@@ -21,8 +21,8 @@ import contextlib
 import io
 import os
 import re
-import unicodedata
 import shutil
+import unicodedata
 
 import SimpleITK
 import dicom2nifti
@@ -50,7 +50,6 @@ def read_dicom_folder(folder_path: str) -> SimpleITK.Image:
     return dicom_image
 
 
-    
 def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     """
     Converts any image format known to ITK to NIFTI
@@ -179,6 +178,7 @@ def is_dicom_file(filename: str) -> bool:
         return True
     except pydicom.errors.InvalidDicomError:
         return False
+
 
 def create_dicom_lookup(dicom_dir: str) -> dict:
     """

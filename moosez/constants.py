@@ -98,7 +98,7 @@ ORGAN_INDICES = {
     "clin_pt_fdg_tumor": {
         1: "tumor"
     },
-    "preclin_mr_all":{
+    "preclin_mr_all": {
         1: "muscle",
         2: "intestines",
         3: "pancreas",
@@ -143,7 +143,7 @@ ORGAN_INDICES = {
         24: "rib_right_12",
         25: "sternum"
     },
-    "clin_ct_muscles":{
+    "clin_ct_muscles": {
         1: "gluteus_maximus_left",
         2: "gluteus_maximus_right",
         3: "gluteus_medius_left",
@@ -155,7 +155,7 @@ ORGAN_INDICES = {
         9: "iliopsoas_left",
         10: "iliopsoas_right"
     },
-    "clin_ct_peripheral_bones":{
+    "clin_ct_peripheral_bones": {
         1: "carpal_left",
         2: "carpal_right",
         3: "clavicle_left",
@@ -191,7 +191,7 @@ ORGAN_INDICES = {
         33: "thyroid_right",
         34: "bladder"
     },
-    "clin_ct_fat":{
+    "clin_ct_fat": {
         1: "spinal_chord",
         2: "skeletal_muscle",
         3: "subcutaneous_fat",
@@ -201,7 +201,7 @@ ORGAN_INDICES = {
         7: "testicles",
         8: "prostate"
     },
-    "clin_ct_vertebrae":{
+    "clin_ct_vertebrae": {
         1: "vertebra_C1",
         2: "vertebra_C2",
         3: "vertebra_C3",
@@ -231,7 +231,7 @@ ORGAN_INDICES = {
         27: "hip_right",
         28: "sacrum"
     },
-    "clin_ct_cardiac":{
+    "clin_ct_cardiac": {
         1: "heart_myocardium",
         2: "heart_atrium_left",
         3: "heart_ventricle_left",
@@ -243,7 +243,7 @@ ORGAN_INDICES = {
         9: "iliac_vena_left",
         10: "iliac_vena_right"
     },
-    "clin_ct_digestive":{
+    "clin_ct_digestive": {
         1: "esophagus",
         2: "trachea",
         3: "small_bowel",
@@ -252,11 +252,11 @@ ORGAN_INDICES = {
         6: "urinary_bladder",
         7: "face"
     },
-    "preclin_ct_legs":{
+    "preclin_ct_legs": {
         1: "right_leg_muscle",
         2: "left_leg_muscle"
     },
-    "clin_ct_all_bones_v1":{
+    "clin_ct_all_bones_v1": {
         1: "carpal",
         2: "clavicle",
         3: "femur",
@@ -278,7 +278,7 @@ ORGAN_INDICES = {
         19: "toes",
         20: "ulna"
     },
-    "clin_ct_PUMA":{
+    "clin_ct_PUMA": {
         0: "background",
         1: "Spleen",
         2: "Kidneys",
@@ -303,7 +303,7 @@ ORGAN_INDICES = {
         21: "Bladder",
         22: "Filler"
     },
-    "clin_pt_fdg_brain_v1":{
+    "clin_pt_fdg_brain_v1": {
         0: "background",
         1: "R-Hippocampus",
         2: "L-Hippocampus",
