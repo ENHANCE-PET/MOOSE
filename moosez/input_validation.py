@@ -21,8 +21,8 @@ import logging
 import multiprocessing
 import os
 from typing import List
-import nibabel as nib
 
+import nibabel as nib
 from moosez import constants
 
 

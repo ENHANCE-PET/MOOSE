@@ -18,22 +18,15 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+
 import SimpleITK as sitk
+import dask
 import dask.array as da
 import nibabel
 import numpy as np
 import pandas as pd
-import nibabel as nib
-import warnings
-from scipy.ndimage import rotate
-from skimage import exposure
-import imageio
-import dask
-import cv2
-from dask.distributed import Client
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
-    CHUNK_FILENAMES, DISPLAY_VOXEL_SPACING, FRAME_DURATION
-from typing import Tuple
+    CHUNK_FILENAMES
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -57,6 +50,39 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
                    intensity_statistics.GetMinimum(i)) for i in intensity_statistics.GetLabels()]
     columns = ['Mean', 'Standard-Deviation', 'Median', 'Maximum', 'Minimum']
     stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
+    labels_present = stats_df.index.to_list()
+    regions_present = []
+    organ_indices_dict = ORGAN_INDICES[model_name]
+    for label in labels_present:
+        if label in organ_indices_dict:
+            regions_present.append(organ_indices_dict[label])
+        else:
+            continue
+    stats_df.insert(0, 'Regions-Present', np.array(regions_present))
+    stats_df.to_csv(out_csv)
+
+
+def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
+    """
+    Get the shape statistics of a NIFTI image file.
+
+    :param mask_image: The multilabel mask image.
+    :type mask_image: sitk.Image
+    :param model_name: The name of the model.
+    :type model_name: str
+    :param out_csv: The path to the output CSV file.
+    :type out_csv: str
+    :return: None
+    """
+    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    label_shape_filter.Execute(mask_image)
+
+    stats_list = [(label_shape_filter.GetPhysicalSize(i),) for i in label_shape_filter.GetLabels() if
+                  i != 0]  # exclude background label
+    columns = ['Volume(mm3)']
+    stats_df = pd.DataFrame(data=stats_list, index=[i for i in label_shape_filter.GetLabels() if i != 0],
+                            columns=columns)
+
     labels_present = stats_df.index.to_list()
     regions_present = []
     organ_indices_dict = ORGAN_INDICES[model_name]
@@ -99,6 +125,7 @@ def delayed_split_and_save(image_chunk: da.Array, image_affine: np.ndarray, imag
     :return: None
     """
     split_and_save(image_chunk, image_affine, image_chunk_path)
+
 
 def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False,
                 is_label: bool = False) -> None:
@@ -294,6 +321,7 @@ class NiftiPreprocessor:
 
         return sitk_image
 
+
 class ImageResampler:
     @staticmethod
     def chunk_along_axis(axis: int) -> int:
@@ -414,7 +442,7 @@ class ImageResampler:
         resampled_image.SetDirection(sitk_image.GetDirection())
 
         return resampled_image
-    
+
     @staticmethod
     def resample_image_SimpleITK(sitk_image: sitk.Image, interpolation: str,
                                  output_spacing: tuple = (1.5, 1.5, 1.5),
@@ -509,7 +537,7 @@ class ImageResampler:
 
     @staticmethod
     def resample_segmentations(input_image_path: str, desired_spacing: tuple,
-                            desired_size: tuple) -> nibabel.Nifti1Image:
+                               desired_size: tuple) -> nibabel.Nifti1Image:
         """
         Resamples an image to a new spacing.
 
@@ -569,7 +597,7 @@ class ImageResampler:
 
     @staticmethod
     def reslice_identity(reference_image: sitk.Image, moving_image: sitk.Image,
-                     output_image_path: str = None, is_label_image: bool = False) -> sitk.Image:
+                         output_image_path: str = None, is_label_image: bool = False) -> sitk.Image:
         """
         Reslices an image to the same space as another image.
 
@@ -597,144 +625,3 @@ class ImageResampler:
         if output_image_path is not None:
             sitk.WriteImage(resampled_image, output_image_path)
         return resampled_image
-
-
-def load_nii(path: str) -> sitk.Image:
-    """
-    Loads a NIfTI image from a file.
-
-    :param path: The path to the NIfTI file.
-    :type path: str
-    :return: The loaded image as SimpleITK.Image.
-    :rtype: SimpleITK.Image
-    """
-    sitk_img = sitk.ReadImage(path)
-    return sitk_img
-
-
-def normalize_img(img: np.ndarray) -> np.ndarray:
-    """
-    Normalizes an image to its maximum intensity.
-
-    :param img: The input image.
-    :type img: numpy.ndarray
-    :return: The normalized image as numpy.ndarray.
-    :rtype: numpy.ndarray
-    """
-    # Normalize the image to its maximum intensity
-    img = img / np.max(img)
-
-    return img
-
-
-def equalize_hist(img: np.ndarray) -> np.ndarray:
-    """
-    Applies histogram equalization to an image.
-
-    :param img: The input image.
-    :type img: numpy.ndarray
-    :return: The equalized image as numpy.ndarray.
-    :rtype: numpy.ndarray
-    """
-    img_eq = exposure.equalize_adapthist(img)
-
-    return img_eq
-
-
-def mip_3d(img: np.ndarray, angle: float) -> np.ndarray:
-    """
-    Creates a Maximum Intensity Projection (MIP) of a 3D image.
-
-    :param img: The input image.
-    :type img: numpy.ndarray
-    :param angle: The angle to rotate the image by.
-    :type angle: float
-    :return: The MIP of the rotated image as numpy.ndarray.
-    :rtype: numpy.ndarray
-    """
-    # Rotate the image
-    rot_img = rotate(img, angle, axes=(1, 2), reshape=False)
-
-    # Create Maximum Intensity Projection along the first axis
-    mip = np.max(rot_img, axis=1)
-
-    # Invert the mip
-    mip_inverted = np.max(mip) - mip
-
-    # Rotate MIP 90 degrees anti-clockwise
-    mip_flipped = np.flip(mip_inverted, axis=0)
-
-    return mip_flipped
-
-
-def create_rotational_mip_gif(pet_path: str, mask_path: str, gif_path: str, rotation_step: int = 5, output_spacing: Tuple[int, int, int] = (2, 2, 2)) -> None:
-    """
-    Creates a Maximum Intensity Projection (MIP) GIF of a PET image and its corresponding mask, rotating the image by a specified angle at each step.
-
-    :param pet_path: The path to the PET image file.
-    :type pet_path: str
-    :param mask_path: The path to the mask image file.
-    :type mask_path: str
-    :param gif_path: The path to save the output GIF file.
-    :type gif_path: str
-    :param rotation_step: The angle to rotate the image by at each step.
-    :type rotation_step: int
-    :param output_spacing: The output voxel spacing of the resampled image.
-    :type output_spacing: Tuple[int, int, int]
-    :return: None
-    :rtype: None
-    """
-    # Load the images
-    sitk_pet_img = load_nii(pet_path)
-    sitk_mask_img = load_nii(mask_path)
-
-    # Resample the images
-    resampler = ImageResampler()
-    sitk_pet_img_resampled = resampler.resample_image_SimpleITK_DASK(sitk_pet_img, 'linear', DISPLAY_VOXEL_SPACING)
-    sitk_mask_img_resampled = resampler.resample_image_SimpleITK_DASK(sitk_mask_img, 'nearest', DISPLAY_VOXEL_SPACING)
-
-    # Convert back to numpy array
-    pet_img_resampled = sitk.GetArrayFromImage(sitk_pet_img_resampled)
-    mask_img_resampled = sitk.GetArrayFromImage(sitk_mask_img_resampled)
-
-    # Normalize the PET image
-    pet_img_resampled = normalize_img(pet_img_resampled)
-
-    # Apply histogram equalization to PET image
-    pet_img_resampled = equalize_hist(pet_img_resampled)
-
-    # Create color versions of the images
-    pet_img_color = np.stack((pet_img_resampled, pet_img_resampled, pet_img_resampled), axis=-1)  # RGB
-    mask_img_color = np.stack((0.5 * mask_img_resampled, np.zeros_like(mask_img_resampled), 0.5 * mask_img_resampled), axis=-1)  # RGB, purple color
-
-    # Create a Dask client with default settings
-    client = Client()
-
-    # Scatter the data to the workers
-    pet_img_color_future = client.scatter(pet_img_color, broadcast=True)
-    mask_img_color_future = client.scatter(mask_img_color, broadcast=True)
-
-    # Create MIPs for a range of angles and store them
-    angles = list(range(0, 360, rotation_step))
-    pet_mip_images_futures = client.map(mip_3d, [pet_img_color_future] * len(angles), angles)
-    mask_mip_images_futures = client.map(mip_3d, [mask_img_color_future] * len(angles), angles)
-
-    # Gather the images
-    pet_mip_images = client.gather(pet_mip_images_futures)
-    mask_mip_images = client.gather(mask_mip_images_futures)
-
-    # Blend the PET and mask MIPs
-    overlay_mip_images = [cv2.addWeighted(pet_mip, 0.7, mask_mip.astype(pet_mip.dtype), 0.3, 0)
-                          for pet_mip, mask_mip in zip(pet_mip_images, mask_mip_images)]
-
-    # Normalize the image array to 0-255
-    mip_images = [(255 * (im - np.min(im)) / (np.max(im) - np.min(im))).astype(np.uint8) for im in overlay_mip_images]
-
-    # Save as gif
-    imageio.mimsave(gif_path, mip_images, duration=FRAME_DURATION)
-
-    # Cleanup
-    client.close()
-    del sitk_pet_img, sitk_mask_img, pet_img_resampled, mask_img_resampled, pet_img_color, mask_img_color, pet_mip_images, mask_mip_images, overlay_mip_images, mip_images
-
-

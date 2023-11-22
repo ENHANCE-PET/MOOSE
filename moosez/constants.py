@@ -98,7 +98,7 @@ ORGAN_INDICES = {
     "clin_pt_fdg_tumor": {
         1: "tumor"
     },
-    "preclin_mr_all":{
+    "preclin_mr_all": {
         1: "muscle",
         2: "intestines",
         3: "pancreas",
@@ -143,7 +143,7 @@ ORGAN_INDICES = {
         24: "rib_right_12",
         25: "sternum"
     },
-    "clin_ct_muscles":{
+    "clin_ct_muscles": {
         1: "gluteus_maximus_left",
         2: "gluteus_maximus_right",
         3: "gluteus_medius_left",
@@ -155,7 +155,7 @@ ORGAN_INDICES = {
         9: "iliopsoas_left",
         10: "iliopsoas_right"
     },
-    "clin_ct_peripheral_bones":{
+    "clin_ct_peripheral_bones": {
         1: "carpal_left",
         2: "carpal_right",
         3: "clavicle_left",
@@ -191,7 +191,7 @@ ORGAN_INDICES = {
         33: "thyroid_right",
         34: "bladder"
     },
-    "clin_ct_fat":{
+    "clin_ct_fat": {
         1: "spinal_chord",
         2: "skeletal_muscle",
         3: "subcutaneous_fat",
@@ -201,7 +201,7 @@ ORGAN_INDICES = {
         7: "testicles",
         8: "prostate"
     },
-    "clin_ct_vertebrae":{
+    "clin_ct_vertebrae": {
         1: "vertebra_C1",
         2: "vertebra_C2",
         3: "vertebra_C3",
@@ -231,7 +231,7 @@ ORGAN_INDICES = {
         27: "hip_right",
         28: "sacrum"
     },
-    "clin_ct_cardiac":{
+    "clin_ct_cardiac": {
         1: "heart_myocardium",
         2: "heart_atrium_left",
         3: "heart_ventricle_left",
@@ -243,7 +243,7 @@ ORGAN_INDICES = {
         9: "iliac_vena_left",
         10: "iliac_vena_right"
     },
-    "clin_ct_digestive":{
+    "clin_ct_digestive": {
         1: "esophagus",
         2: "trachea",
         3: "small_bowel",
@@ -252,11 +252,11 @@ ORGAN_INDICES = {
         6: "urinary_bladder",
         7: "face"
     },
-    "preclin_ct_legs":{
+    "preclin_ct_legs": {
         1: "right_leg_muscle",
         2: "left_leg_muscle"
     },
-    "clin_ct_all_bones_v1":{
+    "clin_ct_all_bones_v1": {
         1: "carpal",
         2: "clavicle",
         3: "femur",
@@ -278,7 +278,7 @@ ORGAN_INDICES = {
         19: "toes",
         20: "ulna"
     },
-    "clin_ct_PUMA":{
+    "clin_ct_PUMA": {
         0: "background",
         1: "Spleen",
         2: "Kidneys",
@@ -302,6 +302,92 @@ ORGAN_INDICES = {
         20: "Muscles",
         21: "Bladder",
         22: "Filler"
+    },
+    "clin_pt_fdg_brain_v1": {
+        0: "background",
+        1: "R-Hippocampus",
+        2: "L-Hippocampus",
+        3: "R-Amygdala",
+        4: "L-Amygdala",
+        5: "R-Anterior-temporal-lobe-medial-part",
+        6: "L-Anterior-temporal-lobe-medial-part",
+        7: "R-Anterior-temporal-lobe-lateral-part",
+        8: "L-Anterior-temporal-lobe-lateral-part",
+        9: "R-Parahippocampal-and-ambient-gyri",
+        10: "L-Parahippocampal-and-ambient-gyri",
+        11: "R-Superior-temporal-gyrus-posterior-part",
+        12: "L-Superior-temporal-gyrus-posterior-part",
+        13: "R-Middle and inferior temporal gyrus",
+        14: "L-Middle and inferior temporal gyrus",
+        15: "R-Fusiform gyrus",
+        16: "L-Fusiform gyrus",
+        17: "R-Cerebellum",
+        18: "L-Cerebellum",
+        19: "Brainstem",
+        20: "L-Insula",
+        21: "R-Insula",
+        22: "L-Lateral remainder of occipital lobe",
+        23: "R-Lateral remainder of occipital lobe",
+        24: "L-Cingulate gyrus gyrus cinguli anterior part",
+        25: "R-Cingulate gyrus gyrus cinguli anterior part",
+        26: "L-Cingulate gyrus gyrus cinguli posterior part",
+        27: "R-Cingulate gyrus gyrus cinguli posterior part",
+        28: "L-Middle frontal gyrus",
+        29: "R-Middle frontal gyrus",
+        30: "L-Posterior temporal lobe",
+        31: "R-Posterior temporal lobe",
+        32: "L-Inferiolateral remainder of parietal lobe",
+        33: "R-Inferiolateral remainder of parietal lobe",
+        34: "L-Caudate nucleus",
+        35: "R-Caudate nucleus",
+        36: "L-Nucleus accumbens",
+        37: "R-Nucleus accumbens",
+        38: "L-Putamen",
+        39: "R-Putamen",
+        40: "L-Thalamus",
+        41: "R-Thalamus",
+        42: "L-Pallidum",
+        43: "R-Pallidum",
+        44: "Corpus callosum",
+        45: "R-Lateral ventricle excluding temporal horn",
+        46: "L-Lateral ventricle excluding temporal horn",
+        47: "R-Lateral ventricle, temporal horn",
+        48: "L-Lateral ventricle, temporal horn",
+        49: "Third ventricle",
+        50: "L-Precentral gyrus",
+        51: "R-Precentral gyrus",
+        52: "L-Straight gyrus",
+        53: "R-Straight gyrus",
+        54: "L-Anterior orbital gyrus",
+        55: "R-Anterior orbital gyrus",
+        56: "L-Inferior frontal gyrus",
+        57: "R-Inferior frontal gyrus",
+        58: "L-Superior frontal gyrus",
+        59: "R-Superior frontal gyrus",
+        60: "L-Postcentral gyrus",
+        61: "R-Postcentral gyrus",
+        62: "L-Superior parietal gyrus",
+        63: "R-Superior parietal gyrus",
+        64: "L-Lingual gyrus",
+        65: "R-Lingual gyrus",
+        66: "L-Cuneus",
+        67: "R-Cuneus",
+        68: "L-Medial orbital gyrus",
+        69: "R-Medial orbital gyrus",
+        70: "L-Lateral orbital gyrus",
+        71: "R-Lateral orbital gyrus",
+        72: "L-Posterior orbital gyrus",
+        73: "R-Posterior orbital gyrus",
+        74: "L-Substantia nigra",
+        75: "R-Substantia nigra",
+        76: "L-Subgenual frontal cortex",
+        77: "R-Subgenual frontal cortex",
+        78: "L-Subcallosal area",
+        79: "R-Subcallosal area",
+        80: "L-Pre-subgenual frontal cortex",
+        81: "R-Pre-subgenual frontal cortex",
+        82: "L-Superior temporal gyrus anterior part",
+        83: "R-Superior temporal gyrus anterior part"
     }
     # More index-to-name dictionaries for other models...
 }

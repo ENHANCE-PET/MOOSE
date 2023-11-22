@@ -1,5 +1,5 @@
-from nnunetv2.training.nnUNetTrainer.variants.data_augmentation.nnUNetTrainerDA5 import nnUNetTrainerDA5
 import torch
+from nnunetv2.training.nnUNetTrainer.variants.data_augmentation.nnUNetTrainerDA5 import nnUNetTrainerDA5
 
 
 class nnUNetTrainer_2000_epochs_DA5NoMirroring(nnUNetTrainerDA5):
@@ -9,7 +9,6 @@ class nnUNetTrainer_2000_epochs_DA5NoMirroring(nnUNetTrainerDA5):
         self.num_epochs = 2000
 
         print(f"Epochs: {self.num_epochs}")
-
 
     def configure_rotation_dummyDA_mirroring_and_inital_patch_size(self):
         rotation_for_DA, do_dummy_2d_data_aug, initial_patch_size, mirror_axes = \

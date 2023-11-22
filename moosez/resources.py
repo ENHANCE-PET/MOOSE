@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
 # Institution: Medical University of Vienna
@@ -17,7 +19,6 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import torch
-import logging
 from moosez import constants
 
 # This list contains the unique identifiers for all available pre-trained models.
@@ -28,7 +29,6 @@ from moosez import constants
 
 AVAILABLE_MODELS = ["clin_ct_lungs",
                     "clin_ct_organs",
-                    "clin_pt_fdg_tumor",
                     "clin_ct_body",
                     "preclin_mr_all",
                     "clin_ct_ribs",
@@ -40,7 +40,8 @@ AVAILABLE_MODELS = ["clin_ct_lungs",
                     "clin_ct_digestive",
                     "preclin_ct_legs",
                     "clin_ct_all_bones_v1",
-                    "clin_ct_PUMA"]
+                    "clin_ct_PUMA",
+                    "clin_pt_fdg_brain_v1"]
 
 # This dictionary holds the pre-trained models available in MooseZ library.
 # Each key is a unique model identifier following a specific syntax mentioned above
@@ -73,14 +74,6 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Organs_"
     },
-    "clin_pt_fdg_tumor": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_pt_fdg_tumor_3_30072023.zip",
-        "filename": "Dataset789_Tumor_3.zip",
-        "directory": "Dataset789_Tumor_3",
-        "trainer": "nnUNetTrainerDA5",
-        "voxel_spacing": [3, 3, 3],
-        "multilabel_prefix": "PT_FDG_Tumor_"
-    },
     "preclin_mr_all": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_mr_all_07082023.zip",
         "filename": "Dataset234_preclin_mr.zip",
@@ -105,7 +98,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Ribs_"
     },
-    "clin_ct_muscles":{
+    "clin_ct_muscles": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_muscles_28082023.zip",
         "filename": "Dataset555_Muscles.zip",
         "directory": "Dataset555_Muscles",
@@ -113,7 +106,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Muscles_"
     },
-    "clin_ct_peripheral_bones":{
+    "clin_ct_peripheral_bones": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_peripheral_bones_28082023.zip",
         "filename": "Dataset666_Peripheral-Bones.zip",
         "directory": "Dataset666_Peripheral-Bones",
@@ -121,7 +114,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Peripheral-Bones_"
     },
-    "clin_ct_fat":{
+    "clin_ct_fat": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_fat_31082023.zip",
         "filename": "Dataset777_Fat.zip",
         "directory": "Dataset777_Fat",
@@ -129,7 +122,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Fat_"
     },
-    "clin_ct_vertebrae":{
+    "clin_ct_vertebrae": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_vertebrae_da5_03102023.zip",
         "filename": "Dataset111_Vertebrae.zip",
         "directory": "Dataset111_Vertebrae",
@@ -137,7 +130,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Vertebrae_"
     },
-    "clin_ct_cardiac":{
+    "clin_ct_cardiac": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_cardiac_10092023.zip",
         "filename": "Dataset888_Cardiac.zip",
         "directory": "Dataset888_Cardiac",
@@ -145,7 +138,7 @@ MODELS = {
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Cardiac_"
     },
-    "clin_ct_digestive":{
+    "clin_ct_digestive": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_digestive10092023.zip",
         "filename": "Dataset999_Digestive.zip",
         "directory": "Dataset999_Digestive",
@@ -176,8 +169,15 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "Clin_CT_PUMA_"
+    },
+    "clin_pt_fdg_brain_v1": {
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_fdg_pt_brain_v1_17112023.zip",
+        "filename": "Dataset100_Brain_v1.zip",
+        "directory": "Dataset100_Brain_v1",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [2.03125, 2.0862598419189453, 2.0862600803375244],
+        "multilabel_prefix": "Clin_PT_FDG_brain_"
     }
-
 }
 
 
@@ -197,7 +197,6 @@ def expected_modality(model_name: str) -> dict:
     models = {
         "clin_ct_lungs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Lungs"},
         "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
-        "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "PET", "Tissue of interest": "Tumor"},
         "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body, Arms, legs, head"},
         "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
         "clin_ct_ribs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Ribs"},
@@ -209,7 +208,8 @@ def expected_modality(model_name: str) -> dict:
         "clin_ct_digestive": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Digestive"},
         "preclin_ct_legs": {"Imaging": "Pre-clinical", "Modality": "CT", "Tissue of interest": "Legs"},
         "clin_ct_all_bones_v1": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "All bones"},
-        "clin_ct_PUMA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"}
+        "clin_ct_PUMA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"},
+        "clin_pt_fdg_brain_v1": {"Imaging": "Clinical", "Modality": "PT", "Tissue of interest": "Brain regions"}
     }
 
     if model_name in models:
@@ -238,8 +238,6 @@ def map_model_name_to_task_number(model_name: str):
         return '333'
     elif model_name == "clin_ct_organs":
         return '123'
-    elif model_name == "clin_pt_fdg_tumor":
-        return '789'
     elif model_name == "preclin_mr_all":
         return '234'
     elif model_name == "clin_ct_body":
@@ -264,6 +262,8 @@ def map_model_name_to_task_number(model_name: str):
         return "600"
     elif model_name == "clin_ct_PUMA":
         return "002"
+    elif model_name == "clin_pt_fdg_brain_v1":
+        return "100"
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 

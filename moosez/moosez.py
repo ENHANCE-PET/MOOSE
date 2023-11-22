@@ -21,13 +21,12 @@ import glob
 import logging
 import os
 import time
-import emoji
 from datetime import datetime
 
 import SimpleITK
 import colorama
+import emoji
 from halo import Halo
-
 from moosez import constants
 from moosez import display
 from moosez import download
@@ -38,8 +37,8 @@ from moosez import input_validation
 from moosez import predict
 from moosez import resources
 from moosez.image_processing import ImageResampler
-from moosez.resources import MODELS, AVAILABLE_MODELS
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
+from moosez.resources import MODELS, AVAILABLE_MODELS
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -51,31 +50,31 @@ def main():
 
     # Argument parser
     parser = argparse.ArgumentParser(
-    description=display.get_usage_message(),
-    formatter_class=argparse.RawTextHelpFormatter,  # To retain the custom formatting
-    add_help=False  # We'll add our own help option later
+        description=display.get_usage_message(),
+        formatter_class=argparse.RawTextHelpFormatter,  # To retain the custom formatting
+        add_help=False  # We'll add our own help option later
     )
 
     # Main directory containing subject folders
     parser.add_argument(
-        "-d", "--main_directory", 
-        type=str, 
+        "-d", "--main_directory",
+        type=str,
         required=True,
         metavar="<MAIN_DIRECTORY>",
         help="Specify the main directory containing subject folders."
     )
-    
+
     # Name of the model to use for segmentation
     model_help_text = "Choose the model for segmentation from the following:\n" + "\n".join(AVAILABLE_MODELS)
     parser.add_argument(
-        "-m", "--model_name", 
-        type=str, 
-        choices=AVAILABLE_MODELS, 
+        "-m", "--model_name",
+        type=str,
+        choices=AVAILABLE_MODELS,
         required=True,
         metavar="<MODEL_NAME>",
         help=model_help_text
     )
-    
+
     # Custom help option
     parser.add_argument(
         "-h", "--help",
@@ -83,7 +82,6 @@ def main():
         default=argparse.SUPPRESS,
         help="Show this help message and exit."
     )
-
 
     args = parser.parse_args()
 
@@ -150,7 +148,8 @@ def main():
     num_subjects = len(moose_compliant_subjects)
 
     if num_subjects < 1:
-        print(f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/QIMP-Team/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
+        print(
+            f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/QIMP-Team/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
         return
 
     # -------------------------------------------------
@@ -226,22 +225,17 @@ def main():
                            f'{constants.ANSI_RESET}'
             time.sleep(3)
 
-        # if model name has tumor calculate the fused MIP, because it is much more useful
-        if 'tumor' in model_name:
-            multilabel_file = glob.glob(os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
-            spinner.text = f'[{i + 1}/{num_subjects}] Calculating fused MIP of PET image and tumor mask for ' \
-                           f'{os.path.basename(subject)}...'
-            image_processing.create_rotational_mip_gif(pet_path=pet_file,
-                                                       mask_path=multilabel_file,
-                                                       gif_path=os.path.join(output_dir,
-                                                                             os.path.basename(subject) +
-                                                                             '_rotational_mip.gif'),
-                                                       rotation_step=constants.MIP_ROTATION_STEP)
-            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] Fused MIP of PET image and tumor mask ' \
-                           f'calculated' \
-                           f' for {os.path.basename(subject)}! '
-            time.sleep(3)
-
+        # ----------------------------------
+        # EXTRACT VOLUME STATISTICS
+        # ----------------------------------
+        spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {os.path.basename(subject)}...'
+        multilabel_file = glob.glob(os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
+        multilabel_image = SimpleITK.ReadImage(multilabel_file)
+        out_csv = os.path.join(stats_dir, os.path.basename(subject) + '_ct_volume.csv')
+        image_processing.get_shape_statistics(multilabel_image, model_name, out_csv)
+        spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
+                       f'{constants.ANSI_RESET}'
+        time.sleep(1)
 
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
@@ -292,7 +286,6 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     logging.info('- Custom trainer: ' + custom_trainer_status)
     input_validation.make_nnunet_compatible(input_dir)
     predict.predict(model_name, input_dir, output_dir, accelerator)
-
 
 
 if __name__ == '__main__':

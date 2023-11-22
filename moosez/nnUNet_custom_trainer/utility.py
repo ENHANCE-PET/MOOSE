@@ -1,6 +1,7 @@
-import site
 import os
 import platform
+import site
+
 from moosez import file_utilities
 
 
