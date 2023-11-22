@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
 # Institution: Medical University of Vienna
@@ -17,7 +19,6 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import torch
-import logging
 from moosez import constants
 
 # This list contains the unique identifiers for all available pre-trained models.
@@ -28,7 +29,6 @@ from moosez import constants
 
 AVAILABLE_MODELS = ["clin_ct_lungs",
                     "clin_ct_organs",
-                    "clin_pt_fdg_tumor",
                     "clin_ct_body",
                     "preclin_mr_all",
                     "clin_ct_ribs",
@@ -73,14 +73,6 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Organs_"
-    },
-    "clin_pt_fdg_tumor": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_pt_fdg_tumor_3_30072023.zip",
-        "filename": "Dataset789_Tumor_3.zip",
-        "directory": "Dataset789_Tumor_3",
-        "trainer": "nnUNetTrainerDA5",
-        "voxel_spacing": [3, 3, 3],
-        "multilabel_prefix": "PT_FDG_Tumor_"
     },
     "preclin_mr_all": {
         "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_mr_all_07082023.zip",
@@ -205,7 +197,6 @@ def expected_modality(model_name: str) -> dict:
     models = {
         "clin_ct_lungs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Lungs"},
         "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
-        "clin_pt_fdg_tumor": {"Imaging": "Clinical", "Modality": "PET", "Tissue of interest": "Tumor"},
         "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body, Arms, legs, head"},
         "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
         "clin_ct_ribs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Ribs"},
@@ -247,8 +238,6 @@ def map_model_name_to_task_number(model_name: str):
         return '333'
     elif model_name == "clin_ct_organs":
         return '123'
-    elif model_name == "clin_pt_fdg_tumor":
-        return '789'
     elif model_name == "preclin_mr_all":
         return '234'
     elif model_name == "clin_ct_body":

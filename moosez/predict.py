@@ -20,19 +20,19 @@ import glob
 import os
 import shutil
 import subprocess
+from typing import Tuple, List, Any
 
 import nibabel as nib
 import numpy as np
 from halo import Halo
-from mpire import WorkerPool
-
 from moosez import constants
 from moosez import file_utilities
 from moosez import image_processing
 from moosez.image_processing import ImageResampler
 from moosez.image_processing import NiftiPreprocessor
 from moosez.resources import MODELS, map_model_name_to_task_number
-from typing import Tuple, List, Any
+from mpire import WorkerPool
+
 
 def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str) -> None:
     """
@@ -104,8 +104,8 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
     resampled_image = ImageResampler.resample_image(moose_img_object=moose_image_object,
                                                     interpolation=constants.INTERPOLATION,
                                                     desired_spacing=desired_spacing)
-    # if model name has tumor in it, run logic below
-    if "tumor" in model_name:
+    # if model name has body in it, run logic below
+    if "body" in model_name:
         image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
                                      False, False)
     else:
@@ -137,11 +137,9 @@ def postprocess(original_image: str, output_dir: str, model_name: str) -> None:
                                                                  desired_size=native_size)
     multilabel_image = os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] +
                                     os.path.basename(original_image))
-    # if model_name has tumor in it, run logic below
-    if "tumor" in model_name:
+    # if model_name has body in it, run logic below
+    if "body" in model_name:
         resampled_prediction_data = resampled_prediction.get_fdata()
-        resampled_prediction_data[resampled_prediction_data != constants.TUMOR_LABEL] = 0
-        resampled_prediction_data[resampled_prediction_data == constants.TUMOR_LABEL] = 1
         resampled_prediction_new = nib.Nifti1Image(resampled_prediction_data, resampled_prediction.affine,
                                                    resampled_prediction.header)
         image_processing.write_image(resampled_prediction_new, multilabel_image, False, True)

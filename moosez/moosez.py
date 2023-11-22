@@ -21,13 +21,12 @@ import glob
 import logging
 import os
 import time
-import emoji
 from datetime import datetime
 
 import SimpleITK
 import colorama
+import emoji
 from halo import Halo
-
 from moosez import constants
 from moosez import display
 from moosez import download
@@ -38,8 +37,8 @@ from moosez import input_validation
 from moosez import predict
 from moosez import resources
 from moosez.image_processing import ImageResampler
-from moosez.resources import MODELS, AVAILABLE_MODELS
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
+from moosez.resources import MODELS, AVAILABLE_MODELS
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                     filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
@@ -226,22 +225,17 @@ def main():
                            f'{constants.ANSI_RESET}'
             time.sleep(3)
 
-        # if model name has tumor calculate the fused MIP, because it is much more useful
-        if 'tumor' in model_name:
-            multilabel_file = glob.glob(os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
-            spinner.text = f'[{i + 1}/{num_subjects}] Calculating fused MIP of PET image and tumor mask for ' \
-                           f'{os.path.basename(subject)}...'
-            image_processing.create_rotational_mip_gif(pet_path=pet_file,
-                                                       mask_path=multilabel_file,
-                                                       gif_path=os.path.join(output_dir,
-                                                                             os.path.basename(subject) +
-                                                                             '_rotational_mip.gif'),
-                                                       rotation_step=constants.MIP_ROTATION_STEP)
-            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] Fused MIP of PET image and tumor mask ' \
-                           f'calculated' \
-                           f' for {os.path.basename(subject)}! '
-            time.sleep(3)
-
+        # ----------------------------------
+        # EXTRACT VOLUME STATISTICS
+        # ----------------------------------
+        spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {os.path.basename(subject)}...'
+        multilabel_file = glob.glob(os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
+        multilabel_image = SimpleITK.ReadImage(multilabel_file)
+        out_csv = os.path.join(stats_dir, os.path.basename(subject) + '_ct_volume.csv')
+        image_processing.get_shape_statistics(multilabel_image, model_name, out_csv)
+        spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
+                       f'{constants.ANSI_RESET}'
+        time.sleep(1)
 
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60

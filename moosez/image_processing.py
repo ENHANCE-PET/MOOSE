@@ -18,22 +18,21 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+from typing import Tuple
+
 import SimpleITK as sitk
+import cv2
+import dask
 import dask.array as da
+import imageio
 import nibabel
 import numpy as np
 import pandas as pd
-import nibabel as nib
-import warnings
-from scipy.ndimage import rotate
-from skimage import exposure
-import imageio
-import dask
-import cv2
 from dask.distributed import Client
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
     CHUNK_FILENAMES, DISPLAY_VOXEL_SPACING, FRAME_DURATION
-from typing import Tuple
+from scipy.ndimage import rotate
+from skimage import exposure
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -57,6 +56,39 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
                    intensity_statistics.GetMinimum(i)) for i in intensity_statistics.GetLabels()]
     columns = ['Mean', 'Standard-Deviation', 'Median', 'Maximum', 'Minimum']
     stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
+    labels_present = stats_df.index.to_list()
+    regions_present = []
+    organ_indices_dict = ORGAN_INDICES[model_name]
+    for label in labels_present:
+        if label in organ_indices_dict:
+            regions_present.append(organ_indices_dict[label])
+        else:
+            continue
+    stats_df.insert(0, 'Regions-Present', np.array(regions_present))
+    stats_df.to_csv(out_csv)
+
+
+def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
+    """
+    Get the shape statistics of a NIFTI image file.
+
+    :param mask_image: The multilabel mask image.
+    :type mask_image: sitk.Image
+    :param model_name: The name of the model.
+    :type model_name: str
+    :param out_csv: The path to the output CSV file.
+    :type out_csv: str
+    :return: None
+    """
+    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    label_shape_filter.Execute(mask_image)
+
+    stats_list = [(label_shape_filter.GetPhysicalSize(i),) for i in label_shape_filter.GetLabels() if
+                  i != 0]  # exclude background label
+    columns = ['Volume(mm3)']
+    stats_df = pd.DataFrame(data=stats_list, index=[i for i in label_shape_filter.GetLabels() if i != 0],
+                            columns=columns)
+
     labels_present = stats_df.index.to_list()
     regions_present = []
     organ_indices_dict = ORGAN_INDICES[model_name]
