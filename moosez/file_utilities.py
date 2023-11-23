@@ -178,7 +178,7 @@ def find_pet_file(folder: str) -> str:
     :rtype: str
     """
     # Searching for files with 'PET' in their name and ending with either .nii or .nii.gz
-    pet_files = glob.glob(os.path.join(folder, 'PET*.nii*'))  # Files should start with PET
+    pet_files = glob.glob(os.path.join(folder, 'PT*.nii*'))  # Files should start with PET
 
     if len(pet_files) == 1:
         return pet_files[0]
