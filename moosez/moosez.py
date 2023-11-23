@@ -40,12 +40,10 @@ from moosez.image_processing import ImageResampler
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
 from moosez.resources import MODELS, AVAILABLE_MODELS
 
-logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                    filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'),
-                    filemode='w')
-
 
 def main():
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
+                        filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
     colorama.init()
 
     # Argument parser
