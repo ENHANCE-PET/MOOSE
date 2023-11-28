@@ -83,11 +83,11 @@ MODELS = {
         "multilabel_prefix": "Preclin_MR_all_"
     },
     "clin_ct_body": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/Dataset001_PUMA.zip",
-        "filename": "Dataset001_PUMA.zip",
-        "directory": "Dataset001_PUMA",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_body_27112023.zip",
+        "filename": "Dataset001_body.zip",
+        "directory": "Dataset001_body",
         "trainer": "nnUNetTrainer",
-        "voxel_spacing": [6, 6, 6],
+        "voxel_spacing": [5, 5, 5],
         "multilabel_prefix": "CT_Body_"
     },
     "clin_ct_ribs": {
