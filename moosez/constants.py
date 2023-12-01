@@ -388,7 +388,14 @@ ORGAN_INDICES = {
         81: "R-Pre-subgenual frontal cortex",
         82: "L-Superior temporal gyrus anterior part",
         83: "R-Superior temporal gyrus anterior part"
-    }
+    },
+    "clin_ct_ALPACA":{
+        1: "heart_ventricle_left",
+        2: "heart_ventricle_right",
+        3: "pulmonary_artery",
+        4: "iliac_artery_left",
+        5: "iliac_artery_right",
+        6: "aorta"}
     # More index-to-name dictionaries for other models...
 }
 """
