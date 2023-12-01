@@ -41,7 +41,8 @@ AVAILABLE_MODELS = ["clin_ct_lungs",
                     "preclin_ct_legs",
                     "clin_ct_all_bones_v1",
                     "clin_ct_PUMA",
-                    "clin_pt_fdg_brain_v1"]
+                    "clin_pt_fdg_brain_v1",
+                    "clin_ct_ALPACA"]
 
 # This dictionary holds the pre-trained models available in MooseZ library.
 # Each key is a unique model identifier following a specific syntax mentioned above
@@ -177,6 +178,14 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [2.03125, 2.0862598419189453, 2.0862600803375244],
         "multilabel_prefix": "Clin_PT_FDG_brain_"
+    },
+    "clin_ct_ALPACA": {
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/clin_ct_ALPACA.zip",
+        "filename": "Dataset080_ALPACA.zip",
+        "directory": "Dataset080_ALPACA",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [1.5, 1.5, 1.5],
+        "multilabel_prefix": "Clin_CT_ALPACA_"
     }
 }
 
@@ -209,7 +218,8 @@ def expected_modality(model_name: str) -> dict:
         "preclin_ct_legs": {"Imaging": "Pre-clinical", "Modality": "CT", "Tissue of interest": "Legs"},
         "clin_ct_all_bones_v1": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "All bones"},
         "clin_ct_PUMA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"},
-        "clin_pt_fdg_brain_v1": {"Imaging": "Clinical", "Modality": "PT", "Tissue of interest": "Brain regions"}
+        "clin_pt_fdg_brain_v1": {"Imaging": "Clinical", "Modality": "PT", "Tissue of interest": "Brain regions"},
+        "clin_ct_ALPACA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "ALPACA tissues"}
     }
 
     if model_name in models:
@@ -264,6 +274,8 @@ def map_model_name_to_task_number(model_name: str):
         return "002"
     elif model_name == "clin_pt_fdg_brain_v1":
         return "100"
+    elif model_name == "clin_ct_ALPACA":
+        return "080"
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
