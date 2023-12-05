@@ -148,11 +148,11 @@ MODELS = {
         "multilabel_prefix": "CT_Digestive_"
     },
     "preclin_ct_legs": {
-        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_ct_legs_26092023.zip",
-        "filename": "Dataset256_Preclin_Legs.zip",
-        "directory": "Dataset256_Preclin_Legs",
+        "url": "https://moose-files.s3.eu-de.cloud-object-storage.appdomain.cloud/preclin_ct_legs_05122023.zip",
+        "filename": "Dataset256_Preclin_leg_muscles.zip",
+        "directory": "Dataset256_Preclin_leg_muscles",
         "trainer": "nnUNetTrainerNoMirroring",
-        "voxel_spacing": [0.0975629985332489, 0.0975629985332489, 0.0975629985332489],
+        "voxel_spacing": [0.18000000715255737, 0.18000000715255737, 0.18000000715255737],
         "multilabel_prefix": "Preclin_CT_legs_"
     },
     "clin_ct_all_bones_v1": {
