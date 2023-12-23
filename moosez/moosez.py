@@ -107,7 +107,7 @@ def main():
     modalities = display.expectations(model_name)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     logging.info('- Custom trainer: ' + custom_trainer_status)
-    accelerator = resources.check_cuda()
+    accelerator = resources.check_device()
 
     # ----------------------------------
     # DOWNLOADING THE MODEL
