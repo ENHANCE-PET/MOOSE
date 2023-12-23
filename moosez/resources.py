@@ -280,20 +280,25 @@ def map_model_name_to_task_number(model_name: str):
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
 
-def check_cuda() -> str:
+def check_device() -> str:
     """
-    This function checks if CUDA is available on the device and prints the device name and number of CUDA devices
-    available on the device.
+    This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
 
     Returns:
-        str: The device to run predictions on, either "cpu" or "cuda".
+        str: The device to run predictions on, either "cpu", "cuda", or "mps".
     """
-    if not torch.cuda.is_available():
-        print(
-            f"{constants.ANSI_ORANGE}CUDA not available on this device. Predictions will be run on CPU.{constants.ANSI_RESET}")
+    # Check for CUDA
+    if torch.cuda.is_available():
+        device_count = torch.cuda.device_count()
+        print(f" CUDA is available with {device_count} GPU(s). Predictions will be run on GPU.")
+        return "cuda"
+    # Check for MPS (Apple Silicon)
+    elif 'mps' in torch.backends and torch.backends.mps.is_available():
+        print(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
+        return "mps"
+    elif 'mps' in torch.backends and not torch.backends.mps.is_built():
+        print(" MPS not available because the current PyTorch install was not built with MPS enabled.")
         return "cpu"
     else:
-        device_count = torch.cuda.device_count()
-        print(
-            f"{constants.ANSI_GREEN} CUDA is available on this device with {device_count} GPU(s). Predictions will be run on GPU.{constants.ANSI_RESET}")
-        return "cuda"
+        print(" CUDA/MPS not available. Predictions will be run on CPU.")
+        return "cpu"
