@@ -18,6 +18,7 @@ Accommodating an array of modalities including PET, CT, and MRI, MOOSE 2.0 stand
 
 Join us as we embark on this journey.
 
+## Sneak-Peek 👀 
 <div align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
