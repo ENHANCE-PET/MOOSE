@@ -18,6 +18,14 @@ Accommodating an array of modalities including PET, CT, and MRI, MOOSE 2.0 stand
 
 Join us as we embark on this journey.
 
+<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
+  <img alt="Shows an illustrated MOOSE story board adopted to different themes" src="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
+</picture>
+</div>
+
 ## Star History 🤩
 
 <a href="https://star-history.com/#QIMP-Team/MOOSE&Date">
