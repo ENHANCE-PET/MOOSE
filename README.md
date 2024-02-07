@@ -27,7 +27,30 @@ Join us as we embark on this journey.
 </picture>
 </div>
 
-## Sneak-Peek 👀 
+## Available Segmentation Models 🧬
+
+MOOSE 2.0 offers a wide range of segmentation models catering to various clinical and preclinical needs. Here are the models currently available:
+
+### Clinical 👫🏽
+- [`clin_ct_lungs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L85)
+- [`clin_ct_organs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L66)
+- [`clin_ct_body`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L92)
+- [`clin_ct_ribs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L124)
+- [`clin_ct_muscles`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L151)
+- [`clin_ct_peripheral_bones`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L163)
+- [`clin_ct_fat`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L199)
+- [`clin_ct_vertebrae`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L209)
+- [`clin_ct_cardiac`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L239)
+- [`clin_ct_digestive`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L251)
+- [`clin_ct_all_bones_v1`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L264)
+- [`clin_pt_fdg_brain_v1`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L311)
+
+### Preclinical 🐁
+- [`preclin_ct_legs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L260)
+- [`preclin_mr_all`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L101)
+
+Each model is designed to provide high-quality segmentation with MOOSE 2.0's optimized algorithms and data-centric AI principles.
+
 <div align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
