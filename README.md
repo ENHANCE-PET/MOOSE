@@ -87,7 +87,7 @@ Before you dive into the incredible world of MOOSE 2.0, here are a few things yo
 
 - **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 2.0 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
 
-- **Python**: Ensure that you have Python 3.9.2 or above installed on your system. MOOSE 2.0 likes to keep up with the latest, after all!
+- **Python**: Ensure that you have Python 3.10 installed on your system. MOOSE 2.0 likes to keep up with the latest, after all!
 
 So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 2.0 has to offer. 🚀🌐
 
