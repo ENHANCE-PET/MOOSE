@@ -78,7 +78,7 @@ MODELS = {
     "preclin_mr_all": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/preclin_mr_all_05122023.zip",
         "filename": "Dataset234_minimoose.zip",
-        "directory": "Dataset234_minimoose_mr",
+        "directory": "Dataset234_minimoose",
         "trainer": "nnUNetTrainer",
         "voxel_spacing": [0.4000000059604645, 0.4000000059604645, 0.4000000059604645],
         "multilabel_prefix": "Preclin_MR_all_"
