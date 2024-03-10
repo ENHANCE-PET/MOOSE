@@ -400,7 +400,33 @@ ORGAN_INDICES = {
         3: "pulmonary_artery",
         4: "iliac_artery_left",
         5: "iliac_artery_right",
-        6: "aorta"}
+        6: "aorta"
+    },
+    "clin_ct_PUMA4": {
+        0: "background",
+        1: "Spleen",
+        2: "Kidneys",
+        3: "Gallbladder",
+        4: "Liver",
+        5: "Stomach",
+        6: "Pancreas",
+        7: "Adrenal Glands",
+        8: "Lungs",
+        9: "Heart",
+        10: "Vessels",
+        11: "Esophagus",
+        12: "Trachea",
+        13: "Small_bowel",
+        14: "Duodenum",
+        15: "Colon",
+        16: "Brain",
+        17: "Skeleton",
+        18: "Subcutaneous_fat",
+        19: "Visceral fat",
+        20: "Muscles",
+        21: "Bladder",
+        22: "Filler"
+    },
     # More index-to-name dictionaries for other models...
 }
 """
