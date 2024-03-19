@@ -97,7 +97,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_ribs": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_ribs_25082023.zip",
+        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_ribs_19032024.zip",
         "filename": "Dataset444_Ribs.zip",
         "directory": "Dataset444_Ribs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
