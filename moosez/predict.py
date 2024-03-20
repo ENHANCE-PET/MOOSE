@@ -60,9 +60,10 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str) 
 
     # choose the appropriate trainer for the model
     trainer = MODELS[model_name]["trainer"]
+    configuration = MODELS[model_name]["configuration"]
 
     # Construct the command
-    command = f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c 3d_fullres' \
+    command = f'nnUNetv2_predict -i {temp_input_dir} -o {output_dir} -d {task_number} -c {configuration}' \
               f' -f all -tr {trainer} --disable_tta -device {accelerator}'
 
     # Run the command

@@ -66,7 +66,8 @@ MODELS = {
         "directory": "Dataset333_HMS3dlungs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Lungs_"
+        "multilabel_prefix": "CT_Lungs_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_organs": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/MOOSEv2_bspline_organs23062023.zip",
@@ -74,7 +75,8 @@ MODELS = {
         "directory": "Dataset123_Organs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Organs_"
+        "multilabel_prefix": "CT_Organs_",
+        "configuration": "3d_fullres"
     },
     "preclin_mr_all": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/preclin_mr_all_05122023.zip",
@@ -82,7 +84,8 @@ MODELS = {
         "directory": "Dataset234_minimoose",
         "trainer": "nnUNetTrainer",
         "voxel_spacing": [0.4000000059604645, 0.4000000059604645, 0.4000000059604645],
-        "multilabel_prefix": "Preclin_MR_all_"
+        "multilabel_prefix": "Preclin_MR_all_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_body": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_body_27112023.zip",
@@ -90,15 +93,17 @@ MODELS = {
         "directory": "Dataset001_body",
         "trainer": "nnUNetTrainer",
         "voxel_spacing": [5, 5, 5],
-        "multilabel_prefix": "CT_Body_"
+        "multilabel_prefix": "CT_Body_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_ribs": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_ribs_25082023.zip",
+        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_ribs_19032024.zip",
         "filename": "Dataset444_Ribs.zip",
         "directory": "Dataset444_Ribs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Ribs_"
+        "multilabel_prefix": "CT_Ribs_",
+        "configuration": "3d_fullres_big_patch"
     },
     "clin_ct_muscles": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_muscles_28082023.zip",
@@ -106,7 +111,8 @@ MODELS = {
         "directory": "Dataset555_Muscles",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Muscles_"
+        "multilabel_prefix": "CT_Muscles_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_peripheral_bones": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_peripheral_bones_28082023.zip",
@@ -114,7 +120,8 @@ MODELS = {
         "directory": "Dataset666_Peripheral-Bones",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Peripheral-Bones_"
+        "multilabel_prefix": "CT_Peripheral-Bones_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_fat": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_fat_31082023.zip",
@@ -122,7 +129,8 @@ MODELS = {
         "directory": "Dataset777_Fat",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Fat_"
+        "multilabel_prefix": "CT_Fat_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_vertebrae": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_vertebrae_da5_03102023.zip",
@@ -130,7 +138,8 @@ MODELS = {
         "directory": "Dataset111_Vertebrae",
         "trainer": "nnUNetTrainer_2000_epochs_DA5NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Vertebrae_"
+        "multilabel_prefix": "CT_Vertebrae_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_cardiac": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_cardiac_10092023.zip",
@@ -138,7 +147,8 @@ MODELS = {
         "directory": "Dataset888_Cardiac",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Cardiac_"
+        "multilabel_prefix": "CT_Cardiac_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_digestive": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_digestive10092023.zip",
@@ -146,7 +156,8 @@ MODELS = {
         "directory": "Dataset999_Digestive",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Digestive_"
+        "multilabel_prefix": "CT_Digestive_",
+        "configuration": "3d_fullres"
     },
     "preclin_ct_legs": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
@@ -154,7 +165,8 @@ MODELS = {
         "directory": "Dataset256_Preclin_leg_muscles",
         "trainer": "nnUNetTrainerNoMirroring",
         "voxel_spacing": [0.18000000715255737, 0.18000000715255737, 0.18000000715255737],
-        "multilabel_prefix": "Preclin_CT_legs_"
+        "multilabel_prefix": "Preclin_CT_legs_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_all_bones_v1": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
@@ -162,7 +174,8 @@ MODELS = {
         "directory": "Dataset600_Original_bones",
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "Clin_CT_all_bones_"
+        "multilabel_prefix": "Clin_CT_all_bones_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_PUMA": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_PUMA_06112023.zip",
@@ -170,7 +183,8 @@ MODELS = {
         "directory": "Dataset002_PUMA",
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "Clin_CT_PUMA_"
+        "multilabel_prefix": "Clin_CT_PUMA_",
+        "configuration": "3d_fullres"
     },
     "clin_pt_fdg_brain_v1": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_fdg_pt_brain_v1_17112023.zip",
@@ -178,7 +192,8 @@ MODELS = {
         "directory": "Dataset100_Brain_v1",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [2.03125, 2.0862598419189453, 2.0862600803375244],
-        "multilabel_prefix": "Clin_PT_FDG_brain_"
+        "multilabel_prefix": "Clin_PT_FDG_brain_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_ALPACA": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_ALPACA.zip",
@@ -186,7 +201,8 @@ MODELS = {
         "directory": "Dataset080_ALPACA",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "Clin_CT_ALPACA_"
+        "multilabel_prefix": "Clin_CT_ALPACA_",
+        "configuration": "3d_fullres"
     },
     "clin_ct_PUMA4": {
         "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
@@ -194,7 +210,8 @@ MODELS = {
         "directory": "Dataset003_PUMA4",
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [4, 4, 4],
-        "multilabel_prefix": "Clin_CT_PUMA4_"
+        "multilabel_prefix": "Clin_CT_PUMA4_",
+        "configuration": "3d_fullres"
     }
 }
 
