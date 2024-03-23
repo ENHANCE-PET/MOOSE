@@ -63,8 +63,8 @@ Each model is designed to provide high-quality segmentation with MOOSE 2.0's opt
 
 <a href="https://star-history.com/#QIMP-Team/MOOSE&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=QIMP-Team/MOOSE&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=QIMP-Team/MOOSE&type=Date" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ENHANCE-PET/MOOSE&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ENHANCE-PET/MOOSE&type=Date" />
     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=QIMP-Team/MOOSE&type=Date" />
   </picture>
 </a>
