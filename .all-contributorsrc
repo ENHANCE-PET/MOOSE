@@ -45,6 +45,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "zax0s",
+      "name": "Zach Chalampalakis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62066397?v=4",
+      "profile": "https://www.meduniwien.ac.at/web/forschung/researcher-profiles/researcher-profiles/index.php?id=688&res=zacharias_chalampalakis1",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "commitType": "docs",
