@@ -302,4 +302,9 @@ Each time you see a 'Z' in one of our package names, be reminded of the spirit o
 
 ## 👥 Contributors
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
