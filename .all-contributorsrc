@@ -1,0 +1,34 @@
+{
+  "projectName": "MOOSE",
+  "projectOwner": "ENHANCE-PET",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "contributors": [
+    {
+      "login": "LalithShiyam",
+      "name": "Lalith Kumar Shiyam Sundar",
+      "avatar_url": "https://github.com/LalithShiyam.png",
+      "profile": "https://github.com/LalithShiyam",
+      "contributions": [
+        "code",
+        "doc"
+      ]
+    },
+    {
+      "login": "Keyn34",
+      "name": "Sebastian Gutschmayer",
+      "avatar_url": "https://github.com/Keyn34.png",
+      "profile": "https://github.com/Keyn34",
+      "contributions": [
+        "code"
+      ]
+    },
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular"
+}
