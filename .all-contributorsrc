@@ -27,8 +27,18 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "n7k-dobri",
+      "name": "n7k-dobri",
+      "avatar_url": "https://avatars.githubusercontent.com/u/114534264?v=4",
+      "profile": "https://github.com/n7k-dobri",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "commitType": "docs",
-  "commitConvention": "angular"
+  "commitConvention": "angular",
+  "contributorsPerLine": 7
 }
