@@ -178,7 +178,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_PUMA": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_PUMA_06112023.zip",
+        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_puma_04042024.zip",
         "filename": "Dataset002_PUMA.zip",
         "directory": "Dataset002_PUMA",
         "trainer": "nnUNetTrainer_2000epochs",
