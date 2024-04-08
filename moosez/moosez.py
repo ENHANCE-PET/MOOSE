@@ -32,6 +32,9 @@ from moosez import display
 from moosez import download
 from moosez import file_utilities
 from moosez import image_conversion
+from moosez import input_validation
+from moosez import predict
+from moosez import resources
 from moosez import image_processing
 from moosez import input_validation
 from moosez import predict
@@ -39,11 +42,15 @@ from moosez import resources
 from moosez.image_processing import ImageResampler
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
 from moosez.resources import MODELS, AVAILABLE_MODELS
+from moosez.benchmarking.profiler import Profiler
 
 
-def main():
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                        filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
+def main(raw_args=None):
+    CURR_DATE = datetime.now().strftime("%H-%M-%d-%m-%Y")
+    LOG_FILENAME = f"moosez-v.2.0.0_{CURR_DATE}"
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.DEBUG,
+                        filename=f"{LOG_FILENAME}.log",
+                        filemode='w')
     colorama.init()
 
     # Argument parser
@@ -73,6 +80,13 @@ def main():
         help=model_help_text
     )
 
+    # profiler
+    parser.add_argument(
+        "-p", "--profile",
+        action="store_true",
+        help="Whether to perform the profiling or not"
+    )
+
     # Custom help option
     parser.add_argument(
         "-h", "--help",
@@ -81,8 +95,9 @@ def main():
         help="Show this help message and exit."
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(raw_args)
 
+    profile_enabled = args.profile
     parent_folder = os.path.abspath(args.main_directory)
     model_name = args.model_name
 
@@ -92,6 +107,16 @@ def main():
     logging.info('----------------------------------------------------------------------------------------------------')
     logging.info('                                     STARTING MOOSE-Z V.2.0.0                                       ')
     logging.info('----------------------------------------------------------------------------------------------------')
+
+    # ----------------------------------
+    # STARTING PROFILER
+    # ----------------------------------
+
+    profiler_log_level = (logging.DEBUG if profile_enabled else logging.NOTSET)
+    Profiler.create_singleton_instance(
+        filename=f"{LOG_FILENAME}_profile", log_level=profiler_log_level)
+    profiler = Profiler()
+    profiler.set_section("init")
 
     # ----------------------------------
     # INPUT VALIDATION AND PREPARATION
@@ -172,16 +197,21 @@ def main():
         logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:'
                      f'{constants.ANSI_RESET}')
         logging.info(' ')
+        # Profiling subject
+        profiler.set_loop_step(f"{os.path.basename(subject)}")
+        profiler.set_section("moose-folder-structure")
         moose_dir, input_dirs, output_dir, stats_dir = file_utilities.moose_folder_structure(subject, model_name,
                                                                                              modalities)
         logging.info(f" MOOSE directory for subject {os.path.basename(subject)} at: {moose_dir}")
 
         # ORGANISE DATA ACCORDING TO MODALITY
         spinner.text = f'[{i + 1}/{num_subjects}] Organising data according to modality for {os.path.basename(subject)}...'
+        profiler.set_section("files-by-modality")
         file_utilities.organise_files_by_modality([subject], modalities, moose_dir)
 
         # PREPARE THE DATA FOR PREDICTION
         spinner.text = f'[{i + 1}/{num_subjects}] Preparing data for prediction for {os.path.basename(subject)}...'
+        profiler.set_section("nnunet-compatibility")
         for input_dir in input_dirs:
             input_validation.make_nnunet_compatible(input_dir)
         logging.info(f" {constants.ANSI_GREEN}Data preparation complete using {model_name} for subject "
@@ -242,6 +272,8 @@ def main():
     spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
                     f'{len(moose_compliant_subjects)} datasets: {round(total_elapsed_time, 1)} min'
                     f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
+    profiler.stop()
+    Profiler.clear_singleton_instance()
 
 
 def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) -> None:

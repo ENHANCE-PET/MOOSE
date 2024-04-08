@@ -18,6 +18,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Any, Sequence
 
 import SimpleITK as sitk
 import dask
@@ -25,6 +27,14 @@ import dask.array as da
 import nibabel
 import numpy as np
 import pandas as pd
+import torch
+from monai.transforms import (
+    Transform, Compose, EnsureChannelFirst, AsDiscrete, LoadImage, ToDevice, Spacing, SaveImage)
+from monai.inferers import SlidingWindowSplitter, AvgMerger, Merger
+from monai.utils import ImageMetaKey, ensure_tuple_size
+from monai.data.folder_layout import FolderLayout
+from monai.data import MetaTensor
+
 from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
     CHUNK_FILENAMES
 
@@ -534,6 +544,49 @@ class ImageResampler:
                                               header=image_header)
 
         return resampled_image
+    
+    @staticmethod
+    def monai_resampling(
+            desired_spacing: Sequence[float],
+            interpolation: str,
+            device: str,
+            output_dir: str) -> Compose:
+        """
+        Resamples an image to a new spacing, optionnaly (based on image size)
+        split the resampled image into slices and save them.
+
+        Args:
+            interpolation: The interpolation method to use.
+                See also `mode`: https://docs.monai.io/en/stable/transforms.html#spacing
+                If `linear`, then sets `mode="bilinear"` instead.
+                If `bspline`, then uses B-Spline of order 3 as SimpleITK:
+                https://simpleitk.org/doxygen/latest/html/namespaceitk_1_1simple.html#a7cb1ef8bd02c669c02ea2f9f5aa374e5
+            desired_spacing: The new spacing to use.
+                See also `pixdim`: https://docs.monai.io/en/stable/transforms.html#spacing
+            device: Specify the target device.
+            output_dir: Output saving directory for the patches.
+
+        Returns:
+            resample_transform: The `monai.transform.Compose` for pre-processing.
+        """
+        if interpolation == "nearest":
+            mode = "nearest"
+        elif interpolation == "linear":
+            mode = "bilinear"
+        elif interpolation == "bspline":
+            mode = 3
+        else:
+            raise ValueError("The interpolation method is not supported.")
+
+        resample_transform = Compose([
+            LoadImage(image_only=True, dtype=torch.float64),
+            ToDevice(device=device),
+            EnsureChannelFirst(),
+            Spacing(pixdim=desired_spacing, mode=mode),
+            ToDevice(device="cpu"),
+            DepthPatchSplitter(output_dir=output_dir)])
+
+        return resample_transform
 
     @staticmethod
     def resample_segmentations(input_image_path: str, desired_spacing: tuple,
@@ -594,6 +647,45 @@ class ImageResampler:
                                               header=image_header)
 
         return resampled_image
+    
+    @staticmethod
+    def monai_segmentation_resampling(
+            interpolation: str,
+            original_spacing: Sequence[int],
+            input_resampled_shape: Sequence[int],
+            n_class: int,
+            device: str) -> str:
+        """
+        Resamples a segmentation result using nearest neighbor to the original image spacing,
+        which was splitted into multiple chunks in depth dimension.
+
+        Args:
+            original_spacing: The original image spacing to resample.
+                See also `pixdim`: https://docs.monai.io/en/stable/transforms.html#spacing
+            input_resampled_shape: The shape of the resampled input image before chunk splitter.
+            n_class: The number of classes for the Merger.
+            device: Specify the target device.
+
+        Returns:
+            segmentation_resample_transform: The `monai.transform.Compose` for post-processing.
+        """
+
+        segmentation_resample_transform = Compose(
+            transforms=[
+                DepthPatchMerger(original_shape=input_resampled_shape, n_class=n_class),
+                ToDevice(device=device),
+                EnsureChannelFirst(),
+                Spacing(pixdim=original_spacing, mode="nearest"),
+                SaveImage(
+                    data_root_dir=".",
+                    output_postfix="",
+                    output_dtype=torch.uint8,
+                    separate_folder=False,
+                    resample=False,
+                    print_log=False)],
+            map_items=False)
+
+        return segmentation_resample_transform
 
     @staticmethod
     def reslice_identity(reference_image: sitk.Image, moving_image: sitk.Image,
@@ -625,3 +717,325 @@ class ImageResampler:
         if output_image_path is not None:
             sitk.WriteImage(resampled_image, output_image_path)
         return resampled_image
+
+
+def get_pixdim_from_affine(affine: torch.Tensor):
+    """
+    Get pixdim or spacing from an affine matrix.
+
+    Args:
+        affine: The input affine matrix.
+
+    Returns:
+        pixdim: The resulting pixel dimension (or spacing) usually in mm.
+    """
+    pixdim = affine[:3, :3] @ affine[:3, :3].T
+    pixdim = np.diag(np.sqrt(pixdim))
+
+    return pixdim
+
+
+def is_large_image(image_shape) -> bool:
+    """
+    Check if the image classifies as large based on pre-defined thresholds.
+
+    Parameters:
+    -----------
+    image_shape: tuple
+        The shape of the NIfTI image.
+
+    Returns:
+    --------
+    bool
+        True if the image is large, False otherwise.
+    """
+    return np.prod(image_shape) > MATRIX_THRESHOLD and image_shape[2] > Z_AXIS_THRESHOLD
+
+
+def update_meta(meta: dict, shape: Sequence[int] = None, filename: str = None, index: str = None) -> dict:
+    """
+    Update the metadata from an image.
+
+    Args:
+        meta: A metadata acquired from `meta` atttribute from a `monai.data.meta_tensor.MetaTensor`
+        shape: Shape to be updated.
+        filename: Filename to be updated, used by `monai.data.folder_layout`.
+        index: Index to be updated, used by `monai.data.folder_layout`.
+
+    Returns:
+        updated_meta: The updated metadata.
+    """
+    updated_meta = meta
+
+    if shape is not None:
+        updated_meta['dim'][1:4] = shape
+        updated_meta['spatial_shape'][:] = shape
+    if filename is not None:
+        updated_meta[ImageMetaKey.FILENAME_OR_OBJ] = filename
+    if index is not None:
+        updated_meta[ImageMetaKey.PATCH_INDEX] = str(index) + "_0000"
+    #TODO currently monai does not update correctly niftii files after resampling
+    # https://github.com/Project-MONAI/MONAI/discussions/3345
+    if not np.allclose(updated_meta['srow_x'], updated_meta['affine'][0], rtol=1e-3, atol=1e-5):
+        updated_meta['srow_x'] = updated_meta['affine'][0]
+        updated_meta['srow_y'] = updated_meta['affine'][1]
+        updated_meta['srow_z'] = updated_meta['affine'][2]
+    pixdim = get_pixdim_from_affine(updated_meta['affine'])
+    if not np.allclose(updated_meta['pixdim'][1:4], pixdim, rtol=1e-3, atol=1e-5):
+        updated_meta['pixdim'][1:4] = pixdim
+
+    return updated_meta
+
+
+class LabelMerger(Merger):
+    """Merge dicrete label patches using one-hot encoding.
+    Number of input channels must be one .
+
+    Args:
+        n_class: the number of labels for one-hot encoding
+        merged_shape: the shape of the tensor required to merge the patches.
+        cropped_shape: the shape of the final merged output tensor.
+            If not provided, it will be the same as `merged_shape`.
+        device: the device for aggregator tensors and final results.
+        value_dtype: the dtype for value aggregating tensor and the final result.
+    """
+
+    def __init__(
+        self,
+        merged_shape: Sequence[int],
+        cropped_shape: Sequence[int] = None,
+        n_class: int = 2,
+        value_dtype: torch.dtype = torch.uint8,
+        device: str = "cpu",
+    ) -> None:
+        super().__init__(merged_shape=merged_shape, cropped_shape=cropped_shape, device=device)
+        if not self.merged_shape:
+            raise ValueError(f"`merged_shape` must be provided for `LabelMerger`. {self.merged_shape} was given.")
+        self.n_class = n_class
+        self.value_dtype = value_dtype
+        self.values = torch.zeros(
+            (self.merged_shape[0], n_class,) + self.merged_shape[2:],
+            dtype=self.value_dtype,
+            device=self.device)
+        self.one_hot_encoder = AsDiscrete(to_onehot=n_class, dim=1, dtype=self.value_dtype)
+
+    def aggregate(self, values: torch.Tensor, location: Sequence[int]) -> None:
+        """
+        Aggregate values for merging.
+
+        Args:
+            values: a tensor of shape B1HW[D], representing the values of inference output.
+            location: a tuple/list giving the top left location of the patch in the original image.
+
+        Raises:
+            NotImplementedError: When the subclass does not override this method.
+
+        """
+        if self.is_finalized:
+            raise ValueError("`LabelMerger` is already finalized. Please instantiate a new object to aggregate.")
+        patch_size = values.shape[2:]
+        map_slice = tuple(slice(loc, loc + size) for loc, size in zip(location, patch_size))
+        map_slice = ensure_tuple_size(map_slice, values.ndim, pad_val=slice(None), pad_from_start=True)
+        one_hot_values = self.one_hot_encoder(values)
+        self.values[map_slice] += one_hot_values
+
+    def finalize(self) -> torch.Tensor:
+        """
+        Finalize merging by dividing values by counts and return the merged tensor.
+
+        Notes:
+            To avoid creating a new tensor for the final results (to save memory space),
+            after this method is called, `get_values()` method will return the "final" averaged values,
+            and not the accumulating values. Also calling `finalize()` multiple times does not have any effect.
+
+        Returns:
+            torch.tensor: a tensor of merged patches
+        """
+        # guard against multiple call to finalize
+        if not self.is_finalized:
+            # use in-place division to save space
+            #TODO: argmax for finalize
+            # Background label takes predecence is there is ambiguity.
+            self.values = torch.argmax(self.values, dim=1, keepdim=True)
+            # finalize the shape
+            self.values = self.values[tuple(slice(0, end) for end in self.cropped_shape)]
+            # set finalize flag to protect performing in-place division again
+            self.is_finalized = True
+
+        return self.values
+
+    def get_output(self) -> torch.Tensor:
+        """
+        Get the final merged output.
+
+        Returns:
+            torch.Tensor: merged output.
+        """
+        return self.finalize()
+
+    def get_values(self) -> torch.Tensor:
+        """
+        Get the accumulated values during aggregation or final averaged values after it is finalized.
+
+        Returns:
+            torch.tensor: aggregated values.
+
+        Notes:
+            - If called before calling `finalize()`, this method returns the accumulating values.
+            - If called after calling `finalize()`, this method returns the final merged [and averaged] values.
+        """
+        return self.values
+
+
+class DepthPatchSplitter(Transform):
+    """
+    Optionnally split the input image into different chunks in the depth dimension.
+    This is typically used for an offline sliding-window inferer.
+    """
+    def __init__(
+            self,
+            num_patches: int = 3,
+            margin_padding: int = MARGIN_PADDING,
+            output_dir: str = ".",
+            num_workers: int = None):
+        """
+        Args:
+            num_patches: The number of patches to split the iput image.
+            margin_padding: Increase the size of patches by this amount of pixels.
+            output_dir: Output directory where to save the different patches.
+            num_workers: Defines the number of parrallel worker to save patches (default: all).
+        """
+        super().__init__()
+        self.num_patches = num_patches
+        self.margin_padding = margin_padding
+        self.output_dir = output_dir
+        self.num_workers = num_workers
+        self.folder_layout = FolderLayout(output_dir=output_dir, extension="nii.gz", postfix="patch")
+
+    def _create_patch_size(self, img_shape: Sequence[int]) -> Sequence[int]:
+        """
+        Define the patch size to split the image.
+
+        Args:
+            img_shape: The image shape [C, H, W, D].
+
+        Returns:
+            patch_size: The size of the patches to be generated.
+        """
+        num_last_dim = img_shape[-1] // self.num_patches + self.margin_padding
+        patch_size = (*img_shape[1:-1], num_last_dim)
+
+        return patch_size
+
+    def _save_img(
+            self, data: torch.Tensor, idx: int = None, meta: dict = None,) -> None:
+        """
+        Save the input array optionnally using provided metadata.
+
+        Args:
+            data: The input data array to be converted and saved.
+            idx: Index number of current array.
+                Specifically it format the filename if multiple data are saved.
+            meta: The metadata of the current image
+        """
+        patch_meta = update_meta(meta, shape=data.shape, index=idx)
+        SaveImage(
+            folder_layout=self.folder_layout,
+            resample=False,
+            print_log=False)(data, meta_data=patch_meta)
+
+    def create_sw_splitter(self, x: Any) -> SlidingWindowSplitter:
+        """
+        Create a `monai.inferers.SlidingWindowSplitter`
+        where patches are accessed through a generator.
+        """
+        img_shape = x.shape
+
+        patch_size = self._create_patch_size(img_shape)
+        sw_splitter = SlidingWindowSplitter(
+            patch_size=patch_size, overlap=0.125, pad_value=x.min())
+
+        return sw_splitter
+
+    def __call__(self, x: Any):
+        img_shape = x.shape
+        is_image_large = is_large_image(img_shape)
+        if is_image_large:
+            sw_splitter = self.create_sw_splitter(x)
+            patch_iterator = sw_splitter(x.unsqueeze(0))
+            if self.num_workers == 1:
+                for idx, patch in enumerate(patch_iterator):
+                    self._save_img(patch[0].squeeze(), idx, x.meta)
+            else:
+                with ProcessPoolExecutor(max_workers=self.num_workers) as executor:
+                    # submit a thread for each item in the generator
+                    futures = [executor.submit(
+                            self._save_img, patch[0].squeeze(), idx, x.meta)
+                        for idx, patch in enumerate(patch_iterator)]
+                    for future in as_completed(futures, timeout=10): pass
+        else:
+            self._save_img(x.squeeze(), 0, x.meta)
+
+        return x
+
+
+class DepthPatchMerger(Transform):
+    """
+    Optionnally merge different chunks into an image in the depth dimension.
+    This is typically used after an offline sliding-window inferer.
+    """
+    def __init__(self, original_shape: Sequence[int], n_class: int, label_prefix="MULTILABEL-"):
+        """
+        Args:
+            original_shape: The shape of the original image before splitting in patches.
+            n_class: The number of classes for the Merger.
+            label_prefix: Prefix to be appended to the filenames.
+        """
+        self.original_shape = original_shape
+        self.n_class = n_class
+        self.label_prefix = label_prefix
+
+    def __call__(self, filepaths: Sequence[str]) -> str:
+        """
+        Combine the split image parts back into a single image using monai.
+        The merging is done only if there is more than one filepath.
+
+        Args:
+            filepaths: List of filepath for the patches.
+
+        Returns:
+            merged_meta_tensor: MetaTensor of the merged image.
+        """
+        # if there is more than one filepath, we merge the resulting images
+        if len(filepaths) > 1:
+            x = torch.zeros(self.original_shape).unsqueeze(0)
+            depth_patch_splitter = DepthPatchSplitter().create_sw_splitter(x)
+            x = x.unsqueeze(0)
+            patch_iterator = depth_patch_splitter(x)
+            locations = [patch[1] for patch in patch_iterator]
+            merged_shape = depth_patch_splitter.get_padded_shape(x)
+            merger = LabelMerger(
+                (1, 1) + merged_shape, cropped_shape=(1, 1) + self.original_shape, n_class=self.n_class)
+
+            for ii, patch_file in enumerate(sorted(filepaths)):
+                curr_patch = LoadImage(image_only=True)(patch_file)
+                curr_value = curr_patch.get_array(torch.Tensor, dtype=torch.float32)
+                curr_value = curr_value.unsqueeze(0).unsqueeze(0)
+                curr_location = locations[ii]
+                merger.aggregate(curr_value, curr_location)
+                os.remove(patch_file)
+            merged_img = merger.finalize().squeeze()
+            # https://docs.monai.io/en/latest/transforms.html#asdiscrete
+            # AsDiscrete(to_onehot=14)(num).shape
+        else:
+            curr_patch = LoadImage(image_only=True)(filepaths[0])
+        # manually update meta for monai Save
+        filepath = curr_patch.meta[ImageMetaKey.FILENAME_OR_OBJ]
+        filepath = filepath[:filepath.find("_0000") + 5] + filepath[filepath.find(".nii"):]
+        merged_image_path = os.path.sep.join(
+            [os.path.dirname(filepath)] + [self.label_prefix + os.path.basename(filepath)])
+        merged_meta = update_meta(curr_patch.meta, shape=self.original_shape, filename=merged_image_path)
+        # SaveImage will use provided metadata for saving
+        merged_meta_tensor = MetaTensor(merged_img, meta=merged_meta)
+
+        return merged_meta_tensor

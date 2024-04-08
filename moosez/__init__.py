@@ -9,3 +9,5 @@ from . import predict
 from . import resources
 from .moosez import moose
 from .nnUNet_custom_trainer import utility
+
+__version__ = "2.4.3"
