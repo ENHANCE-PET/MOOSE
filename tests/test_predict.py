@@ -47,3 +47,6 @@ def test_predict(setup_temp_dir):
         and output_dir.joinpath("plans.json").is_file() \
         and output_dir.joinpath("predict_from_raw_data_args.json").is_file() \
         and sorted(output_dir.glob(label_prefix + "*"))[0].is_file()
+
+if __name__ == "__main__":
+    pytest.main()
