@@ -73,7 +73,8 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str) 
     # if temp_input_dir has more than one nifti file, run logic below
     profiler.set_section("post-processing")
     original_spacing = get_pixdim_from_affine(resampled_image.meta['original_affine'])
-    n_class = len(constants.ORGAN_INDICES[model_name])
+    # takes last label id to define number of classes for one-hot encoding
+    n_class = sorted(constants.ORGAN_INDICES['clin_ct_organs'].keys())[-1] + 1
     postprocess_monai(output_dir, original_spacing, input_resampled_shape, n_class, accelerator)
 
     shutil.rmtree(temp_input_dir)
