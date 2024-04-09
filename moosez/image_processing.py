@@ -653,6 +653,7 @@ class ImageResampler:
             interpolation: str,
             original_spacing: Sequence[int],
             input_resampled_shape: Sequence[int],
+            label_prefix: str,
             n_class: int,
             device: str) -> str:
         """
@@ -663,6 +664,7 @@ class ImageResampler:
             original_spacing: The original image spacing to resample.
                 See also `pixdim`: https://docs.monai.io/en/stable/transforms.html#spacing
             input_resampled_shape: The shape of the resampled input image before chunk splitter.
+            label_prefix: Prefix to be appended to the filenames.
             n_class: The number of classes for the Merger.
             device: Specify the target device.
 
@@ -672,7 +674,7 @@ class ImageResampler:
 
         segmentation_resample_transform = Compose(
             transforms=[
-                DepthPatchMerger(original_shape=input_resampled_shape, n_class=n_class),
+                DepthPatchMerger(original_shape=input_resampled_shape, n_class=n_class, label_prefix=label_prefix),
                 ToDevice(device=device),
                 EnsureChannelFirst(),
                 Spacing(pixdim=original_spacing, mode="nearest"),

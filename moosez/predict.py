@@ -75,7 +75,8 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str) 
     original_spacing = get_pixdim_from_affine(resampled_image.meta['original_affine'])
     # takes last label id to define number of classes for one-hot encoding
     n_class = sorted(constants.ORGAN_INDICES['clin_ct_organs'].keys())[-1] + 1
-    postprocess_monai(output_dir, original_spacing, input_resampled_shape, n_class, accelerator)
+    label_prefix = MODELS[model_name]['multilabel_prefix']
+    postprocess_monai(output_dir, original_spacing, input_resampled_shape, label_prefix, n_class, accelerator)
 
     shutil.rmtree(temp_input_dir)
 
@@ -116,6 +117,7 @@ def postprocess_monai(
         output_dir: str,
         original_spacing: Sequence[int],
         input_resampled_shape: Sequence[int],
+        label_prefix: str,
         n_class: int,
         accelerator: str):
     """
@@ -125,6 +127,7 @@ def postprocess_monai(
         output_dir: The directory containing the resulting segmentation.
         original_spacing: The original image spacing to resample to.
         input_resampled_shape: The shape of the resampled input image before chunk splitter.
+        label_prefix: Prefix to be appended to the filenames.
         n_class: The number of classes for the Merger.
         accelerator: Specify the target device.
     """
@@ -134,6 +137,7 @@ def postprocess_monai(
         interpolation=constants.INTERPOLATION,
         original_spacing=original_spacing,
         input_resampled_shape=input_resampled_shape,
+        label_prefix=label_prefix,
         n_class=n_class,
         device=accelerator)
     seg_resample_transform(predicted_images)
