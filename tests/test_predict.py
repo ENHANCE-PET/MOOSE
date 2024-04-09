@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import nibabel as nib
+from monai.data.synthetic import create_test_image_3d
 
 import moosez.resources
 import moosez.predict
@@ -13,6 +14,7 @@ from moosez.benchmarking.profiler import Profiler
 @pytest.fixture()
 def setup_temp_dir(tmp_path_factory) -> tuple[str, str, str]:
     np.random.seed(0)
+    rnd_state = np.random.RandomState(seed=0)
 
     tmp_root_dir = tmp_path_factory.mktemp(f"moosez-v{moosez.__version__}")
     image_path = tmp_root_dir.joinpath("CT")
@@ -20,9 +22,18 @@ def setup_temp_dir(tmp_path_factory) -> tuple[str, str, str]:
     image_path.mkdir()
     seg_path.mkdir()
 
-    data = np.random.randint(
-        np.iinfo(np.int16).max, size=(500, 500, 390), dtype=np.int16)
-    img = nib.Nifti1Image(dataobj=data, affine=np.eye(4))
+    img_dtype = np.int16
+    img_data = create_test_image_3d(
+        height=500,
+        width=500,
+        depth=390,
+        rad_min=50,
+        rad_max=100,
+        noise_max=0.25,
+        random_state=rnd_state
+    )[0]
+    img_data = (img_data * np.iinfo(img_dtype).max).astype(img_dtype)
+    img = nib.Nifti1Image(dataobj=img_data, affine=np.eye(4))
     img.header.set_xyzt_units(xyz="mm")
     nib.save(img, image_path.joinpath("CT_XXXX-PETCT_XXXX-CT_0000.nii.gz"))
 
