@@ -63,6 +63,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "W7ebere",
+      "name": "W7ebere",
+      "avatar_url": "https://avatars.githubusercontent.com/u/166598214?v=4",
+      "profile": "https://github.com/W7ebere",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "commitType": "docs",
