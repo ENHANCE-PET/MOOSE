@@ -1,0 +1,80 @@
+{
+  "projectName": "MOOSE",
+  "projectOwner": "ENHANCE-PET",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "contributors": [
+    {
+      "login": "LalithShiyam",
+      "name": "Lalith Kumar Shiyam Sundar",
+      "avatar_url": "https://github.com/LalithShiyam.png",
+      "profile": "https://github.com/LalithShiyam",
+      "contributions": [
+        "code",
+        "doc"
+      ]
+    },
+    {
+      "login": "Keyn34",
+      "name": "Sebastian Gutschmayer",
+      "avatar_url": "https://github.com/Keyn34.png",
+      "profile": "https://github.com/Keyn34",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "n7k-dobri",
+      "name": "n7k-dobri",
+      "avatar_url": "https://avatars.githubusercontent.com/u/114534264?v=4",
+      "profile": "https://github.com/n7k-dobri",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mprires",
+      "name": "Manuel Pires",
+      "avatar_url": "https://avatars.githubusercontent.com/u/48754309?v=4",
+      "profile": "https://github.com/mprires",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "zax0s",
+      "name": "Zach Chalampalakis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62066397?v=4",
+      "profile": "https://www.meduniwien.ac.at/web/forschung/researcher-profiles/researcher-profiles/index.php?id=688&res=zacharias_chalampalakis1",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "dhaberl",
+      "name": "David Haberl",
+      "avatar_url": "https://avatars.githubusercontent.com/u/54232863?v=4",
+      "profile": "https://github.com/dhaberl",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "W7ebere",
+      "name": "W7ebere",
+      "avatar_url": "https://avatars.githubusercontent.com/u/166598214?v=4",
+      "profile": "https://github.com/W7ebere",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributorsPerLine": 7
+}
