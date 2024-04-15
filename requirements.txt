@@ -21,7 +21,7 @@ pandas
 psutil~=5.9.5
 plotly~=5.15.0
 monai[gdown,itk,pynrrd]==1.2.0
-cupy~=12.2.0
+cupy-cuda11x~=13.0
 pynvml
 dicom2nifti~=2.4.8
 emoji

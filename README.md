@@ -102,18 +102,26 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    sudo apt install libssl-dev libncurses5-dev libsqlite3-dev libreadline-dev libtk8.6 libgdm-dev libdb4o-cil-dev libpcap-dev libbz2-dev
    ```
 
-2. Then, create a Python environment. You can name it to your liking; for example, 'moose-env'.
+2. (optionnally for CUDA users) Make sure the NVIDIA drivers are working on your system and install `cuda-toolkit`:
+   ```bash
+   sudo apt install cuda-toolkit-11-7
+   ```
+
+   > **Note**:
+   > Our backend relies on [cupy](https://cupy.dev/) for some processing, and it cannot use the embedded/packaged `cuda` by `pytorch`. This is why we need to install `cuda` on the system ourself.
+
+3. Then, create a Python environment. You can name it to your liking; for example, 'moose-env'.
    ```bash
    python3.10 -m venv moose-env
    ```
 
-3. Activate your newly created environment.
+4. Activate your newly created environment.
    ```bash
    source moose-env/bin/activate  # for Linux
    source moose-env/bin/activate  # for MacOS
    ```
 
-4. Install MOOSE 2.0.
+5. Install MOOSE 2.0.
    ```bash
    pip install moosez
    ```
