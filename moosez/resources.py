@@ -61,7 +61,7 @@ AVAILABLE_MODELS = ["clin_ct_lungs",
 
 MODELS = {
     "clin_ct_lungs": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_lungs_24062023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_lungs_24062023.zip",
         "filename": "Dataset333_HMS3dlungs.zip",
         "directory": "Dataset333_HMS3dlungs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -70,7 +70,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_organs": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/MOOSEv2_bspline_organs23062023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_23062023.zip",
         "filename": "Dataset123_Organs.zip",
         "directory": "Dataset123_Organs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -79,7 +79,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "preclin_mr_all": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/preclin_mr_all_05122023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_mr_all_05122023.zip",
         "filename": "Dataset234_minimoose.zip",
         "directory": "Dataset234_minimoose",
         "trainer": "nnUNetTrainer",
@@ -88,7 +88,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_body": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_body_27112023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_27112023.zip",
         "filename": "Dataset001_body.zip",
         "directory": "Dataset001_body",
         "trainer": "nnUNetTrainer",
@@ -97,7 +97,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_ribs": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_ribs_19032024.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_27112023.zip",
         "filename": "Dataset444_Ribs.zip",
         "directory": "Dataset444_Ribs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -106,7 +106,7 @@ MODELS = {
         "configuration": "3d_fullres_big_patch"
     },
     "clin_ct_muscles": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_muscles_28082023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_muscles_06022024.zip",
         "filename": "Dataset555_Muscles.zip",
         "directory": "Dataset555_Muscles",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -115,7 +115,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_peripheral_bones": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_peripheral_bones_28082023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_28082023.zip",
         "filename": "Dataset666_Peripheral-Bones.zip",
         "directory": "Dataset666_Peripheral-Bones",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -124,7 +124,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_fat": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_fat_31082023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
         "filename": "Dataset777_Fat.zip",
         "directory": "Dataset777_Fat",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -133,7 +133,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_vertebrae": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_vertebrae_da5_03102023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_da5_03102023.zip",
         "filename": "Dataset111_Vertebrae.zip",
         "directory": "Dataset111_Vertebrae",
         "trainer": "nnUNetTrainer_2000_epochs_DA5NoMirroring",
@@ -142,7 +142,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_cardiac": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_cardiac_10092023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_da5_03102023.zip",
         "filename": "Dataset888_Cardiac.zip",
         "directory": "Dataset888_Cardiac",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -151,7 +151,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_digestive": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_digestive10092023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
         "filename": "Dataset999_Digestive.zip",
         "directory": "Dataset999_Digestive",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -160,7 +160,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "preclin_ct_legs": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
         "filename": "Dataset256_Preclin_leg_muscles.zip",
         "directory": "Dataset256_Preclin_leg_muscles",
         "trainer": "nnUNetTrainerNoMirroring",
@@ -169,7 +169,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_all_bones_v1": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
         "filename": "Dataset600_Original_bones.zip",
         "directory": "Dataset600_Original_bones",
         "trainer": "nnUNetTrainer_2000epochs",
@@ -178,7 +178,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_PUMA": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_puma_04042024.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_puma_04042024.zip",
         "filename": "Dataset002_PUMA.zip",
         "directory": "Dataset002_PUMA",
         "trainer": "nnUNetTrainer_2000epochs",
@@ -187,7 +187,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_pt_fdg_brain_v1": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_fdg_pt_brain_v1_17112023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_puma_04042024.zip",
         "filename": "Dataset100_Brain_v1.zip",
         "directory": "Dataset100_Brain_v1",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -196,7 +196,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_ALPACA": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_ALPACA.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_puma_04042024.zip",
         "filename": "Dataset080_ALPACA.zip",
         "directory": "Dataset080_ALPACA",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -205,7 +205,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_PUMA4": {
-        "url": "https://ucd-emic-muv.s3.us-west-2.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
         "filename": "Dataset003_PUMA4.zip",
         "directory": "Dataset003_PUMA4",
         "trainer": "nnUNetTrainer_2000epochs",
