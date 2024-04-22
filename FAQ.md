@@ -1,7 +1,7 @@
 
-## 🧐 Frequently Asked Questions (FAQ)
+# 🧐 Frequently Asked Questions (FAQ)
 
-### Q1: How to fix "IndexError: list index out of range"?
+## Q1: How to fix "IndexError: list index out of range"?
 
 **Problem Description:**
 
@@ -38,7 +38,7 @@ IndexError: list index out_of_range
 4. **Consider Specific Versions (for Stability):**  ✨
     - If you're facing persistent issues, try using a specific version of PyTorch (2.1.1) and CUDA (11.8) known to be compatible with Moose.
 
-**Q2: Why doesn't Moose work on MRI?**
+## Q2: Why doesn't Moose work on MRI?**
 
 Moose is currently designed to work specifically with CT scans. If you're looking to analyze MRI data, you'll need a different tool.  For more information on Moose's functionalities, refer to the README section: [https://github.com/ENHANCE-PET/MOOSE](https://github.com/ENHANCE-PET/MOOSE)
 
