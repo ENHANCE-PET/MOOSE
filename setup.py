@@ -58,7 +58,7 @@ setup(
         'psutil~=5.9.5',
         'plotly~=5.15.0',
         'monai[gdown,itk,pynrrd]==1.2.0',
-        'cupy-cuda11x~=13.0',
+        'cupy-cuda12x~=13.0',
         'pynvml'
     ],
     entry_points={

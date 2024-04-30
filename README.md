@@ -104,7 +104,7 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 
 2. (optionnally for CUDA users) Make sure the NVIDIA drivers are working on your system and install `cuda-toolkit`:
    ```bash
-   sudo apt install cuda-toolkit-11-7
+   sudo apt install cuda-toolkit-12-4
    ```
 
    > **Note**:
@@ -121,8 +121,9 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    source moose-env/bin/activate  # for MacOS
    ```
 
-5. Install MOOSE 2.0.
+5. Update pip and install MOOSE 2.0.
    ```bash
+   pip install --upgrade pip
    pip install moosez
    ```
 
