@@ -67,7 +67,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Lungs_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_organs": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_23062023.zip",
@@ -76,7 +77,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Organs_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "preclin_mr_all": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_mr_all_05122023.zip",
@@ -85,7 +87,8 @@ MODELS = {
         "trainer": "nnUNetTrainer",
         "voxel_spacing": [0.4000000059604645, 0.4000000059604645, 0.4000000059604645],
         "multilabel_prefix": "Preclin_MR_all_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_body": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_27112023.zip",
@@ -104,7 +107,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Ribs_",
-        "configuration": "3d_fullres_big_patch"
+        "configuration": "3d_fullres_big_patch",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_muscles": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_muscles_06022024.zip",
@@ -113,7 +117,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Muscles_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_peripheral_bones": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_28082023.zip",
@@ -122,7 +127,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Peripheral-Bones_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_fat": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
@@ -131,7 +137,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Fat_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_vertebrae": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_da5_03102023.zip",
@@ -140,7 +147,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000_epochs_DA5NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Vertebrae_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_cardiac": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac_26012024.zip",
@@ -149,7 +157,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Cardiac_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_digestive": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
@@ -158,7 +167,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "CT_Digestive_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "preclin_ct_legs": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
@@ -167,7 +177,8 @@ MODELS = {
         "trainer": "nnUNetTrainerNoMirroring",
         "voxel_spacing": [0.18000000715255737, 0.18000000715255737, 0.18000000715255737],
         "multilabel_prefix": "Preclin_CT_legs_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_all_bones_v1": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
@@ -176,7 +187,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "Clin_CT_all_bones_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_PUMA": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_puma_04042024.zip",
@@ -185,7 +197,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "Clin_CT_PUMA_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_pt_fdg_brain_v1": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_fdg_pt_brain_v1_17112023.zip",
@@ -194,7 +207,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [2.03125, 2.0862598419189453, 2.0862600803375244],
         "multilabel_prefix": "Clin_PT_FDG_brain_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_ALPACA": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ALPACA.zip",
@@ -203,7 +217,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "Clin_CT_ALPACA_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_PUMA4": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
@@ -212,7 +227,8 @@ MODELS = {
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [4, 4, 4],
         "multilabel_prefix": "Clin_CT_PUMA4_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     }
 }
 

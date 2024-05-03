@@ -98,12 +98,19 @@ def initialize_model(model_name):
 
 def predict_from_array(predictor, input_dir, output_dir, model_name):
 
-    image, properties, original_header, resampled_header = preprocess(input_dir, model_name)
-    segmentatation = predictor.predict_from_list_of_npy_arrays(image, None, properties, None) # Returns a np.array
+    image, nnunet_dict, properties_dict = preprocess(input_dir, model_name)
+    segmentation = predictor.predict_from_list_of_npy_arrays(image, None, nnunet_dict, None) # Returns a np.array
 
-    predicted_image = nib.Nifti1Image(segmentatation[0], properties["nibabel_stuff"]["original_affine"], resampled_header)
 
-    postprocess(predicted_image, input_dir, output_dir, model_name, original_header)
+
+    if len(segmentation) > 1:
+
+        predicted_image = merge_image_parts(segmentation, properties_dict["resampled_shape"], properties_dict["resampled_affine"])
+    else:
+        predicted_image = nib.Nifti1Image(segmentation[0], nnunet_dict["nibabel_stuff"]["original_affine"],
+                                          properties_dict["resampled_header"])
+
+    postprocess(predicted_image, input_dir, output_dir, model_name, properties_dict["original_header"])
 
 
 
@@ -132,6 +139,9 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
     resampled_image = ImageResampler.resample_image(moose_img_object=moose_image_object,
                                                     interpolation=constants.INTERPOLATION,
                                                     desired_spacing=desired_spacing)
+    properties_dict = {"original_header": original_header, "resampled_header": resampled_image.header,
+                       "resampled_shape": resampled_image.shape, "resampled_affine": resampled_image.affine}
+    resampled_header = resampled_image.header
     # if model name has body in it, run logic below
     if "body" in model_name:
         image_data = resampled_image.get_fdata().transpose((2, 1, 0))[None] # According to nnUNet the transpose is to make it consistent with stik loading
@@ -141,12 +151,11 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
             },
             "spacing": [float(i) for i in resampled_image.header.get_zooms()[::-1]] # Also retrieved like this to make it consistent with sitk
         }
-        resampled_header = resampled_image.header
-        return image_data, nnunet_dict, original_header, resampled_header
+
     else:
-        image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
-                                     moose_image_object.is_large, False)
-        return temp_folder, resampled_image, moose_image_object
+        image_data, nnunet_dict = image_processing.chunk_image(resampled_image, moose_image_object.is_large)
+
+    return image_data, nnunet_dict, properties_dict
 
 
 def postprocess(predicted_image, original_image: str, output_dir: str, model_name: str, original_header) -> None:
@@ -175,9 +184,10 @@ def postprocess(predicted_image, original_image: str, output_dir: str, model_nam
         resampled_prediction_data = resampled_prediction.get_fdata()
         resampled_prediction_new = nib.Nifti1Image(resampled_prediction_data, resampled_prediction.affine,
                                                    resampled_prediction.header)
-        image_processing.write_image(resampled_prediction_new, multilabel_image, False, True)
+        image_processing.write_segmentation(resampled_prediction_new, multilabel_image)
     else:
-        image_processing.write_image(resampled_prediction, multilabel_image, False, True)
+
+        image_processing.write_segmentation(resampled_prediction, multilabel_image)
 
 
 def count_output_files(output_dir: str) -> int:
@@ -279,7 +289,7 @@ def handle_large_image(image: nib.Nifti1Image, save_dir: str) -> List[str]:
         return [resampled_image_path]
 
 
-def merge_image_parts(save_dir: str, original_image_shape: Tuple[int, int, int],
+def merge_image_parts(segmentations: list, original_image_shape: Tuple[int, int, int],
                       original_image_affine: np.ndarray) -> str:
     """
     Combine the split image parts back into a single image.
@@ -295,34 +305,16 @@ def merge_image_parts(save_dir: str, original_image_shape: Tuple[int, int, int],
     """
     # Create an empty array with the original image's shape
     merged_image_data = np.zeros(original_image_shape, dtype=np.uint8)
-
     # Calculate the split index along the z-axis
     z_split_index = original_image_shape[2] // 3
 
-    # Load each part, extract its data, and place it in the correct position in the merged image
 
-    predicted_chunk_filenames = [s.replace("_0000", "") for s in constants.CHUNK_FILENAMES]
-
-    merged_image_data[:, :, :z_split_index] = nib.load(
-        os.path.join(save_dir, predicted_chunk_filenames[0])).get_fdata()[:,
-                                              :, :-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index:z_split_index * 2] = nib.load(
-        os.path.join(save_dir, predicted_chunk_filenames[1])).get_fdata()[:, :,
-                                                               constants.MARGIN_PADDING - 1:-constants.MARGIN_PADDING]
-    merged_image_data[:, :, z_split_index * 2:] = nib.load(
-        os.path.join(save_dir, predicted_chunk_filenames[2])).get_fdata()[
-                                                  :, :, constants.MARGIN_PADDING - 1:]
+    merged_image_data[:, :, :z_split_index] = segmentations[0].transpose((2,1,0))[:,:, :-constants.MARGIN_PADDING]
+    merged_image_data[:, :, z_split_index:z_split_index * 2] = segmentations[1].transpose((2,1,0))[:, :, constants.MARGIN_PADDING - 1:-constants.MARGIN_PADDING]
+    merged_image_data[:, :, z_split_index * 2:] = segmentations[2].transpose((2,1,0))[:, :, constants.MARGIN_PADDING - 1:]
 
     # Create a new Nifti1Image with the merged data and the original image's affine transformation
-    merged_image = nib.Nifti1Image(merged_image_data, original_image_affine)
+    merged_image = nib.Nifti1Image(merged_image_data.transpose((2,1,0)), original_image_affine)
 
-    # remove the split image parts
-    files_to_remove = glob.glob(os.path.join(save_dir, constants.CHUNK_PREFIX + "*"))
-    for file in files_to_remove:
-        os.remove(file)
 
-    # write the merged image to disk
-    merged_image_path = os.path.join(save_dir, constants.RESAMPLED_IMAGE_FILE_NAME)
-    nib.save(merged_image, merged_image_path)
-
-    return merged_image_path
+    return merged_image

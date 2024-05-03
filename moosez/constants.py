@@ -51,8 +51,6 @@ TUMOR_LABEL = 12
 
 RESAMPLED_IMAGE_FILE_NAME = 'resampled_image_0000.nii.gz'
 RESAMPLED_MASK_FILE_NAME = 'resampled_mask.nii.gz'
-CHUNK_FILENAMES = ["chunk01_0000.nii.gz", "chunk02_0000.nii.gz", "chunk03_0000.nii.gz"]
-CHUNK_PREFIX = 'chunk'
 
 # DISPLAY PARAMETERS
 
