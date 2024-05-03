@@ -94,7 +94,8 @@ MODELS = {
         "trainer": "nnUNetTrainer",
         "voxel_spacing": [5, 5, 5],
         "multilabel_prefix": "CT_Body_",
-        "configuration": "3d_fullres"
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     },
     "clin_ct_ribs": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ribs_19032024.zip",

@@ -160,7 +160,7 @@ def main():
     logging.info(' ')
     logging.info(' PERFORMING PREDICTION:')
     logging.info(' ')
-
+    model = predict.initialize_model(model_name)
     spinner = Halo(text=' Initiating', spinner='dots')
     spinner.start()
     start_total_time = time.time()
@@ -195,7 +195,7 @@ def main():
         spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_name}...'
 
         for input_dir in input_dirs:
-            predict.predict(model_name, input_dir, output_dir, accelerator)
+            predict.predict_from_array(model, input_dir, output_dir, model_name)
         logging.info(f"Prediction complete using {model_name}.")
 
         end_time = time.time()

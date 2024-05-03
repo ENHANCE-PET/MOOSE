@@ -536,7 +536,7 @@ class ImageResampler:
         return resampled_image
 
     @staticmethod
-    def resample_segmentations(input_image_path: str, desired_spacing: tuple,
+    def resample_segmentations(input_image: np.array, desired_spacing: tuple,
                                desired_size: tuple) -> nibabel.Nifti1Image:
         """
         Resamples an image to a new spacing.
@@ -551,7 +551,6 @@ class ImageResampler:
         :rtype: nibabel.Nifti1Image
         """
         # Load the image and get necessary information
-        input_image = nibabel.load(input_image_path)
         image_data = input_image.get_fdata()
         image_header = input_image.header
         image_affine = input_image.affine
@@ -560,8 +559,7 @@ class ImageResampler:
         rotation_matrix = image_affine[:3, :3]
 
         # Convert to SimpleITK image format
-        image_data_swapped_axes = image_data.swapaxes(0, 2)
-        sitk_input_image = sitk.GetImageFromArray(image_data_swapped_axes)
+        sitk_input_image = sitk.GetImageFromArray(image_data)
         sitk_input_image.SetSpacing([spacing.item() for spacing in original_spacing])
         axis_flip_matrix = np.diag([-1, -1, 1])
         sitk_input_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))
