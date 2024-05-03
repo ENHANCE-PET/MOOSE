@@ -31,6 +31,8 @@ from moosez import image_processing
 from moosez.image_processing import ImageResampler
 from moosez.image_processing import NiftiPreprocessor
 from moosez.resources import MODELS, map_model_name_to_task_number
+from nnunetv2.paths import nnUNet_results
+from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 from mpire import WorkerPool
 
 
@@ -81,6 +83,30 @@ def predict(model_name: str, input_dir: str, output_dir: str, accelerator: str) 
     shutil.rmtree(temp_input_dir)
 
 
+def initialize_model(model_name):
+
+    model_folder_name = MODELS[model_name]["directory"]
+    trainer = MODELS[model_name]["trainer"]
+    configuration = MODELS[model_name]["configuration"]
+    planner = MODELS[model_name]["planner"]
+    predictor = nnUNetPredictor()
+    predictor.initialize_from_trained_model_folder(os.path.join(constants.NNUNET_RESULTS_FOLDER, model_folder_name,
+                                                                f"{trainer}__{planner}__{configuration}"),
+                                                   use_folds=("all"))
+    return predictor
+
+
+def predict_from_array(predictor, input_dir, output_dir, model_name):
+
+    image, properties, original_header, resampled_header = preprocess(input_dir, model_name)
+    segmentatation = predictor.predict_from_list_of_npy_arrays(image, None, properties, None) # Returns a np.array
+
+    predicted_image = nib.Nifti1Image(segmentatation[0], properties["nibabel_stuff"]["original_affine"], resampled_header)
+
+    postprocess(predicted_image, input_dir, output_dir, model_name, original_header)
+
+
+
 def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib.Nifti1Image, Any]:
     """
     Preprocesses the original images.
@@ -97,6 +123,7 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
     os.makedirs(temp_folder, exist_ok=True)
     original_image_files = file_utilities.get_files(original_image_directory, '.nii.gz')
     org_image = nib.load(original_image_files[0])
+    original_header = org_image.header
     moose_image_object = NiftiPreprocessor(org_image)
 
     # choose the target spacing for the model to enable preprocessing
@@ -107,15 +134,22 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
                                                     desired_spacing=desired_spacing)
     # if model name has body in it, run logic below
     if "body" in model_name:
-        image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
-                                     False, False)
+        image_data = resampled_image.get_fdata().transpose((2, 1, 0))[None] # According to nnUNet the transpose is to make it consistent with stik loading
+        nnunet_dict = {
+            "nibabel_stuff": {
+                "original_affine": resampled_image.affine
+            },
+            "spacing": [float(i) for i in resampled_image.header.get_zooms()[::-1]] # Also retrieved like this to make it consistent with sitk
+        }
+        resampled_header = resampled_image.header
+        return image_data, nnunet_dict, original_header, resampled_header
     else:
         image_processing.write_image(resampled_image, os.path.join(temp_folder, constants.RESAMPLED_IMAGE_FILE_NAME),
                                      moose_image_object.is_large, False)
-    return temp_folder, resampled_image, moose_image_object
+        return temp_folder, resampled_image, moose_image_object
 
 
-def postprocess(original_image: str, output_dir: str, model_name: str) -> None:
+def postprocess(predicted_image, original_image: str, output_dir: str, model_name: str, original_header) -> None:
     """
     Postprocesses the predicted images.
 
@@ -129,11 +163,9 @@ def postprocess(original_image: str, output_dir: str, model_name: str) -> None:
     :rtype: None
     """
     # [1] Resample the predicted image to the original image's voxel spacing
-    predicted_image = file_utilities.get_files(output_dir, '.nii.gz')[0]
-    original_header = nib.load(original_image).header
     native_spacing = original_header.get_zooms()
     native_size = original_header.get_data_shape()
-    resampled_prediction = ImageResampler.resample_segmentations(input_image_path=predicted_image,
+    resampled_prediction = ImageResampler.resample_segmentations(input_image=predicted_image,
                                                                  desired_spacing=native_spacing,
                                                                  desired_size=native_size)
     multilabel_image = os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] +
@@ -146,7 +178,6 @@ def postprocess(original_image: str, output_dir: str, model_name: str) -> None:
         image_processing.write_image(resampled_prediction_new, multilabel_image, False, True)
     else:
         image_processing.write_image(resampled_prediction, multilabel_image, False, True)
-    os.remove(predicted_image)
 
 
 def count_output_files(output_dir: str) -> int:
