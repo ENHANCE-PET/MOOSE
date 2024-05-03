@@ -25,8 +25,7 @@ import dask.array as da
 import nibabel
 import numpy as np
 import pandas as pd
-from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
-    CHUNK_FILENAMES
+from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -95,7 +94,7 @@ def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) 
     stats_df.to_csv(out_csv)
 
 
-def split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
+def split(image_chunk: da.Array, image_affine: np.ndarray) -> None:
     """
     Get a chunk of the image and save it.
 
@@ -108,11 +107,18 @@ def split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_
     :return: None
     """
     chunk_part = nibabel.Nifti1Image(image_chunk, image_affine)
-    nibabel.save(chunk_part, image_chunk_path)
+    image_data = chunk_part.get_fdata().transpose((2, 1, 0))[None]
+    nnunet_dict = {
+        "nibabel_stuff": {
+            "original_affine": chunk_part.affine
+        },
+        "spacing": [float(i) for i in chunk_part.header.get_zooms()[::-1]]
+    }
+    return image_data, nnunet_dict
 
 
 @dask.delayed
-def delayed_split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
+def delayed_split(image_chunk: da.Array, image_affine: np.ndarray) -> None:
     """
     Delayed function to get a chunk of the image and save it.
 
@@ -124,11 +130,11 @@ def delayed_split_and_save(image_chunk: da.Array, image_affine: np.ndarray, imag
     :type image_chunk_path: str
     :return: None
     """
-    split_and_save(image_chunk, image_affine, image_chunk_path)
+    image_data, nnunet_dict = split(image_chunk, image_affine)
+    return image_data, nnunet_dict
 
 
-def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False,
-                is_label: bool = False) -> None:
+def write_segmentation(image: nibabel.Nifti1Image, out_image_path: str) -> None:
     """
     Writes an image either as a single file or multiple files depending on the image size.
 
@@ -136,10 +142,21 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
     :type image: nibabel.Nifti1Image
     :param out_image_path: The path to save the image.
     :type out_image_path: str
+    :return: None
+    """
+    resampled_image_path = out_image_path
+    image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine ,header=image.header)
+    nibabel.save(image_as_uint8, resampled_image_path)
+
+
+def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False,):
+    """
+    Writes an image either as a single file or multiple files depending on the image size.
+
+    :param image: The image to save.
+    :type image: nibabel.Nifti1Image
     :param large_image: Indicates whether the image classifies as large or not.
     :type large_image: bool
-    :param is_label: Indicates whether the image is a label or not.
-    :type is_label: bool
     :return: None
     """
     image_shape = image.shape
@@ -153,26 +170,26 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         chunk_indices = [(0, chunk_size + MARGIN_PADDING),
                          (chunk_size + 1 - MARGIN_PADDING, chunk_size * 2 + MARGIN_PADDING),
                          (chunk_size * 2 + 1 - MARGIN_PADDING, None)]
-        filenames = CHUNK_FILENAMES
-        save_dir = os.path.dirname(out_image_path)
-        chunk_paths = [os.path.join(save_dir, filename) for filename in filenames]
 
         tasks = []
-        for i, chunk_path in enumerate(chunk_paths):
-            tasks.append(delayed_split_and_save(image_data[:, :, chunk_indices[i][0]:chunk_indices[i][1]].compute(),
-                                                image_affine, chunk_path))
+        for i in range (num_chunks):
+            tasks.append(delayed_split(image_data[:, :, chunk_indices[i][0]:chunk_indices[i][1]].compute(),
+                                                image_affine))
 
-        dask.compute(*tasks)
+        chunk_list = dask.compute(*tasks)
+
+        resampled_image_data = [chunk[0] for chunk in chunk_list]
+        nnunet_dict = [chunk[1] for chunk in chunk_list]
 
     else:
-        if is_label:
-            resampled_image_path = out_image_path
-            image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine ,header=image.header)
-            nibabel.save(image_as_uint8, resampled_image_path)
-        else:
-            resampled_image_path = out_image_path
-            nibabel.save(image, resampled_image_path)
-
+        resampled_image_data = resampled_image.get_fdata()
+        nnunet_dict = {
+            "nibabel_stuff": {
+                "original_affine": resampled_image.affine
+            },
+            "spacing": [float(i) for i in resampled_image.header.get_zooms()[::-1]] # Also retrieved like this to make it consistent with sitk
+        }
+    return resampled_image_data, nnunet_dict
 
 class NiftiPreprocessor:
     """
