@@ -24,6 +24,9 @@ import time
 from datetime import datetime
 import sys
 
+os.environ["nnUNet_raw"] = ""
+os.environ["nnUNet_preprocessed"] = ""Cha
+
 import SimpleITK
 import colorama
 import emoji
