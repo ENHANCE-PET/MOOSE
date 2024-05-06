@@ -25,7 +25,7 @@ from datetime import datetime
 import sys
 
 os.environ["nnUNet_raw"] = ""
-os.environ["nnUNet_preprocessed"] = ""Cha
+os.environ["nnUNet_preprocessed"] = ""
 
 import SimpleITK
 import colorama
