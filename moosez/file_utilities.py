@@ -49,7 +49,7 @@ def get_virtual_env_root() -> str:
     return virtual_env_root
 
 
-def get_files(directory: str, wildcard: str) -> list:
+def get_files(directory: str, prefix: str, wildcard: str) -> list:
     """
     Returns the list of files in the directory with the specified wildcard.
     
@@ -64,12 +64,13 @@ def get_files(directory: str, wildcard: str) -> list:
     """
     files = []
     for file in os.listdir(directory):
-        if file.endswith(wildcard):
-            files.append(os.path.join(directory, file))
+        if file.startswith(prefix):
+            if file.endswith(wildcard):
+                files.append(os.path.join(directory, file))
     return files
 
 
-def moose_folder_structure(parent_directory: str, model_name: str, modalities: list) -> tuple:
+def moose_folder_structure(parent_directory: str, model_name: str) -> tuple:
     """
     Creates the moose folder structure.
     
@@ -88,16 +89,12 @@ def moose_folder_structure(parent_directory: str, model_name: str, modalities: l
     moose_dir = os.path.join(parent_directory,
                              'moosez-' + model_name + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     create_directory(moose_dir)
-    input_dirs = []
-    for modality in modalities:
-        input_dirs.append(os.path.join(moose_dir, modality))
-        create_directory(input_dirs[-1])
 
     output_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
     stats_dir = os.path.join(moose_dir, constants.STATS_FOLDER)
     create_directory(output_dir)
     create_directory(stats_dir)
-    return moose_dir, input_dirs, output_dir, stats_dir
+    return moose_dir, parent_directory, output_dir, stats_dir
 
 
 def copy_file(file: str, destination: str) -> None:
@@ -147,24 +144,6 @@ def select_files_by_modality(moose_compliant_subjects: list, modality_tag: str) 
             if file.startswith(modality_tag) and (file.endswith('.nii') or file.endswith('.nii.gz')):
                 selected_files.append(os.path.join(subject, file))
     return selected_files
-
-
-def organise_files_by_modality(moose_compliant_subjects: list, modalities: list, moose_dir: str) -> None:
-    """
-    Organises the files by modality.
-    
-    :param moose_compliant_subjects: The list of moose-compliant subjects paths.
-    :type moose_compliant_subjects: list
-    
-    :param modalities: The list of modalities.
-    :type modalities: list
-    
-    :param moose_dir: The path to the moose directory.
-    :type moose_dir: str
-    """
-    for modality in modalities:
-        files_to_copy = select_files_by_modality(moose_compliant_subjects, modality)
-        copy_files_to_destination(files_to_copy, os.path.join(moose_dir, modality))
 
 
 def find_pet_file(folder: str) -> str:
