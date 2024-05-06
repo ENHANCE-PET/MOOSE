@@ -49,7 +49,8 @@ def initialize_model(model_name: str) -> nnUNetPredictor:
     trainer = MODELS[model_name]["trainer"]
     configuration = MODELS[model_name]["configuration"]
     planner = MODELS[model_name]["planner"]
-
+    os.environ["nnUNet_raw"] = ""
+    os.environ["nnUNet_preprocessed"] = ""
     predictor = nnUNetPredictor(allow_tqdm=False)
     predictor.initialize_from_trained_model_folder(os.path.join(constants.NNUNET_RESULTS_FOLDER, model_folder_name,
                                                                 f"{trainer}__{planner}__{configuration}"), use_folds=("all"))
