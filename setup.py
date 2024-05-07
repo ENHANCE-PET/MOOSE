@@ -6,8 +6,12 @@ setup(
     version='2.4.9',
 =======
     version='2.5.0',
+<<<<<<< HEAD
 >>>>>>> 47016b2 (Updated version number)
     author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer',
+=======
+    author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires',
+>>>>>>> b574151 (Update setup.py)
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
     python_requires='>=3.10',
