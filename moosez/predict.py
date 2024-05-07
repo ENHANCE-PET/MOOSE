@@ -3,6 +3,7 @@
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
+#         Manuel Pires
 # Institution: Medical University of Vienna
 # Research Group: Quantitative Imaging and Medical Physics (QIMP) Team
 # Date: 13.02.2023
@@ -57,7 +58,7 @@ def initialize_model(model_name: str) -> nnUNetPredictor:
 
 def predict_from_array(predictor: nnUNetPredictor, input_dir: str, output_dir: str, model_name: str) -> None:
     """
-    Reads an image and perorms the necessary processing to predict and write the infered segmentations.
+    Uses the initialized model to infer the input image.
 
     :param predictor: The predictor object.
     :type predictor: nnUNetPredictor
@@ -83,7 +84,7 @@ def predict_from_array(predictor: nnUNetPredictor, input_dir: str, output_dir: s
 
 
 
-def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib.Nifti1Image, Any]:
+def preprocess(original_image_directory: str, model_name: str) -> Tuple[np.array, dict, dict]:
     """
     Preprocesses the original images.
 
@@ -91,8 +92,8 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
     :type original_image_directory: str
     :param model_name: The name of the model.
     :type model_name: str
-    :return: A tuple containing the path to the temp folder, the resampled image, and the moose_image_object.
-    :rtype: Tuple[str, nib.Nifti1Image, Any]
+    :return: A tuple containing the array with the image data, a dictionary for the predictor, and a dictionary for postprocessing.
+    :rtype: Tuple[np.array, dict, dict]
     """
 
     prefix = MODELS[model_name]["multilabel_prefix"].split("_")[1]
@@ -126,16 +127,20 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
     return image_data, nnunet_dict, properties_dict
 
 
-def postprocess(predicted_image, original_image: str, output_dir: str, model_name: str, original_header) -> None:
+def postprocess(predicted_image, original_image: str, output_dir: str, model_name: str, original_header:nib.Nifti1Header) -> None:
     """
     Postprocesses the predicted images.
 
+    :param predicted_image: Image infered by nnUNet.
+    :type predicted_image: str
     :param original_image: The path to the original image.
     :type original_image: str
     :param output_dir: The output directory containing the label image.
     :type output_dir: str
     :param model_name: The name of the model.
     :type model_name: str
+    :param original_header: Header of the image infered.
+    :type original_header: nib.Nifti1Header
     :return: None
     :rtype: None
     """
@@ -155,13 +160,13 @@ def merge_image_parts(segmentations: list, original_image_shape: Tuple[int, int,
     """
     Combine the split image parts back into a single image.
 
-    :param save_dir: Directory where the image parts are saved.
-    :type save_dir: str
+    :param segmentations: List with predicted segmentations for each chunk.
+    :type segmentations: list
     :param original_image_shape: The shape of the original image.
     :type original_image_shape: Tuple[int, int, int]
     :param original_image_affine: The affine transformation of the original image.
     :type original_image_affine: np.ndarray
-    :return: Path to the merged image.
+    :return: Merged segmentation image.
     :rtype: nib.Nifti1Image
     """
     # Create an empty array with the original image's shape
