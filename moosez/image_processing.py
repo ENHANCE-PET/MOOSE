@@ -146,10 +146,11 @@ def write_segmentation(image: nibabel.Nifti1Image, out_image_path: str) -> None:
     """
     resampled_image_path = out_image_path
     image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine ,header=image.header)
+    image_as_uint8.set_data_dtype(np.uint8)
     nibabel.save(image_as_uint8, resampled_image_path)
 
 
-def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False,):
+def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False):
     """
     Writes an image either as a single file or multiple files depending on the image size.
 
@@ -182,12 +183,12 @@ def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False,):
         nnunet_dict = [chunk[1] for chunk in chunk_list]
 
     else:
-        resampled_image_data = resampled_image.get_fdata()
+        resampled_image_data = image.get_fdata().transpose((2, 1, 0))[None]
         nnunet_dict = {
             "nibabel_stuff": {
-                "original_affine": resampled_image.affine
+                "original_affine": image.affine
             },
-            "spacing": [float(i) for i in resampled_image.header.get_zooms()[::-1]] # Also retrieved like this to make it consistent with sitk
+            "spacing": [float(i) for i in image.header.get_zooms()[::-1]] # Also retrieved like this to make it consistent with sitk
         }
     return resampled_image_data, nnunet_dict
 
