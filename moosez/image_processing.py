@@ -4,6 +4,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
 #         Sebastian Gutschmayer
+#         Manuel Pires
 # Institution: Medical University of Vienna
 # Research Group: Quantitative Imaging and Medical Physics (QIMP) Team
 # Date: 05.06.2023
@@ -25,8 +26,7 @@ import dask.array as da
 import nibabel
 import numpy as np
 import pandas as pd
-from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
-    CHUNK_FILENAMES
+from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -95,7 +95,7 @@ def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) 
     stats_df.to_csv(out_csv)
 
 
-def split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
+def split(image_chunk: da.Array, image_affine: np.ndarray) -> None:
     """
     Get a chunk of the image and save it.
 
@@ -103,16 +103,21 @@ def split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_
     :type image_chunk: da.Array
     :param image_affine: The image affine transformation.
     :type image_affine: np.ndarray
-    :param image_chunk_path: The path to save the image chunk.
-    :type image_chunk_path: str
     :return: None
     """
     chunk_part = nibabel.Nifti1Image(image_chunk, image_affine)
-    nibabel.save(chunk_part, image_chunk_path)
+    image_data = chunk_part.get_fdata().transpose((2, 1, 0))[None]
+    nnunet_dict = {
+        "nibabel_stuff": {
+            "original_affine": chunk_part.affine
+        },
+        "spacing": [float(i) for i in chunk_part.header.get_zooms()[::-1]]
+    }
+    return image_data, nnunet_dict
 
 
 @dask.delayed
-def delayed_split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
+def delayed_split(image_chunk: da.Array, image_affine: np.ndarray) -> None:
     """
     Delayed function to get a chunk of the image and save it.
 
@@ -120,15 +125,13 @@ def delayed_split_and_save(image_chunk: da.Array, image_affine: np.ndarray, imag
     :type image_chunk: da.Array
     :param image_affine: The image affine transformation.
     :type image_affine: np.ndarray
-    :param image_chunk_path: The path to save the image chunk.
-    :type image_chunk_path: str
     :return: None
     """
-    split_and_save(image_chunk, image_affine, image_chunk_path)
+    image_data, nnunet_dict = split(image_chunk, image_affine)
+    return image_data, nnunet_dict
 
 
-def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False,
-                is_label: bool = False) -> None:
+def write_segmentation(image: nibabel.Nifti1Image, out_image_path: str) -> None:
     """
     Writes an image either as a single file or multiple files depending on the image size.
 
@@ -136,11 +139,23 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
     :type image: nibabel.Nifti1Image
     :param out_image_path: The path to save the image.
     :type out_image_path: str
+    :return: None
+    """
+    resampled_image_path = out_image_path
+    image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine ,header=image.header)
+    image_as_uint8.set_data_dtype(np.uint8)
+    nibabel.save(image_as_uint8, resampled_image_path)
+
+
+def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False) -> tuple:
+    """
+    Writes an image either as a single file or multiple files depending on the image size.
+
+    :param image: The image to save.
+    :type image: nibabel.Nifti1Image
     :param large_image: Indicates whether the image classifies as large or not.
     :type large_image: bool
-    :param is_label: Indicates whether the image is a label or not.
-    :type is_label: bool
-    :return: None
+    :return: tuple
     """
     image_shape = image.shape
     image_data = da.from_array(image.get_fdata(), chunks=(image_shape[0], image_shape[1], image_shape[2] // 3))
@@ -153,26 +168,26 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         chunk_indices = [(0, chunk_size + MARGIN_PADDING),
                          (chunk_size + 1 - MARGIN_PADDING, chunk_size * 2 + MARGIN_PADDING),
                          (chunk_size * 2 + 1 - MARGIN_PADDING, None)]
-        filenames = CHUNK_FILENAMES
-        save_dir = os.path.dirname(out_image_path)
-        chunk_paths = [os.path.join(save_dir, filename) for filename in filenames]
 
         tasks = []
-        for i, chunk_path in enumerate(chunk_paths):
-            tasks.append(delayed_split_and_save(image_data[:, :, chunk_indices[i][0]:chunk_indices[i][1]].compute(),
-                                                image_affine, chunk_path))
+        for i in range (num_chunks):
+            tasks.append(delayed_split(image_data[:, :, chunk_indices[i][0]:chunk_indices[i][1]].compute(),
+                                                image_affine))
 
-        dask.compute(*tasks)
+        chunk_list = dask.compute(*tasks)
+
+        resampled_image_data = [chunk[0] for chunk in chunk_list]
+        nnunet_dict = [chunk[1] for chunk in chunk_list]
 
     else:
-        if is_label:
-            resampled_image_path = out_image_path
-            image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine ,header=image.header)
-            nibabel.save(image_as_uint8, resampled_image_path)
-        else:
-            resampled_image_path = out_image_path
-            nibabel.save(image, resampled_image_path)
-
+        resampled_image_data = image.get_fdata().transpose((2, 1, 0))[None]
+        nnunet_dict = {
+            "nibabel_stuff": {
+                "original_affine": image.affine
+            },
+            "spacing": [float(i) for i in image.header.get_zooms()[::-1]] # Also retrieved like this to make it consistent with sitk
+        }
+    return resampled_image_data, nnunet_dict
 
 class NiftiPreprocessor:
     """
@@ -536,13 +551,13 @@ class ImageResampler:
         return resampled_image
 
     @staticmethod
-    def resample_segmentations(input_image_path: str, desired_spacing: tuple,
+    def resample_segmentations(input_image: nibabel.Nifti1Image, desired_spacing: tuple,
                                desired_size: tuple) -> nibabel.Nifti1Image:
         """
         Resamples an image to a new spacing.
 
-        :param input_image_path: Path to the input image.
-        :type input_image_path: str
+        :param input_image: Image to resample.
+        :type input_image: nibabel.Nifti1Image
         :param desired_spacing: The new spacing to use.
         :type desired_spacing: tuple
         :param desired_size: The new size to use.
@@ -551,7 +566,6 @@ class ImageResampler:
         :rtype: nibabel.Nifti1Image
         """
         # Load the image and get necessary information
-        input_image = nibabel.load(input_image_path)
         image_data = input_image.get_fdata()
         image_header = input_image.header
         image_affine = input_image.affine
@@ -560,8 +574,7 @@ class ImageResampler:
         rotation_matrix = image_affine[:3, :3]
 
         # Convert to SimpleITK image format
-        image_data_swapped_axes = image_data.swapaxes(0, 2)
-        sitk_input_image = sitk.GetImageFromArray(image_data_swapped_axes)
+        sitk_input_image = sitk.GetImageFromArray(image_data)
         sitk_input_image.SetSpacing([spacing.item() for spacing in original_spacing])
         axis_flip_matrix = np.diag([-1, -1, 1])
         sitk_input_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))

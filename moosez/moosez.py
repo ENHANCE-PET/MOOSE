@@ -3,6 +3,7 @@
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
+#         Manuel Pires
 # Institution: Medical University of Vienna
 # Research Group: Quantitative Imaging and Medical Physics (QIMP) Team
 # Date: 09.02.2023
@@ -22,6 +23,11 @@ import logging
 import os
 import time
 from datetime import datetime
+import sys
+
+os.environ["nnUNet_raw"] = ""
+os.environ["nnUNet_preprocessed"] = ""
+os.environ["nnUNet_results"] = ""
 
 import SimpleITK
 import colorama
@@ -42,8 +48,9 @@ from moosez.resources import MODELS, AVAILABLE_MODELS
 
 
 def main():
+    log_filename = datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log')
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                        filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
+                        filename=log_filename, filemode='w')
     colorama.init()
 
     # Argument parser
@@ -153,6 +160,8 @@ def main():
     # -------------------------------------------------
     # RUN PREDICTION ONLY FOR MOOSE COMPLIANT SUBJECTS
     # -------------------------------------------------
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
 
     print('')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":crystal_ball:")} PREDICT:{constants.ANSI_RESET}')
@@ -160,6 +169,13 @@ def main():
     logging.info(' ')
     logging.info(' PERFORMING PREDICTION:')
     logging.info(' ')
+    # Catch nnunet output to a text file to make debugging nnunet problems easier
+    with open(f"nnunet_output_{log_filename}", "w") as f:
+        sys.stdout = f
+        sys.stderr = f
+        model = predict.initialize_model(model_name)
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
 
     spinner = Halo(text=' Initiating', spinner='dots')
     spinner.start()
@@ -172,18 +188,15 @@ def main():
         logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:'
                      f'{constants.ANSI_RESET}')
         logging.info(' ')
-        moose_dir, input_dirs, output_dir, stats_dir = file_utilities.moose_folder_structure(subject, model_name,
-                                                                                             modalities)
+        moose_dir, input_dir, output_dir, stats_dir = file_utilities.moose_folder_structure(subject, model_name)
         logging.info(f" MOOSE directory for subject {os.path.basename(subject)} at: {moose_dir}")
 
         # ORGANISE DATA ACCORDING TO MODALITY
         spinner.text = f'[{i + 1}/{num_subjects}] Organising data according to modality for {os.path.basename(subject)}...'
-        file_utilities.organise_files_by_modality([subject], modalities, moose_dir)
 
         # PREPARE THE DATA FOR PREDICTION
         spinner.text = f'[{i + 1}/{num_subjects}] Preparing data for prediction for {os.path.basename(subject)}...'
-        for input_dir in input_dirs:
-            input_validation.make_nnunet_compatible(input_dir)
+
         logging.info(f" {constants.ANSI_GREEN}Data preparation complete using {model_name} for subject "
                      f"{os.path.basename(subject)}{constants.ANSI_RESET}")
 
@@ -194,8 +207,14 @@ def main():
         logging.info(' ')
         spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_name}...'
 
-        for input_dir in input_dirs:
-            predict.predict(model_name, input_dir, output_dir, accelerator)
+        # Catch nnunet output to a text file to make debugging nnunet problems easier
+        with open(f"nnunet_output_{log_filename}", "a") as f:
+            sys.stdout = f
+            sys.stderr = f
+            predict.predict_from_array(model, input_dir, output_dir, model_name)
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+
         logging.info(f"Prediction complete using {model_name}.")
 
         end_time = time.time()
