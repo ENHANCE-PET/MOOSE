@@ -4,6 +4,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
 #         Sebastian Gutschmayer
+#         Manuel Pires
 # Institution: Medical University of Vienna
 # Research Group: Quantitative Imaging and Medical Physics (QIMP) Team
 # Date: 05.06.2023
@@ -102,8 +103,6 @@ def split(image_chunk: da.Array, image_affine: np.ndarray) -> None:
     :type image_chunk: da.Array
     :param image_affine: The image affine transformation.
     :type image_affine: np.ndarray
-    :param image_chunk_path: The path to save the image chunk.
-    :type image_chunk_path: str
     :return: None
     """
     chunk_part = nibabel.Nifti1Image(image_chunk, image_affine)
@@ -126,8 +125,6 @@ def delayed_split(image_chunk: da.Array, image_affine: np.ndarray) -> None:
     :type image_chunk: da.Array
     :param image_affine: The image affine transformation.
     :type image_affine: np.ndarray
-    :param image_chunk_path: The path to save the image chunk.
-    :type image_chunk_path: str
     :return: None
     """
     image_data, nnunet_dict = split(image_chunk, image_affine)
@@ -150,7 +147,7 @@ def write_segmentation(image: nibabel.Nifti1Image, out_image_path: str) -> None:
     nibabel.save(image_as_uint8, resampled_image_path)
 
 
-def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False):
+def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False) -> tuple:
     """
     Writes an image either as a single file or multiple files depending on the image size.
 
@@ -158,7 +155,7 @@ def chunk_image(image: nibabel.Nifti1Image, large_image: bool = False):
     :type image: nibabel.Nifti1Image
     :param large_image: Indicates whether the image classifies as large or not.
     :type large_image: bool
-    :return: None
+    :return: tuple
     """
     image_shape = image.shape
     image_data = da.from_array(image.get_fdata(), chunks=(image_shape[0], image_shape[1], image_shape[2] // 3))
@@ -554,13 +551,13 @@ class ImageResampler:
         return resampled_image
 
     @staticmethod
-    def resample_segmentations(input_image: np.array, desired_spacing: tuple,
+    def resample_segmentations(input_image: nibabel.Nifti1Image, desired_spacing: tuple,
                                desired_size: tuple) -> nibabel.Nifti1Image:
         """
         Resamples an image to a new spacing.
 
-        :param input_image_path: Path to the input image.
-        :type input_image_path: str
+        :param input_image: Image to resample.
+        :type input_image: nibabel.Nifti1Image
         :param desired_spacing: The new spacing to use.
         :type desired_spacing: tuple
         :param desired_size: The new size to use.

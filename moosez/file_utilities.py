@@ -49,15 +49,15 @@ def get_virtual_env_root() -> str:
     return virtual_env_root
 
 
-def get_files(directory: str, prefix: str, wildcard: str) -> list:
+def get_files(directory: str, prefix: str, wildcard: tuple) -> list:
     """
     Returns the list of files in the directory with the specified wildcard.
     
     :param directory: The directory path.
     :type directory: str
     
-    :param wildcard: The wildcard to be used.
-    :type wildcard: str
+    :param wildcard: The wildcards to be used.
+    :type wildcard: tuple
     
     :return: The list of files.
     :rtype: list
@@ -79,9 +79,6 @@ def moose_folder_structure(parent_directory: str, model_name: str) -> tuple:
     
     :param model_name: The name of the model.
     :type model_name: str
-    
-    :param modalities: The list of modalities.
-    :type modalities: list
     
     :return: A tuple containing the paths to the moose directory, input directories, output directory, and stats directory.
     :rtype: tuple
