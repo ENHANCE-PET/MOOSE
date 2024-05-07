@@ -95,7 +95,7 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[str, nib
     :rtype: Tuple[str, nib.Nifti1Image, Any]
     """
 
-    prefix = MODELS[model_name]["multilabel_prefix"].split("_")[0]
+    prefix = MODELS[model_name]["multilabel_prefix"].split("_")[1]
     original_image_files = file_utilities.get_files(original_image_directory, prefix, ('.nii.gz', '.nii'))
     org_image = nib.load(original_image_files[0])
     original_header = org_image.header
@@ -147,15 +147,7 @@ def postprocess(predicted_image, original_image: str, output_dir: str, model_nam
                                                                  desired_size=native_size)
     multilabel_image = os.path.join(output_dir, MODELS[model_name]["multilabel_prefix"] +
                                     os.path.basename(original_image))
-    # if model_name has body in it, run logic below
-    if "body" in model_name:
-        resampled_prediction_data = resampled_prediction.get_fdata()
-        resampled_prediction_new = nib.Nifti1Image(resampled_prediction_data, resampled_prediction.affine,
-                                                   resampled_prediction.header)
-        image_processing.write_segmentation(resampled_prediction_new, multilabel_image)
-    else:
-
-        image_processing.write_segmentation(resampled_prediction, multilabel_image)
+    image_processing.write_segmentation(resampled_prediction, multilabel_image)
 
 
 def merge_image_parts(segmentations: list, original_image_shape: Tuple[int, int, int],

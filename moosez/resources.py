@@ -66,7 +66,7 @@ MODELS = {
         "directory": "Dataset333_HMS3dlungs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Lungs_",
+        "multilabel_prefix": "Clin_CT_Lungs_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -76,7 +76,7 @@ MODELS = {
         "directory": "Dataset123_Organs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Organs_",
+        "multilabel_prefix": "Clin_CT_Organs_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -96,7 +96,7 @@ MODELS = {
         "directory": "Dataset001_body",
         "trainer": "nnUNetTrainer",
         "voxel_spacing": [5, 5, 5],
-        "multilabel_prefix": "CT_Body_",
+        "multilabel_prefix": "Clin_CT_Body_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -106,7 +106,7 @@ MODELS = {
         "directory": "Dataset444_Ribs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Ribs_",
+        "multilabel_prefix": "Clin_CT_Ribs_",
         "configuration": "3d_fullres_big_patch",
         "planner": "nnUNetPlans"
     },
@@ -116,7 +116,7 @@ MODELS = {
         "directory": "Dataset555_Muscles",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Muscles_",
+        "multilabel_prefix": "Clin_CT_Muscles_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -126,7 +126,7 @@ MODELS = {
         "directory": "Dataset666_Peripheral-Bones",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Peripheral-Bones_",
+        "multilabel_prefix": "Clin_CT_Peripheral-Bones_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -136,7 +136,7 @@ MODELS = {
         "directory": "Dataset777_Fat",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Fat_",
+        "multilabel_prefix": "Clin_CT_Fat_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -146,7 +146,7 @@ MODELS = {
         "directory": "Dataset111_Vertebrae",
         "trainer": "nnUNetTrainer_2000_epochs_DA5NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Vertebrae_",
+        "multilabel_prefix": "Clin_CT_Vertebrae_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -156,7 +156,7 @@ MODELS = {
         "directory": "Dataset888_Cardiac",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Cardiac_",
+        "multilabel_prefix": "Clin_CT_Cardiac_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -166,7 +166,7 @@ MODELS = {
         "directory": "Dataset999_Digestive",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "CT_Digestive_",
+        "multilabel_prefix": "Clin_CT_Digestive_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
     },
@@ -212,8 +212,8 @@ MODELS = {
     },
     "clin_ct_ALPACA": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ALPACA.zip",
-        "filename": "Dataset080_ALPACA.zip",
-        "directory": "Dataset080_ALPACA",
+        "filename": "Dataset080_Alpaca.zip",
+        "directory": "Dataset080_Alpaca",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "Clin_CT_ALPACA_",
