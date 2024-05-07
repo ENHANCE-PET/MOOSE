@@ -295,16 +295,12 @@ ORGAN_INDICES = {
         10: "Vessels",
         11: "Esophagus",
         12: "Trachea",
-        13: "Small_bowel",
-        14: "Duodenum",
-        15: "Colon",
-        16: "Brain",
-        17: "Skeleton",
-        18: "Subcutaneous_fat",
-        19: "Visceral fat",
-        20: "Muscles",
-        21: "Bladder",
-        22: "Filler"
+        13: "Digestive",
+        14: "Brain",
+        15: "Skeleton",
+        16: "Muscles",
+        17: "Bladder",
+        18: "Filler"
     },
     "clin_pt_fdg_brain_v1": {
         0: "background",
@@ -414,16 +410,12 @@ ORGAN_INDICES = {
         10: "Vessels",
         11: "Esophagus",
         12: "Trachea",
-        13: "Small_bowel",
-        14: "Duodenum",
-        15: "Colon",
-        16: "Brain",
-        17: "Skeleton",
-        18: "Subcutaneous_fat",
-        19: "Visceral fat",
-        20: "Muscles",
-        21: "Bladder",
-        22: "Filler"
+        13: "Digestive",
+        14: "Brain",
+        15: "Skeleton",
+        16: "Muscles",
+        17: "Bladder",
+        18: "Filler"
     },
     # More index-to-name dictionaries for other models...
 }
