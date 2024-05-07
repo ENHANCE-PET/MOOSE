@@ -72,6 +72,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "Kazezaka",
+      "name": "Kazezaka",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29598301?v=4",
+      "profile": "https://github.com/Kazezaka",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "commitType": "docs",
