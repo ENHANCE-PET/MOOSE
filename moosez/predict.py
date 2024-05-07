@@ -56,7 +56,7 @@ def initialize_model(model_name: str) -> nnUNetPredictor:
     return predictor
 
 
-def predict_from_array(predictor: nnUNetPredictor, input_dir: str, output_dir: str, model_name: str) -> None:
+def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: str, model_name: str) -> None:
     """
     Uses the initialized model to infer the input image.
 

@@ -211,7 +211,7 @@ def main():
         with open(f"nnunet_output_{log_filename}", "a") as f:
             sys.stdout = f
             sys.stderr = f
-            predict.predict_from_array(model, input_dir, output_dir, model_name)
+            predict.prediction_pipeline(model, input_dir, output_dir, model_name)
         sys.stdout = original_stdout
         sys.stderr = original_stderr
 
@@ -284,7 +284,7 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     :param output_dir: Path to the directory where the segmented output will be saved.
     :type output_dir: str
 
-    :param accelerator: Specifies the type of accelerator to be used. Common values include "cpu" and "cuda" for 
+    :param accelerator: Specifies the type of accelerator to be used. Common values include "cpu" and "cuda" for
                         GPU acceleration.
     :type accelerator: str
 
@@ -300,9 +300,10 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
+    model = predict.initialize_model(model_name)
     logging.info('- Custom trainer: ' + custom_trainer_status)
     input_validation.make_nnunet_compatible(input_dir)
-    predict.predict(model_name, input_dir, output_dir, accelerator)
+    predict.prediction_pipeline(model, input_dir, output_dir, model_name)
 
 
 if __name__ == '__main__':
