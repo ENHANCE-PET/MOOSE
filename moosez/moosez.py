@@ -255,7 +255,7 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     4. Validates and prepares the input directory to be compatible with nnUNet.
     5. Executes the prediction process.
 
-    :param model_name: The name of the model to be used for predictions. This model will be downloaded and used 
+    :param model_name: The name of the model to be used for predictions. This model will be downloaded and used
                        for the image segmentation process.
     :type model_name: str
 
@@ -265,7 +265,7 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     :param output_dir: Path to the directory where the segmented output will be saved.
     :type output_dir: str
 
-    :param accelerator: Specifies the type of accelerator to be used. Common values include "cpu" and "cuda" for 
+    :param accelerator: Specifies the type of accelerator to be used. Common values include "cpu" and "cuda" for
                         GPU acceleration.
     :type accelerator: str
 
