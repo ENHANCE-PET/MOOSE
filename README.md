@@ -102,8 +102,11 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    sudo apt install libssl-dev libncurses5-dev libsqlite3-dev libreadline-dev libtk8.6 libgdm-dev libdb4o-cil-dev libpcap-dev libbz2-dev
    ```
 
-2. (optionnally for CUDA users) Make sure the NVIDIA drivers are working on your system and install `cuda-toolkit`:
+2. (optionnally for CUDA users) Make sure the [NVIDIA drivers are properly installed and working](https://ubuntu.com/server/docs/nvidia-drivers-installation) on your system and install `cuda-toolkit`:
    ```bash
+   wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.debsudo
+   dpkg -i cuda-keyring_1.1-1_all.debsudo
+   sudo apt-get update
    sudo apt install cuda-toolkit-12-4
    ```
 
