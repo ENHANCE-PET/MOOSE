@@ -899,7 +899,7 @@ class DepthPatchSplitter(Transform):
             num_patches: int = 3,
             margin_padding: int = MARGIN_PADDING,
             output_dir: str = ".",
-            num_workers: int = 0):
+            num_workers: int = 1):
         """
         Args:
             num_patches: The number of patches to split the iput image.
