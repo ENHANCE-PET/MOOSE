@@ -49,7 +49,7 @@ def get_virtual_env_root() -> str:
     return virtual_env_root
 
 
-def get_files(directory: str, prefix: str, wildcard: tuple) -> list:
+def get_files(directory: str, prefix: str, wildcard: str) -> list:
     """
     Returns the list of files in the directory with the specified wildcard.
     
@@ -57,16 +57,14 @@ def get_files(directory: str, prefix: str, wildcard: tuple) -> list:
     :type directory: str
     
     :param wildcard: The wildcards to be used.
-    :type wildcard: tuple
+    :type wildcard: str
     
     :return: The list of files.
     :rtype: list
     """
     files = []
-    for file in os.listdir(directory):
-        if file.startswith(prefix):
-            if file.endswith(wildcard):
-                files.append(os.path.join(directory, file))
+    files += glob.glob(os.path.join(directory, f"{prefix}*{wildcard}"))
+
     return files
 
 

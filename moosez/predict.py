@@ -26,6 +26,7 @@ from typing import Tuple, List, Any
 import nibabel as nib
 import numpy as np
 from halo import Halo
+import torch
 from moosez import constants
 from moosez import file_utilities
 from moosez import image_processing
@@ -37,7 +38,7 @@ from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 from mpire import WorkerPool
 
 
-def initialize_model(model_name: str) -> nnUNetPredictor:
+def initialize_model(model_name: str, accelerator) -> nnUNetPredictor:
     """
     Initializes the model for prediction.
 
@@ -50,13 +51,14 @@ def initialize_model(model_name: str) -> nnUNetPredictor:
     trainer = MODELS[model_name]["trainer"]
     configuration = MODELS[model_name]["configuration"]
     planner = MODELS[model_name]["planner"]
-    predictor = nnUNetPredictor(allow_tqdm=False)
+    device = torch.device(accelerator)
+    predictor = nnUNetPredictor(allow_tqdm=False, device=device)
     predictor.initialize_from_trained_model_folder(os.path.join(constants.NNUNET_RESULTS_FOLDER, model_folder_name,
                                                                 f"{trainer}__{planner}__{configuration}"), use_folds=("all"))
     return predictor
 
 
-def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: str, model_name: str) -> None:
+def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: str, model_name: str, moose_package:bool=False) -> None:
     """
     Uses the initialized model to infer the input image.
 
@@ -71,7 +73,7 @@ def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: 
     :return: None
     :rtype: None
     """
-    image, nnunet_dict, properties_dict = preprocess(input_dir, model_name)
+    image, nnunet_dict, properties_dict = preprocess(input_dir, model_name, moose_package)
     segmentation = predictor.predict_from_list_of_npy_arrays(image, None, nnunet_dict, None) # Returns a np.array
 
     if len(segmentation) > 1:
@@ -84,7 +86,7 @@ def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: 
 
 
 
-def preprocess(original_image_directory: str, model_name: str) -> Tuple[np.array, dict, dict]:
+def preprocess(original_image_directory: str, model_name: str, moose_package:bool=False) -> Tuple[np.array, dict, dict]:
     """
     Preprocesses the original images.
 
@@ -95,9 +97,12 @@ def preprocess(original_image_directory: str, model_name: str) -> Tuple[np.array
     :return: A tuple containing the array with the image data, a dictionary for the predictor, and a dictionary for postprocessing.
     :rtype: Tuple[np.array, dict, dict]
     """
+    if moose_package:
+        original_image_files = file_utilities.get_files(original_image_directory, "*", ".nii*")
+    else:
+        prefix = MODELS[model_name]["multilabel_prefix"].split("_")[1]
+        original_image_files = file_utilities.get_files(original_image_directory, prefix, ".nii*")
 
-    prefix = MODELS[model_name]["multilabel_prefix"].split("_")[1]
-    original_image_files = file_utilities.get_files(original_image_directory, prefix, ('.nii.gz', '.nii'))
     org_image = nib.load(original_image_files[0])
     original_header = org_image.header
     moose_image_object = NiftiPreprocessor(org_image)
