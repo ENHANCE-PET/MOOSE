@@ -317,8 +317,8 @@ Each time you see a 'Z' in one of our package names, be reminded of the spirit o
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kazezaka"><img src="https://avatars.githubusercontent.com/u/29598301?v=4?s=100" width="100px;" alt="Kazezaka"/><br /><sub><b>Kazezaka</b></sub></a><br /><a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=Kazezaka" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://ltetrel.github.io/"><img src="https://avatars.githubusercontent.com/u/37963074?v=4?s=100" width="100px;" alt="Loic Tetrel"/><br /><sub><b>Loic Tetrel</b></sub></a><br /><a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=ltetrel" title="Code">💻</a> <a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=ltetrel" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://www.kitware.com"><img src="https://avatars.githubusercontent.com/u/87549?v=4?s=100" width="100px;" alt="Kitware, Inc."/><br /><sub><b>Kitware, Inc.</b></sub></a><br /><a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=Kitware" title="Code">💻</a> <a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=Kitware" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ltetrel.github.io/"><img src="https://avatars.githubusercontent.com/u/37963074?v=4?s=100" width="100px;" alt="Loic Tetrel"/><br /><sub><b>Loic Tetrel @ Kitware</b></sub></a><br /><a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=ltetrel" title="Code">💻</a> <a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=ltetrel" title="Documentation">📖</a></td>
+      
     </tr>
   </tbody>
 </table>
