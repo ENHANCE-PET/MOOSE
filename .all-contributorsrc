@@ -91,6 +91,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "Kitware",
+      "name": "Kitware, Inc.",
+      "avatar_url": "https://avatars.githubusercontent.com/u/87549?v=4",
+      "profile": "https://www.kitware.com",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "commitType": "docs",
