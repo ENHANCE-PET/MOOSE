@@ -81,6 +81,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "ltetrel",
+      "name": "Loic Tetrel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37963074?v=4",
+      "profile": "https://ltetrel.github.io/",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "commitType": "docs",
