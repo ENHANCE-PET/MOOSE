@@ -1,4 +1,5 @@
 nnunetv2
+pytest~=7.4.2
 nibabel~=3.2.2
 halo~=0.0.31
 pandas~=1.4.1
@@ -17,10 +18,12 @@ pillow>=9.2.0
 dask~=2023.6.0
 rich
 pandas
+psutil~=5.9.5
+plotly~=5.15.0
+monai[gdown,itk,pynrrd]==1.2.0
+cupy-cuda12x~=13.0
+pynvml
 dicom2nifti~=2.4.8
 emoji
 Sphinx
 sphinx_rtd_theme
-
-
-

@@ -97,19 +97,36 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 
 ## For Linux and MacOS 🐧🍏
 
-1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
+1. Make sure to have python 3.10 installed with the following dependencies:
    ```bash
-   python3 -m venv moose-env
+   sudo apt install libssl-dev libncurses5-dev libsqlite3-dev libreadline-dev libtk8.6 libgdm-dev libdb4o-cil-dev libpcap-dev libbz2-dev
    ```
 
-2. Activate your newly created environment.
+2. (optionnally for CUDA users) Make sure the [NVIDIA drivers are properly installed and working](https://ubuntu.com/server/docs/nvidia-drivers-installation) on your system and install `cuda-toolkit`:
+   ```bash
+   wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.debsudo
+   dpkg -i cuda-keyring_1.1-1_all.debsudo
+   sudo apt-get update
+   sudo apt install cuda-toolkit-12-4
+   ```
+
+   > **Note**:
+   > Our backend relies on [cupy](https://cupy.dev/) for some processing, and it cannot use the embedded/packaged `cuda` by `pytorch`. This is why we need to install `cuda` on the system ourself.
+
+3. Then, create a Python environment. You can name it to your liking; for example, 'moose-env'.
+   ```bash
+   python3.10 -m venv moose-env
+   ```
+
+4. Activate your newly created environment.
    ```bash
    source moose-env/bin/activate  # for Linux
    source moose-env/bin/activate  # for MacOS
    ```
 
-3. Install MOOSE 2.0.
+5. Update pip and install MOOSE 2.0.
    ```bash
+   pip install --upgrade pip
    pip install moosez
    ```
 
@@ -167,6 +184,34 @@ moosez -h
 ```
 
 This command will provide you with all the help and the information about the available [models](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/resources.py#L29) and the [regions](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/constants.py#L64) it segments.
+
+#### Benchmarking
+
+We provide an option to benchmark the code.
+For that, please use the optionnal argument `p`. Then to visualize the results, first generate the html figures:
+```bash
+python -m moosez.moosez moosez/benchmarking/visualization.py XXX_profile.tsv
+```
+You can then visualize `XXX_profile.html` with any web browser.
+
+We also enabled the default python profiler [cprofile](https://docs.python.org/3/library/profile.html), the resulting csv are available in `XXX_profile_cprofile.tsv`.
+
+#### Testing
+
+For unit tests, make sure you have `pytest` installed on your system or in the `venv`.
+Then you can simply run at the root of the repository:
+```bash
+pytest
+```
+
+Optionnally, we provide non-regression tests to inform on output regressions for a specific code change.
+Make sure you have downloaded `CT-images_N20_reference_output.zip` and have it inside `./data/external`.
+You can then simply run:
+```bash
+pytest -m non_reg
+```
+
+After the process finished, you can find the results in `./data/processed`.
 
 ### Using MOOSE 2.0 as a Library :books:
 

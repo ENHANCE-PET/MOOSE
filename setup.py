@@ -47,6 +47,7 @@ setup(
         'natsort~=8.1.0',
         'pillow>=9.2.0',
         'colorama~=0.4.6',
+        'pytest~=7.4.2',
         'dask',
         'rich',
         'pandas',
@@ -54,6 +55,11 @@ setup(
         'emoji',
         'dask[distributed]',
         'opencv-python-headless',
+        'psutil~=5.9.5',
+        'plotly~=5.15.0',
+        'monai[gdown,itk,pynrrd]==1.2.0',
+        'cupy-cuda12x~=13.0',
+        'pynvml'
     ],
     entry_points={
         'console_scripts': [
