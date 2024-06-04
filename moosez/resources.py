@@ -321,13 +321,13 @@ def check_device() -> str:
         device_count = torch.cuda.device_count()
         print(f" CUDA is available with {device_count} GPU(s). Predictions will be run on GPU.")
         return "cuda"
-    # Check for MPS (Apple Silicon)
-    elif torch.backends.mps.is_available():
-        print(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
-        return "mps"
-    elif not torch.backends.mps.is_built():
-        print(" MPS not available because the current PyTorch install was not built with MPS enabled.")
-        return "cpu"
+    # Check for MPS (Apple Silicon) Here for the future but not compatible right now
+    #elif torch.backends.mps.is_available():
+        #print(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
+        #return "mps"
+    #elif not torch.backends.mps.is_built():
+        #print(" MPS not available because the current PyTorch install was not built with MPS enabled.")
+        #return "cpu"
     else:
         print(" CUDA/MPS not available. Predictions will be run on CPU.")
         return "cpu"
