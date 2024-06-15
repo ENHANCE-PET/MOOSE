@@ -95,7 +95,7 @@ So, that's it! Make sure you're geared up with these specifications, and you're 
 
 Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 2.0.
 
-## For Linux and MacOS 🐧🍏
+## For Linux 🐧
 
 1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
    ```bash
@@ -105,7 +105,6 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 2. Activate your newly created environment.
    ```bash
    source moose-env/bin/activate  # for Linux
-   source moose-env/bin/activate  # for MacOS
    ```
 
 3. Install MOOSE 2.0.
@@ -114,6 +113,25 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    ```
 
 Voila! You're all set to explore with MOOSE 2.0.
+
+## For Mac 🍏
+
+1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
+   ```bash
+   python3.10 -m venv moose-env
+   ```
+
+2. Activate your newly created environment.
+   ```bash
+   source moose-env/bin/activate 
+   ```
+
+3. Install MOOSE 2.0 and a special fork of PyTorch (MPS specific). You need to install the MPS specific branch for making MOOSE work with MPS
+   ```bash
+   pip install moosez
+   pip install git+https://github.com/pytorch/pytorch.git@3c61c525694eca0f895bb01fc67c16793226051a
+   ```
+Now you are ready to use MOOSE on Apple Silicon 🏎⚡️.
 
 ## For Windows 🪟
 
