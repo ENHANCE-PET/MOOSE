@@ -95,7 +95,7 @@ So, that's it! Make sure you're geared up with these specifications, and you're 
 
 Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 2.0.
 
-## For Linux 🐧
+## For Linux (and Intel x86 Mac)🐧
 
 1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
    ```bash
@@ -114,7 +114,7 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 
 Voila! You're all set to explore with MOOSE 2.0.
 
-## For Mac 🍏
+## For Macs powered by Apple Silicon (M series chips with MPS) 🍏
 
 1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
    ```bash
