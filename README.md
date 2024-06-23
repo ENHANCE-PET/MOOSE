@@ -129,7 +129,7 @@ Voila! You're all set to explore with MOOSE 2.0.
 3. Install MOOSE 2.0 and a special fork of PyTorch (MPS specific). You need to install the MPS specific branch for making MOOSE work with MPS
    ```bash
    pip install moosez
-   pip install https://github.com/LalithShiyam/pytorch-mps.git
+   pip install git+https://github.com/LalithShiyam/pytorch-mps.git
    ```
 Now you are ready to use MOOSE on Apple Silicon 🏎⚡️.
 
