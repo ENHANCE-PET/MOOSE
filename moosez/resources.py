@@ -191,10 +191,10 @@ MODELS = {
         "planner": "nnUNetPlans"
     },
     "clin_ct_PUMA": {
-        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_puma_04042024.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA_1k_23052024.zip",
         "filename": "Dataset002_PUMA.zip",
         "directory": "Dataset002_PUMA",
-        "trainer": "nnUNetTrainer_2000epochs",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "Clin_CT_PUMA_",
         "configuration": "3d_fullres",
@@ -338,7 +338,7 @@ def check_device() -> str:
         device_count = torch.cuda.device_count()
         print(f" CUDA is available with {device_count} GPU(s). Predictions will be run on GPU.")
         return "cuda"
-    # Check for MPS (Apple Silicon)
+    # Check for MPS (Apple Silicon) Here for the future but not compatible right now
     elif torch.backends.mps.is_available():
         print(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
         return "mps"

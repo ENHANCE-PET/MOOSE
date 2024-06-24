@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='moosez',
-    version='2.5.1',
-    author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires',
+    version='2.6.0',
+    author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer',
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
     python_requires='>=3.10',
@@ -39,7 +39,7 @@ setup(
         'pydicom~=2.2.2',
         'argparse~=1.4.0',
         'imageio~=2.16.1',
-        'numpy',
+        'numpy<2.0',
         'mpire~=2.3.3',
         'openpyxl~=3.0.9',
         'matplotlib',
