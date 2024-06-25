@@ -199,7 +199,7 @@ First, import the `moose` function from the `moosez` package in your python scri
 Then, call the `moose` function to run predictions. The `moose` function takes four arguments:
 
 1. `model_name`: The name of the model to use for the predictions.
-2. `input_dir`: The directory containing the images (in nifti, either .nii or .nii.gz) to process.
+2. `input_dir`: The directory containing the images (in nifti, either .nii or .nii.gz) to process. Please remember to follow the [naming conventions](https://github.com/ENHANCE-PET/MOOSE?tab=readme-ov-file#naming-conventions-for-nifti-files-).
 3. `output_dir`: The directory where the output will be saved.
 4. `accelerator`: The type of accelerator to use (e.g., "cpu", "cuda").
 
