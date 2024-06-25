@@ -296,13 +296,27 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     >>> moose('clin_ct_organs', '/path/to/input/images', '/path/to/save/output', 'cuda')
 
     """
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    log_filename = datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log')
+
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
-    model = predict.initialize_model(model_name, accelerator)
+    with open(f"nnunet_output_{log_filename}", "w") as f:
+        sys.stdout = f
+        sys.stderr = f
+        model = predict.initialize_model(model_name, accelerator)
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
     logging.info('- Custom trainer: ' + custom_trainer_status)
-    predict.prediction_pipeline(model, input_dir, output_dir, model_name, True)
+    with open(f"nnunet_output_{log_filename}", "a") as f:
+        sys.stdout = f
+        sys.stderr = f
+        predict.prediction_pipeline(model, input_dir, output_dir, model_name, True)
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
 
 
 if __name__ == '__main__':
