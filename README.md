@@ -95,7 +95,7 @@ So, that's it! Make sure you're geared up with these specifications, and you're 
 
 Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 2.0.
 
-## For Linux and MacOS 🐧🍏
+## For Linux (and Intel x86 Mac)🐧
 
 1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
    ```bash
@@ -105,7 +105,6 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 2. Activate your newly created environment.
    ```bash
    source moose-env/bin/activate  # for Linux
-   source moose-env/bin/activate  # for MacOS
    ```
 
 3. Install MOOSE 2.0.
@@ -114,6 +113,25 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    ```
 
 Voila! You're all set to explore with MOOSE 2.0.
+
+## For Macs powered by Apple Silicon (M series chips with MPS) 🍏
+
+1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
+   ```bash
+   python3.10 -m venv moose-env
+   ```
+
+2. Activate your newly created environment.
+   ```bash
+   source moose-env/bin/activate 
+   ```
+
+3. Install MOOSE 2.0 and a special fork of PyTorch (MPS specific). You need to install the MPS specific branch for making MOOSE work with MPS
+   ```bash
+   pip install moosez
+   pip install git+https://github.com/LalithShiyam/pytorch-mps.git
+   ```
+Now you are ready to use MOOSE on Apple Silicon 🏎⚡️.
 
 ## For Windows 🪟
 
@@ -317,6 +335,8 @@ Each time you see a 'Z' in one of our package names, be reminded of the spirit o
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kazezaka"><img src="https://avatars.githubusercontent.com/u/29598301?v=4?s=100" width="100px;" alt="Kazezaka"/><br /><sub><b>Kazezaka</b></sub></a><br /><a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=Kazezaka" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://ltetrel.github.io/"><img src="https://avatars.githubusercontent.com/u/37963074?v=4?s=100" width="100px;" alt="Loic Tetrel"/><br /><sub><b>Loic Tetrel @ Kitware</b></sub></a><br /><a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=ltetrel" title="Code">💻</a> <a href="https://github.com/ENHANCE-PET/MOOSE/commits?author=ltetrel" title="Documentation">📖</a></td>
+      
     </tr>
   </tbody>
 </table>
