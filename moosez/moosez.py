@@ -208,12 +208,8 @@ def main():
         spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_name}...'
 
         # Catch nnunet output to a text file to make debugging nnunet problems easier
-        with open(f"nnunet_output_{log_filename}", "a") as f:
-            sys.stdout = f
-            sys.stderr = f
-            predict.prediction_pipeline(model, input_dir, output_dir, model_name)
-        sys.stdout = original_stdout
-        sys.stderr = original_stderr
+
+        predict.prediction_pipeline(model, input_dir, output_dir, model_name, log_filename, original_stdout, original_stderr)
 
         logging.info(f"Prediction complete using {model_name}.")
 
@@ -311,10 +307,8 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     sys.stdout = original_stdout
     sys.stderr = original_stderr
     logging.info('- Custom trainer: ' + custom_trainer_status)
-    with open(f"nnunet_output_{log_filename}", "a") as f:
-        sys.stdout = f
-        sys.stderr = f
-        predict.prediction_pipeline(model, input_dir, output_dir, model_name, True)
+    predict.prediction_pipeline(model, input_dir, output_dir, model_name, log_filename, original_stdout,
+                                original_stderr, True)
     sys.stdout = original_stdout
     sys.stderr = original_stderr
 

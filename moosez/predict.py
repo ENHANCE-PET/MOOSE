@@ -36,6 +36,7 @@ from moosez.resources import MODELS, map_model_name_to_task_number
 from nnunetv2.paths import nnUNet_results
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 from mpire import WorkerPool
+import sys
 
 
 def initialize_model(model_name: str, accelerator) -> nnUNetPredictor:
@@ -58,7 +59,8 @@ def initialize_model(model_name: str, accelerator) -> nnUNetPredictor:
     return predictor
 
 
-def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: str, model_name: str, moose_package:bool=False) -> None:
+def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: str, model_name: str, log_file:str,
+                        original_stdout:str, original_stderr:str,moose_package:bool=False) -> None:
     """
     Uses the initialized model to infer the input image.
 
@@ -73,16 +75,22 @@ def prediction_pipeline(predictor: nnUNetPredictor, input_dir: str, output_dir: 
     :return: None
     :rtype: None
     """
-    image, nnunet_dict, properties_dict = preprocess(input_dir, model_name, moose_package)
-    segmentation = predictor.predict_from_list_of_npy_arrays(image, None, nnunet_dict, None) # Returns a np.array
+    with open(f"nnunet_output_{log_file}", "a") as f:
+        sys.stdout = f
+        sys.stderr = f
+        image, nnunet_dict, properties_dict = preprocess(input_dir, model_name, moose_package)
+        segmentation = predictor.predict_from_list_of_npy_arrays(image, None, nnunet_dict, None) # Returns a np.array
 
-    if len(segmentation) > 1:
-        predicted_image = merge_image_parts(segmentation, properties_dict["resampled_shape"], properties_dict["resampled_affine"])
-    else:
-        predicted_image = nib.Nifti1Image(segmentation[0], nnunet_dict["nibabel_stuff"]["original_affine"],
-                                          properties_dict["resampled_header"])
+        if len(segmentation) > 1:
+            predicted_image = merge_image_parts(segmentation, properties_dict["resampled_shape"], properties_dict["resampled_affine"])
+        else:
+            predicted_image = nib.Nifti1Image(segmentation[0], nnunet_dict["nibabel_stuff"]["original_affine"],
+                                            properties_dict["resampled_header"])
 
-    postprocess(predicted_image, input_dir, output_dir, model_name, properties_dict["original_header"])
+        postprocess(predicted_image, input_dir, output_dir, model_name, properties_dict["original_header"])
+
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
 
 
 
