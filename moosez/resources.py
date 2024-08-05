@@ -70,7 +70,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_organs": {
-        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_23062023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_05082024.zip",
         "filename": "Dataset123_Organs.zip",
         "directory": "Dataset123_Organs",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
@@ -115,7 +115,7 @@ MODELS = {
         "configuration": "3d_fullres"
     },
     "clin_ct_peripheral_bones": {
-        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_28082023.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_05082024.zip",
         "filename": "Dataset666_Peripheral-Bones.zip",
         "directory": "Dataset666_Peripheral-Bones",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
