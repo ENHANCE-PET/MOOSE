@@ -99,7 +99,7 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 
 1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
    ```bash
-   python3 -m venv moose-env
+   python3.10 -m venv moose-env
    ```
 
 2. Activate your newly created environment.
@@ -137,7 +137,7 @@ Now you are ready to use MOOSE on Apple Silicon 🏎⚡️.
 
 1. Create a Python environment. You could name it 'moose-env', or as you wish.
    ```bash
-   python -m venv moose-env
+   python3.10 -m venv moose-env
    ```
 
 2. Activate your newly created environment.
