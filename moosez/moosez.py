@@ -191,7 +191,8 @@ def main():
         spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_name}...'
 
         for input_dir in input_dirs:
-            predict.predict(model_name, input_dir, output_dir, accelerator)
+            file_path = file_utilities.get_files(input_dir, '.nii.gz')[0]
+            moose(file_path, model_name, output_dir, accelerator)
         logging.info(f"Prediction complete using {model_name}.")
 
         end_time = time.time()
@@ -293,7 +294,7 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
     if output_dir is None:
         output_dir = os.path.dirname(file_path)
     file_name = file_utilities.get_nifti_file_stem(file_path)
-    segmentation_image_path = os.path.join(output_dir, f"{file_name}_{model_name}_segmentation.nii.gz")
+    segmentation_image_path = os.path.join(output_dir, f"{MODELS[model_name]['multilabel_prefix']}segmentation_{file_name}.nii.gz")
     SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
 
 
