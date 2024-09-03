@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='moosez',
-    version='2.6.3',
+    version='3.0.0',
     author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer',
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
@@ -19,8 +19,6 @@ setup(
         'Intended Audience :: Healthcare Industry',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering :: Medical Science Apps.',
     ],
@@ -42,7 +40,6 @@ setup(
         'numpy<2.0',
         'mpire~=2.3.3',
         'openpyxl~=3.0.9',
-        'matplotlib',
         'pyfiglet~=0.8.post1',
         'natsort~=8.1.0',
         'pillow>=9.2.0',

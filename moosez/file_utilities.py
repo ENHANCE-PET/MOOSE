@@ -186,3 +186,8 @@ def find_pet_file(folder: str) -> str:
         raise ValueError("More than one PET file found in the directory.")
     else:
         return None
+
+
+def get_nifti_file_stem(file_path: str) -> str:
+    file_stem = os.path.basename(file_path).split('.gz')[0].split('.nii')[0]
+    return file_stem

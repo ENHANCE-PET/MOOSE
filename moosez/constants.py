@@ -5,7 +5,7 @@
 This module contains the constants that are used in the moosez.
 
 .. moduleauthor:: Lalith Kumar Shiyam Sundar <lalith.shiyamsundar@meduniwien.ac.at>
-.. versionadded:: 2.0.0
+.. versionadded:: 3.0.0
 """
 
 import os
@@ -41,7 +41,7 @@ MATRIX_THRESHOLD = 200 * 200 * 600
 Z_AXIS_THRESHOLD = 200
 MARGIN_PADDING = 20
 INTERPOLATION = 'bspline'
-CHUNK_THRESHOLD = 200
+CHUNK_THRESHOLD = 100
 
 # POSTPROCESSING PARAMETERS
 

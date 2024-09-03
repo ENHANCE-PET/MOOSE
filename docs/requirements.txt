@@ -13,7 +13,6 @@ imageio
 numpy
 mpire
 openpyxl
-matplotlib
 pyfiglet
 natsort
 pillow

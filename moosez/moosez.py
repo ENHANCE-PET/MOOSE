@@ -43,7 +43,7 @@ from moosez.resources import MODELS, AVAILABLE_MODELS
 
 def main():
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                        filename=datetime.now().strftime('moosez-v.2.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
+                        filename=datetime.now().strftime('moosez-v.3.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
     colorama.init()
 
     # Argument parser
@@ -125,8 +125,7 @@ def main():
     # ----------------------------------
 
     print('')
-    print(
-        f'{constants.ANSI_VIOLET} {emoji.emojize(":magnifying_glass_tilted_left:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
+    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":magnifying_glass_tilted_left:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
     print('')
     logging.info(' ')
     logging.info(' STANDARDIZING INPUT DATA TO NIFTI:')
@@ -139,15 +138,13 @@ def main():
     # CHECKING FOR MOOSE COMPLIANT SUBJECTS
     # --------------------------------------
 
-    subjects = [os.path.join(parent_folder, d) for d in os.listdir(parent_folder) if
-                os.path.isdir(os.path.join(parent_folder, d))]
+    subjects = [os.path.join(parent_folder, d) for d in os.listdir(parent_folder) if os.path.isdir(os.path.join(parent_folder, d))]
     moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities)
 
     num_subjects = len(moose_compliant_subjects)
 
     if num_subjects < 1:
-        print(
-            f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/ENHANCE-PET/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
+        print(f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/ENHANCE-PET/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
         return
 
     # -------------------------------------------------
@@ -169,8 +166,7 @@ def main():
         # SETTING UP DIRECTORY STRUCTURE
         spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {os.path.basename(subject)}...'
         logging.info(' ')
-        logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:'
-                     f'{constants.ANSI_RESET}')
+        logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:{constants.ANSI_RESET}')
         logging.info(' ')
         moose_dir, input_dirs, output_dir, stats_dir = file_utilities.moose_folder_structure(subject, model_name,
                                                                                              modalities)
@@ -203,8 +199,8 @@ def main():
         spinner.text = f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {model_name}!' \
                        f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}'
         time.sleep(3)
-        logging.info(
-            f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {model_name}!' f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}')
+        logging.info(f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {model_name}!' f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}')
+
         # ----------------------------------
         # EXTRACT PET ACTIVITY
         # ----------------------------------
@@ -244,7 +240,7 @@ def main():
                     f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
 
 
-def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) -> None:
+def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: str = None) -> None:
     """
     Execute the MOOSE 2.0 image segmentation process.
 
@@ -259,8 +255,8 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
                        for the image segmentation process.
     :type model_name: str
 
-    :param input_dir: Path to the directory containing the images (in nifti, either .nii or .nii.gz) to be processed.
-    :type input_dir: str
+    :param file_path: Path to the file (in nifti, either .nii or .nii.gz) to be processed.
+    :type file_path: str
 
     :param output_dir: Path to the directory where the segmented output will be saved.
     :type output_dir: str
@@ -281,9 +277,24 @@ def moose(model_name: str, input_dir: str, output_dir: str, accelerator: str) ->
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
-    logging.info('- Custom trainer: ' + custom_trainer_status)
-    input_validation.make_nnunet_compatible(input_dir)
-    predict.predict(model_name, input_dir, output_dir, accelerator)
+
+    image = SimpleITK.ReadImage(file_path)
+    desired_spacing = resources.MODELS[model_name]["voxel_spacing"]
+    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+
+    segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_name, accelerator)
+
+    segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+    segmentation.SetSpacing(desired_spacing)
+    segmentation.SetOrigin(image.GetOrigin())
+    segmentation.SetDirection(image.GetDirection())
+    resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
+
+    if output_dir is None:
+        output_dir = os.path.dirname(file_path)
+    file_name = file_utilities.get_nifti_file_stem(file_path)
+    segmentation_image_path = os.path.join(output_dir, f"{file_name}_{model_name}_segmentation.nii.gz")
+    SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
 
 
 if __name__ == '__main__':

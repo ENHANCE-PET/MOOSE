@@ -376,14 +376,9 @@ class ImageResampler:
         """
         sitk_image_chunk = sitk.GetImageFromArray(image_chunk)
         sitk_image_chunk.SetSpacing(input_spacing)
-        input_size = sitk_image_chunk.GetSize()
-
-        if all(x == 0 for x in input_size):
-            return image_chunk
 
         resampled_sitk_image = sitk.Resample(sitk_image_chunk, output_size, sitk.Transform(),
-                                             interpolation_method,
-                                             sitk_image_chunk.GetOrigin(), output_spacing,
+                                             interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
                                              sitk_image_chunk.GetDirection(), 0.0, sitk_image_chunk.GetPixelIDValue())
 
         resampled_array = sitk.GetArrayFromImage(resampled_sitk_image)
@@ -625,3 +620,44 @@ class ImageResampler:
         if output_image_path is not None:
             sitk.WriteImage(resampled_image, output_image_path)
         return resampled_image
+
+    @staticmethod
+    def resample_image_SimpleITK_DASK_array(sitk_image: sitk.Image, interpolation: str,
+                                            output_spacing: tuple = (1.5, 1.5, 1.5),
+                                            output_size: tuple = None) -> np.array:
+        if interpolation == 'nearest':
+            interpolation_method = sitk.sitkNearestNeighbor
+        elif interpolation == 'linear':
+            interpolation_method = sitk.sitkLinear
+        elif interpolation == 'bspline':
+            interpolation_method = sitk.sitkBSpline
+        else:
+            raise ValueError('The interpolation method is not supported.')
+
+        input_spacing = sitk_image.GetSpacing()
+        input_size = sitk_image.GetSize()
+        input_chunks = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size]
+        input_chunks_reversed = list(reversed(input_chunks))
+
+        image_dask = da.from_array(sitk.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
+
+        if output_size is not None:
+            output_spacing = [input_spacing[i] * (input_size[i] / output_size[i]) for i in range(len(input_size))]
+
+        output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in
+                         range(len(input_chunks))]
+        output_chunks_reversed = list(reversed(output_chunks))
+
+        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
+                               output_spacing, output_chunks, chunks=output_chunks_reversed, meta=np.array(()),
+                               dtype=np.float32)
+
+        return result.compute()
+
+    @staticmethod
+    def resample_segmentation(reference_image: sitk.Image, segmentation_image: sitk.Image):
+        resampled_sitk_image = sitk.Resample(segmentation_image, reference_image.GetSize(), sitk.Transform(),
+                                             sitk.sitkNearestNeighbor,
+                                             reference_image.GetOrigin(), reference_image.GetSpacing(),
+                                             reference_image.GetDirection(), 0.0, segmentation_image.GetPixelIDValue())
+        return resampled_sitk_image
