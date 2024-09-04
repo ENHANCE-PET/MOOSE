@@ -23,11 +23,6 @@ import os
 import time
 from datetime import datetime
 import sys
-
-os.environ["nnUNet_raw"] = ""
-os.environ["nnUNet_preprocessed"] = ""
-os.environ["nnUNet_results"] = ""
-
 import SimpleITK
 import colorama
 import emoji
@@ -97,7 +92,7 @@ def main():
     display.citation()
 
     logging.info('----------------------------------------------------------------------------------------------------')
-    logging.info('                                     STARTING MOOSE-Z V.2.0.0                                       ')
+    logging.info('                                     STARTING MOOSE-Z V.3.0.0                                       ')
     logging.info('----------------------------------------------------------------------------------------------------')
 
     # ----------------------------------
@@ -261,7 +256,7 @@ def main():
 
 def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: str = None) -> None:
     """
-    Execute the MOOSE 2.0 image segmentation process.
+    Execute the MOOSE 3.0 image segmentation process.
 
     This function carries out the following steps:
     1. Sets the path for model results.
@@ -299,7 +294,7 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
     if limit_fov:
         download.model(constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"], model_path)
 
-    custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
+    add_custom_trainers_to_local_nnunetv2()
 
     image = SimpleITK.ReadImage(file_path)
     if limit_fov:

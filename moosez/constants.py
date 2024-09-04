@@ -62,16 +62,16 @@ FRAME_DURATION = 0.4
 
 # CROPPING WORKFLOWS
 
-LIMIT_FOV_WORKFLOWS ={
-    "clin_ct_liver_segments":{
+LIMIT_FOV_WORKFLOWS = {
+    "clin_ct_liver_segments": {
         "model_to_crop_from": "clin_ct_fast_organs",
         "label_intensity_to_crop_from": 8
     },
-    "clin_ct_aorta":{
+    "clin_ct_aorta": {
         "model_to_crop_from": "clin_ct_cardiac",
         "label_intensity_to_crop_from": 6
     },
-    "clin_ct_body_composition":{
+    "clin_ct_body_composition": {
         "model_to_crop_from": "clin_ct_vertebrae",
         "label_intensity_to_crop_from": 22
     }
@@ -416,7 +416,7 @@ ORGAN_INDICES = {
         82: "L-Superior temporal gyrus anterior part",
         83: "R-Superior temporal gyrus anterior part"
     },
-    "clin_ct_ALPACA":{
+    "clin_ct_ALPACA": {
         1: "heart_ventricle_left",
         2: "heart_ventricle_right",
         3: "pulmonary_artery",
@@ -445,7 +445,7 @@ ORGAN_INDICES = {
         17: "Bladder",
         18: "Filler"
     },
-    "clin_fast_organs":{
+    "clin_fast_organs": {
         1: "adrenal_gland_left",
         2: "adrenal_gland_right",
         3: "bladder",
@@ -466,7 +466,7 @@ ORGAN_INDICES = {
         18: "thyroid_right",
         19: "trachea"
     },
-    "clin_ct_liver_segments":{
+    "clin_ct_liver_segments": {
         1: "segment_I",
         2: "segment_II",
         3: "segment_III",
@@ -476,7 +476,7 @@ ORGAN_INDICES = {
         7: "segment_VII",
         8: "segment_VIII"
     },
-    "clin_ct_aorta":{
+    "clin_ct_aorta": {
         1: "zone_0",
         2: "innominate",
         3: "zone_1",

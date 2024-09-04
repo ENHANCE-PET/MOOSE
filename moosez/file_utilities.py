@@ -49,7 +49,7 @@ def get_virtual_env_root() -> str:
     return virtual_env_root
 
 
-def get_files(directory: str, wildcard: str) -> list:
+def get_files(directory: str, wildcard: str) -> list[str]:
     """
     Returns the list of files in the directory with the specified wildcard.
     
@@ -69,7 +69,7 @@ def get_files(directory: str, wildcard: str) -> list:
     return files
 
 
-def moose_folder_structure(parent_directory: str, model_name: str, modalities: list) -> tuple:
+def moose_folder_structure(parent_directory: str, model_name: str, modalities: list[str]) -> tuple[str, list[str], str, str]:
     """
     Creates the moose folder structure.
     
@@ -113,7 +113,7 @@ def copy_file(file: str, destination: str) -> None:
     shutil.copy(file, destination)
 
 
-def copy_files_to_destination(files: list, destination: str) -> None:
+def copy_files_to_destination(files: list[str], destination: str) -> None:
     """
     Copies the files inside the list to the destination directory in a parallel fashion.
     
@@ -127,7 +127,7 @@ def copy_files_to_destination(files: list, destination: str) -> None:
         pool.starmap(copy_file, [(file, destination) for file in files])
 
 
-def select_files_by_modality(moose_compliant_subjects: list, modality_tag: str) -> list:
+def select_files_by_modality(moose_compliant_subjects: list[str], modality_tag: str) -> list:
     """
     Selects the files with the selected modality tag from the moose-compliant folders.
     
@@ -149,7 +149,7 @@ def select_files_by_modality(moose_compliant_subjects: list, modality_tag: str) 
     return selected_files
 
 
-def organise_files_by_modality(moose_compliant_subjects: list, modalities: list, moose_dir: str) -> None:
+def organise_files_by_modality(moose_compliant_subjects: list[str], modalities: list[str], moose_dir: str) -> None:
     """
     Organises the files by modality.
     
@@ -167,7 +167,7 @@ def organise_files_by_modality(moose_compliant_subjects: list, modalities: list,
         copy_files_to_destination(files_to_copy, os.path.join(moose_dir, modality))
 
 
-def find_pet_file(folder: str) -> str:
+def find_pet_file(folder: str) -> str | None:
     """
     Finds the PET file in the specified folder.
     
