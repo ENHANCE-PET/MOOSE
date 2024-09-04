@@ -22,6 +22,11 @@ import logging
 import os
 import time
 from datetime import datetime
+import sys
+
+os.environ["nnUNet_raw"] = ""
+os.environ["nnUNet_preprocessed"] = ""
+os.environ["nnUNet_results"] = ""
 
 import SimpleITK
 import colorama
@@ -44,6 +49,8 @@ from moosez.resources import MODELS, AVAILABLE_MODELS
 def main():
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                         filename=datetime.now().strftime('moosez-v.3.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
+    nnunet_log_filename = datetime.now().strftime('nnunet.%H-%M-%d-%m-%Y.log')
+
     colorama.init()
 
     # Argument parser
@@ -193,9 +200,17 @@ def main():
         logging.info(' ')
         spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_name}...'
 
-        for input_dir in input_dirs:
-            file_path = file_utilities.get_files(input_dir, '.nii.gz')[0]
-            moose(file_path, model_name, output_dir, accelerator)
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        with open(nnunet_log_filename, "w") as nnunet_log_file:
+            sys.stdout = nnunet_log_file
+            sys.stderr = nnunet_log_file
+            for input_dir in input_dirs:
+                file_path = file_utilities.get_files(input_dir, '.nii.gz')[0]
+                moose(file_path, model_name, output_dir, accelerator)
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+
         logging.info(f"Prediction complete using {model_name}.")
 
         end_time = time.time()

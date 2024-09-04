@@ -397,7 +397,7 @@ def prediction_pipeline(image, model_name, accelerator):
     desired_spacing = MODELS[model_name]["voxel_spacing"]
     resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
                                                                                           desired_spacing)
-    print(resampled_array.shape)
+
     segmentation_array = predict_from_array_by_iterator(resampled_array, model_name, accelerator)
     return segmentation_array
 
