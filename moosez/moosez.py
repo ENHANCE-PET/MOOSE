@@ -22,6 +22,11 @@ import logging
 import os
 import time
 from datetime import datetime
+import sys
+
+os.environ["nnUNet_raw"] = ""
+os.environ["nnUNet_preprocessed"] = ""
+os.environ["nnUNet_results"] = ""
 
 import SimpleITK
 import colorama
@@ -44,6 +49,8 @@ from moosez.resources import MODELS, AVAILABLE_MODELS
 def main():
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                         filename=datetime.now().strftime('moosez-v.3.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
+    nnunet_log_filename = datetime.now().strftime('nnunet.%H-%M-%d-%m-%Y.log')
+
     colorama.init()
 
     # Argument parser
@@ -108,6 +115,7 @@ def main():
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     logging.info('- Custom trainer: ' + custom_trainer_status)
     accelerator = resources.check_device()
+    cropping = resources.check_cropping(model_name)
 
     # ----------------------------------
     # DOWNLOADING THE MODEL
@@ -119,6 +127,8 @@ def main():
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
+    if cropping:
+        download.model(constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"], model_path)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
@@ -190,9 +200,17 @@ def main():
         logging.info(' ')
         spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_name}...'
 
-        for input_dir in input_dirs:
-            file_path = file_utilities.get_files(input_dir, '.nii.gz')[0]
-            moose(file_path, model_name, output_dir, accelerator)
+        original_stdout = sys.stdout
+        original_stderr = sys.stderr
+        with open(nnunet_log_filename, "w") as nnunet_log_file:
+            sys.stdout = nnunet_log_file
+            sys.stderr = nnunet_log_file
+            for input_dir in input_dirs:
+                file_path = file_utilities.get_files(input_dir, '.nii.gz')[0]
+                moose(file_path, model_name, output_dir, accelerator)
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+
         logging.info(f"Prediction complete using {model_name}.")
 
         end_time = time.time()
@@ -274,19 +292,28 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
     >>> moose('clin_ct_organs', '/path/to/input/images', '/path/to/save/output', 'cuda')
 
     """
+    limit_fov = resources.check_cropping(model_name)
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
+    if limit_fov:
+        download.model(constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"], model_path)
+
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
 
     image = SimpleITK.ReadImage(file_path)
-    desired_spacing = resources.MODELS[model_name]["voxel_spacing"]
-    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+    if limit_fov:
+        image, original_fov_info = predict.limit_fov(image, constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"],
+                                                     constants.LIMIT_FOV_WORKFLOWS[model_name]["label_intensity_to_crop_from"],
+                                                     accelerator)
+    segmentation_array = predict.prediction_pipeline(image, model_name, accelerator)
 
-    segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_name, accelerator)
+    if limit_fov:
+        segmentation_array = image_processing.expand_segmentation_fov(segmentation_array, original_fov_info)
+        image = original_fov_info["original_image"]
 
     segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-    segmentation.SetSpacing(desired_spacing)
+    segmentation.SetSpacing(resources.MODELS[model_name]["voxel_spacing"])
     segmentation.SetOrigin(image.GetOrigin())
     segmentation.SetDirection(image.GetDirection())
     resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)

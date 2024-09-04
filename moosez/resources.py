@@ -43,7 +43,10 @@ AVAILABLE_MODELS = ["clin_ct_lungs",
                     "clin_ct_PUMA",
                     "clin_pt_fdg_brain_v1",
                     "clin_ct_ALPACA",
-                    "clin_ct_PUMA4"]
+                    "clin_ct_PUMA4",
+                    "clin_ct_liver_segments",
+                    "clin_ct_fast_organs",
+                    "clin_ct_aorta"]
 
 # This dictionary holds the pre-trained models available in MooseZ library.
 # Each key is a unique model identifier following a specific syntax mentioned above
@@ -229,6 +232,36 @@ MODELS = {
         "multilabel_prefix": "Clin_CT_PUMA4_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans"
+    },
+    "clin_ct_liver_segments": {
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_liver_segments_02092024.zip",
+        "filename": "Dataset134_Couinaud.zip",
+        "directory": "Dataset134_Couinaud",
+        "trainer": "nnUNetTrainer_2000epochs",
+        "voxel_spacing": [5.0, 0.7753905057907104, 0.7753905057907104],
+        "multilabel_prefix": "Clin_CT_liver_segments",
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
+    },
+    "clin_ct_fast_organs": {
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_6_02092024.zip",
+        "filename": "Dataset145_Fast_organs.zip",
+        "directory": "Dataset145_Fast_organs",
+        "trainer": "nnUNetTrainer_2000epochs",
+        "voxel_spacing": [6, 6, 6],
+        "multilabel_prefix": "Clin_CT_fast_organs",
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
+    },
+    "clin_ct_aorta": {
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_aorta_02092024.zip",
+        "filename": "Dataset321_Aorta.zip",
+        "directory": "Dataset321_Aorta",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [1.5, 1.5, 1.5],
+        "multilabel_prefix": "Clin_CT_aorta",
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans"
     }
 }
 
@@ -263,7 +296,10 @@ def expected_modality(model_name: str) -> dict:
         "clin_ct_PUMA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"},
         "clin_pt_fdg_brain_v1": {"Imaging": "Clinical", "Modality": "PT", "Tissue of interest": "Brain regions"},
         "clin_ct_ALPACA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "ALPACA tissues"},
-        "clin_ct_PUMA4": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"}
+        "clin_ct_PUMA4": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"},
+        "clin_ct_liver_segments": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Liver segments"},
+        "clin_ct_fast_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
+        "clin_ct_aorta": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Aorta segments"}
     }
 
     if model_name in models:
@@ -322,6 +358,12 @@ def map_model_name_to_task_number(model_name: str):
         return "080"
     elif model_name == "clin_ct_PUMA4":
         return "003"
+    elif model_name == "clin_ct_liver_segments":
+        return "134"
+    elif model_name == "clin_ct_fast_organs":
+        return "145"
+    elif model_name == "clin_ct_aorta":
+        return "321"
     else:
         raise Exception(f"Error: The model name '{model_name}' is not valid.")
 
@@ -348,3 +390,9 @@ def check_device() -> str:
     else:
         print(" CUDA/MPS not available. Predictions will be run on CPU.")
         return "cpu"
+
+
+def check_cropping(model_name):
+    if model_name in constants.LIMIT_FOV_WORKFLOWS.keys():
+        return True
+    return False

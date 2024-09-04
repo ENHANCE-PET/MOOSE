@@ -25,7 +25,7 @@ import dask
 import sys
 import torch
 from typing import Tuple, List, Any
-
+import SimpleITK
 import nibabel as nib
 import numpy as np
 from halo import Halo
@@ -390,3 +390,38 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model_name: str, acc
 
         finally:
             sys.stdout = old_stdout
+
+
+def prediction_pipeline(image, model_name, accelerator):
+
+    desired_spacing = MODELS[model_name]["voxel_spacing"]
+    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
+                                                                                          desired_spacing)
+
+    segmentation_array = predict_from_array_by_iterator(resampled_array, model_name, accelerator)
+    return segmentation_array
+
+def limit_fov(image, model_to_limit_fov_from, fov_label, accelerator):
+
+    segmentation_array = prediction_pipeline(image, model_to_limit_fov_from, accelerator)
+
+    # Convert the images to numpy arrays
+    image_array = SimpleITK.GetArrayFromImage(image)
+
+    # Find the z-axis indices where the label matches the target intensity
+    z_indices = np.where(segmentation_array == fov_label)[
+        0]  # Note: SimpleITK uses [z,y,x] indexing
+    z_min, z_max = np.min(z_indices), np.max(z_indices)
+
+    # Crop the CT data along the z-axis
+    limited_fov_array = image_array[z_min:z_max + 1, :, :]  # Note: SimpleITK uses [z,y,x] indexing
+
+    # Convert the cropped numpy array back to a SimpleITK image
+    limited_fov_image = SimpleITK.GetImageFromArray(limited_fov_array)
+
+    # Set the same origin, spacing, and direction as the original image
+    limited_fov_image.SetOrigin(image.GetOrigin())
+    limited_fov_image.SetSpacing(image.GetSpacing())
+    limited_fov_image.SetDirection(image.GetDirection())
+
+    return limited_fov_image, {"z_min": z_min, "z_max": z_max, "original_shape": image_array.shape, "original_image": image}
