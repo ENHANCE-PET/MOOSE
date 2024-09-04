@@ -18,7 +18,6 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-
 import SimpleITK as sitk
 import dask
 import dask.array as da
@@ -172,6 +171,19 @@ def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bo
         else:
             resampled_image_path = out_image_path
             nibabel.save(image, resampled_image_path)
+
+
+def expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info):
+    z_min = original_fov_info["z_min"]
+    z_max = original_fov_info["z_max"]
+    original_shape = original_fov_info["original_shape"]
+
+    # Initialize an array of zeros with the shape of the original CT
+    filled_segmentation_array = np.zeros(original_shape, np.uint8)
+    # Place the cropped segmentation back into its original position
+    filled_segmentation_array[z_min:z_max + 1, :, :] = limited_fov_segmentation_array
+
+    return filled_segmentation_array
 
 
 class NiftiPreprocessor:

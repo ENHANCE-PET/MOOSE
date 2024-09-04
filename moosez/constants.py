@@ -60,6 +60,23 @@ MIP_ROTATION_STEP = 40
 DISPLAY_VOXEL_SPACING = (3, 3, 3)
 FRAME_DURATION = 0.4
 
+# CROPPING WORKFLOWS
+
+LIMIT_FOV_WORKFLOWS ={
+    "clin_ct_liver_segments":{
+        "model_to_crop_from": "clin_ct_fast_organs",
+        "label_intensity_to_crop_from": 8
+    },
+    "clin_ct_aorta":{
+        "model_to_crop_from": "clin_ct_cardiac",
+        "label_intensity_to_crop_from": 6
+    },
+    "clin_ct_body_composition":{
+        "model_to_crop_from": "clin_ct_vertebrae",
+        "label_intensity_to_crop_from": 22
+    }
+}
+
 # ORGAN INDICES
 
 ORGAN_INDICES = {
@@ -428,6 +445,62 @@ ORGAN_INDICES = {
         17: "Bladder",
         18: "Filler"
     },
+    "clin_fast_organs":{
+        1: "adrenal_gland_left",
+        2: "adrenal_gland_right",
+        3: "bladder",
+        4: "brain",
+        5: "gallbladder",
+        6: "kidney_left",
+        7: "kidney_right",
+        8: "liver",
+        9: "lung_lower_lobe_left",
+        10: "lung_lower_lobe_right",
+        11: "lung_middle_lobe_right",
+        12: "lung_upper_lobe_left",
+        13: "lung_upper_lobe_right",
+        14: "pancreas",
+        15: "spleen",
+        16: "stomach",
+        17: "thyroid_left",
+        18: "thyroid_right",
+        19: "trachea"
+    },
+    "clin_ct_liver_segments":{
+        1: "segment_I",
+        2: "segment_II",
+        3: "segment_III",
+        4: "segment_IV",
+        5: "segment_V",
+        6: "segment_VI",
+        7: "segment_VII",
+        8: "segment_VIII"
+    },
+    "clin_ct_aorta":{
+        1: "zone_0",
+        2: "innominate",
+        3: "zone_1",
+        4: "left_common_carotid",
+        5: "zone_2",
+        6: "left_subclavian_artery",
+        7: "zone_3",
+        8: "zone_4",
+        9: "zone_5",
+        10: "zone_6",
+        11: "celiac_artery",
+        12: "zone_7",
+        13: "sma",
+        14: "zone_8",
+        15: "right_renal_artery",
+        16: "left_renal_artery",
+        17: "zone_9",
+        18: "right_common_iliac_artery",
+        19: "left_common_iliac_artery",
+        20: "right_internal_iliac_artery",
+        21: "left_internal_iliac_artery",
+        22: "right_external_iliac_artery",
+        23: "left_external_iliac_artery"
+    }
     # More index-to-name dictionaries for other models...
 }
 """

@@ -108,6 +108,7 @@ def main():
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     logging.info('- Custom trainer: ' + custom_trainer_status)
     accelerator = resources.check_device()
+    cropping = resources.check_cropping(model_name)
 
     # ----------------------------------
     # DOWNLOADING THE MODEL
@@ -119,6 +120,8 @@ def main():
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
+    if cropping:
+        download.model(constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"], model_path)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
@@ -274,19 +277,28 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
     >>> moose('clin_ct_organs', '/path/to/input/images', '/path/to/save/output', 'cuda')
 
     """
+    limit_fov = resources.check_cropping(model_name)
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
+    if limit_fov:
+        download.model(constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"], model_path)
+
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
 
     image = SimpleITK.ReadImage(file_path)
-    desired_spacing = resources.MODELS[model_name]["voxel_spacing"]
-    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+    if limit_fov:
+        image, original_fov_info = predict.limit_fov(image, constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"],
+                                                     constants.LIMIT_FOV_WORKFLOWS[model_name]["label_intensity_to_crop_from"],
+                                                     accelerator)
+    segmentation_array = predict.prediction_pipeline(image, model_name, accelerator)
 
-    segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_name, accelerator)
+    if limit_fov:
+        segmentation_array = image_processing.expand_segmentation_fov(segmentation_array, original_fov_info)
+        image = original_fov_info["original_image"]
 
     segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-    segmentation.SetSpacing(desired_spacing)
+    segmentation.SetSpacing(resources.MODELS[model_name]["voxel_spacing"])
     segmentation.SetOrigin(image.GetOrigin())
     segmentation.SetDirection(image.GetDirection())
     resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
