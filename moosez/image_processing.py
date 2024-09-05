@@ -21,7 +21,8 @@ import SimpleITK as sitk
 import dask.array as da
 import numpy as np
 import pandas as pd
-from moosez.constants import CHUNK_THRESHOLD, ORGAN_INDICES
+from moosez.constants import CHUNK_THRESHOLD
+from moosez.resources import MODELS
 
 
 def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
@@ -47,7 +48,7 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = ORGAN_INDICES[model_name]
+    organ_indices_dict = MODELS[model_name]["organ_indices"]
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
@@ -80,7 +81,7 @@ def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) 
 
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = ORGAN_INDICES[model_name]
+    organ_indices_dict = MODELS[model_name]["organ_indices"]
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
