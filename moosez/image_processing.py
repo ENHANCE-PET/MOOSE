@@ -91,24 +91,25 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: 
     stats_df.to_csv(out_csv)
 
 
-def limit_fov(image_array: np.array, segmentation_array: np.array,fov_label: int):
+def limit_fov(image_array: np.array, segmentation_array: np.array,fov_label):
 
-    # Find the z-axis indices where the label matches the target intensity
-    z_indices = np.where(segmentation_array == fov_label)[0]
+    if type(fov_label) is list:
+        z_indices = np.where((segmentation_array >= fov_label[0]) & (segmentation_array <= fov_label[1]))[0]
+    else:
+        z_indices = np.where(segmentation_array == fov_label)[0]
 
     z_min, z_max = np.min(z_indices), np.max(z_indices)
 
     # Crop the CT data along the z-axis
     limited_fov_array = image_array[z_min:z_max + 1, :, :]
 
-
     return limited_fov_array, {"z_min": z_min, "z_max": z_max, "original_shape": image_array.shape}
+
 
 def expand_segmentation_fov(limited_fov_segmentation_array: np.ndarray, original_fov_info: dict) -> np.ndarray:
     z_min = original_fov_info["z_min"]
     z_max = original_fov_info["z_max"]
     original_shape = original_fov_info["original_shape"]
-
     # Initialize an array of zeros with the shape of the original CT
     filled_segmentation_array = np.zeros(original_shape, np.uint8)
     # Place the cropped segmentation back into its original position

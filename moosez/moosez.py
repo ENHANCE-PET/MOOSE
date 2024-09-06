@@ -313,7 +313,7 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
 
         limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array,
                                                                                 fov_limiting_segmentation_array,
-                                                                                constants.LIMIT_FOV_WORKFLOWS[model_name]["label_intensity_to_crop_from"])
+                                                                                constants.LIMIT_FOV_WORKFLOWS[model_name]["inference_fov_intensities"])
 
         image = SimpleITK.GetImageFromArray(limited_fov_image_array)
         image.SetOrigin(image.GetOrigin())
@@ -326,7 +326,12 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
     segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_name, accelerator)
 
     if limit_fov:
-        segmentation_array = image_processing.expand_segmentation_fov(segmentation_array, original_fov_info)
+        expanded_segmentation_array = image_processing.expand_segmentation_fov(segmentation_array, original_fov_info)
+        limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array,
+                                                                       fov_limiting_segmentation_array,
+                                                                       constants.LIMIT_FOV_WORKFLOWS[model_name][
+                                                                           "label_intensity_to_crop_from"])
+        segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
         image = original_image
 
     segmentation = SimpleITK.GetImageFromArray(segmentation_array)
