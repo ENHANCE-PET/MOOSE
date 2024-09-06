@@ -17,7 +17,7 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import SimpleITK as sitk
+import SimpleITK
 import dask.array as da
 import numpy as np
 import pandas as pd
@@ -25,7 +25,7 @@ from moosez.constants import CHUNK_THRESHOLD
 from moosez.resources import MODELS
 
 
-def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
+def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model_name: str, out_csv: str) -> None:
     """
     Get the intensity statistics of a NIFTI image file.
 
@@ -58,7 +58,7 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df.to_csv(out_csv)
 
 
-def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
+def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: str) -> None:
     """
     Get the shape statistics of a NIFTI image file.
 
@@ -70,7 +70,7 @@ def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) 
     :type out_csv: str
     :return: None
     """
-    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    label_shape_filter = SimpleITK.LabelShapeStatisticsImageFilter()
     label_shape_filter.Execute(mask_image)
 
     stats_list = [(label_shape_filter.GetPhysicalSize(i),) for i in label_shape_filter.GetLabels() if
@@ -90,6 +90,19 @@ def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) 
     stats_df.insert(0, 'Regions-Present', np.array(regions_present))
     stats_df.to_csv(out_csv)
 
+
+def limit_fov(image_array: np.array, segmentation_array: np.array,fov_label: int):
+
+    # Find the z-axis indices where the label matches the target intensity
+    z_indices = np.where(segmentation_array == fov_label)[0]
+
+    z_min, z_max = np.min(z_indices), np.max(z_indices)
+
+    # Crop the CT data along the z-axis
+    limited_fov_array = image_array[z_min:z_max + 1, :, :]
+
+
+    return limited_fov_array, {"z_min": z_min, "z_max": z_max, "original_shape": image_array.shape}
 
 def expand_segmentation_fov(limited_fov_segmentation_array: np.ndarray, original_fov_info: dict) -> np.ndarray:
     z_min = original_fov_info["z_min"]
@@ -156,20 +169,20 @@ class ImageResampler:
         :return: The resampled chunk (part of an image).
         :rtype: da.array
         """
-        sitk_image_chunk = sitk.GetImageFromArray(image_chunk)
+        sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
         sitk_image_chunk.SetSpacing(input_spacing)
 
-        resampled_sitk_image = sitk.Resample(sitk_image_chunk, output_size, sitk.Transform(),
+        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
                                              interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
                                              sitk_image_chunk.GetDirection(), 0.0, sitk_image_chunk.GetPixelIDValue())
 
-        resampled_array = sitk.GetArrayFromImage(resampled_sitk_image)
+        resampled_array = SimpleITK.GetArrayFromImage(resampled_sitk_image)
         return resampled_array
 
     @staticmethod
-    def resample_image_SimpleITK_DASK(sitk_image: sitk.Image, interpolation: str,
+    def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: str,
                                       output_spacing: tuple = (1.5, 1.5, 1.5),
-                                      output_size: tuple = None) -> sitk.Image:
+                                      output_size: tuple = None) -> SimpleITK.Image:
         """
         Resamples a sitk_image using Dask and SimpleITK.
 
@@ -188,7 +201,7 @@ class ImageResampler:
 
         resample_result = ImageResampler.resample_image_SimpleITK_DASK_array(sitk_image, interpolation, output_spacing, output_size)
 
-        resampled_image = sitk.GetImageFromArray(resample_result)
+        resampled_image = SimpleITK.GetImageFromArray(resample_result)
         resampled_image.SetSpacing(output_spacing)
         resampled_image.SetOrigin(sitk_image.GetOrigin())
         resampled_image.SetDirection(sitk_image.GetDirection())
@@ -196,8 +209,8 @@ class ImageResampler:
         return resampled_image
 
     @staticmethod
-    def reslice_identity(reference_image: sitk.Image, moving_image: sitk.Image,
-                         output_image_path: str = None, is_label_image: bool = False) -> sitk.Image:
+    def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
+                         output_image_path: str = None, is_label_image: bool = False) -> SimpleITK.Image:
         """
         Reslices an image to the same space as another image.
 
@@ -212,30 +225,30 @@ class ImageResampler:
         :return: The resliced image as SimpleITK.Image.
         :rtype: SimpleITK.Image
         """
-        resampler = sitk.ResampleImageFilter()
+        resampler = SimpleITK.ResampleImageFilter()
         resampler.SetReferenceImage(reference_image)
 
         if is_label_image:
-            resampler.SetInterpolator(sitk.sitkNearestNeighbor)
+            resampler.SetInterpolator(SimpleITK.sitkNearestNeighbor)
         else:
-            resampler.SetInterpolator(sitk.sitkLinear)
+            resampler.SetInterpolator(SimpleITK.sitkLinear)
 
         resampled_image = resampler.Execute(moving_image)
-        resampled_image = sitk.Cast(resampled_image, sitk.sitkInt32)
+        resampled_image = SimpleITK.Cast(resampled_image, SimpleITK.sitkInt32)
         if output_image_path is not None:
-            sitk.WriteImage(resampled_image, output_image_path)
+            SimpleITK.WriteImage(resampled_image, output_image_path)
         return resampled_image
 
     @staticmethod
-    def resample_image_SimpleITK_DASK_array(sitk_image: sitk.Image, interpolation: str,
+    def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
                                             output_spacing: tuple = (1.5, 1.5, 1.5),
                                             output_size: tuple = None) -> np.array:
         if interpolation == 'nearest':
-            interpolation_method = sitk.sitkNearestNeighbor
+            interpolation_method = SimpleITK.sitkNearestNeighbor
         elif interpolation == 'linear':
-            interpolation_method = sitk.sitkLinear
+            interpolation_method = SimpleITK.sitkLinear
         elif interpolation == 'bspline':
-            interpolation_method = sitk.sitkBSpline
+            interpolation_method = SimpleITK.sitkBSpline
         else:
             raise ValueError('The interpolation method is not supported.')
 
@@ -244,7 +257,7 @@ class ImageResampler:
         input_chunks = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size]
         input_chunks_reversed = list(reversed(input_chunks))
 
-        image_dask = da.from_array(sitk.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
+        image_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
 
         if output_size is not None:
             output_spacing = [input_spacing[i] * (input_size[i] / output_size[i]) for i in range(len(input_size))]
@@ -260,9 +273,9 @@ class ImageResampler:
         return result.compute()
 
     @staticmethod
-    def resample_segmentation(reference_image: sitk.Image, segmentation_image: sitk.Image):
-        resampled_sitk_image = sitk.Resample(segmentation_image, reference_image.GetSize(), sitk.Transform(),
-                                             sitk.sitkNearestNeighbor,
+    def resample_segmentation(reference_image: SimpleITK.Image, segmentation_image: SimpleITK.Image):
+        resampled_sitk_image = SimpleITK.Resample(segmentation_image, reference_image.GetSize(), SimpleITK.Transform(),
+                                             SimpleITK.sitkNearestNeighbor,
                                              reference_image.GetOrigin(), reference_image.GetSpacing(),
                                              reference_image.GetDirection(), 0.0, segmentation_image.GetPixelIDValue())
         return resampled_sitk_image

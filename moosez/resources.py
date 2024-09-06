@@ -660,7 +660,22 @@ MODELS = {
         "organ_indices": {
             1: "tumor"
         }
-    }
+    },
+    "clin_ct_body_composition": {
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_composition_05092024.zip",
+        "filename": "Dataset778_Body_composition.zip",
+        "directory": "Dataset778_Body_composition",
+        "trainer": "nnUNetTrainer_2000epochs",
+        "voxel_spacing": [1.5, 1.5, 1.5],
+        "multilabel_prefix": "Clin_CT_body_composition",
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans",
+        "organ_indices": {
+            1: "skeletal_muscle",
+            2: "subcutaneous_fat",
+            3: "visceral_fat"
+            }
+        }
     # More dictionaries for other models...
 }
 
@@ -700,7 +715,8 @@ def expected_modality(model_name: str) -> dict:
         "clin_ct_PUMA4": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"},
         "clin_ct_liver_segments": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Liver segments"},
         "clin_ct_fast_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
-        "clin_ct_aorta": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Aorta segments"}
+        "clin_ct_aorta": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Aorta segments"},
+        "clin_ct_body_composition": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body composition on the L3 vertebra region"}
     }
 
     if model_name in models:

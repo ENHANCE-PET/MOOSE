@@ -15,11 +15,15 @@
 # The main function in this module is executed when the mooseZ is run.
 #
 # ----------------------------------------------------------------------------------------------------------------------
+import os
+
+os.environ["nnUNet_raw"] = ""
+os.environ["nnUNet_preprocessed"] = ""
+os.environ["nnUNet_results"] = ""
 
 import argparse
 import glob
 import logging
-import os
 import time
 from datetime import datetime
 import sys
@@ -292,20 +296,38 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
     file_utilities.create_directory(model_path)
     download.model(model_name, model_path)
     if limit_fov:
-        download.model(constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"], model_path)
+        model_to_limit_fov_from = constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"]
+        download.model(model_to_limit_fov_from, model_path)
 
     add_custom_trainers_to_local_nnunetv2()
 
     image = SimpleITK.ReadImage(file_path)
     if limit_fov:
-        image, original_fov_info = predict.limit_fov(image, constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"],
-                                                     constants.LIMIT_FOV_WORKFLOWS[model_name]["label_intensity_to_crop_from"],
-                                                     accelerator)
-    segmentation_array = predict.prediction_pipeline(image, model_name, accelerator)
+        original_image = image
+        desired_spacing = MODELS[model_to_limit_fov_from]["voxel_spacing"]
+        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
+                                                                                              desired_spacing)
+        fov_limiting_segmentation_array = predict.predict_from_array_by_iterator(resampled_array,
+                                                                                 model_to_limit_fov_from,
+                                                                                 accelerator)
+
+        limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array,
+                                                                                fov_limiting_segmentation_array,
+                                                                                constants.LIMIT_FOV_WORKFLOWS[model_name]["label_intensity_to_crop_from"])
+
+        image = SimpleITK.GetImageFromArray(limited_fov_image_array)
+        image.SetOrigin(image.GetOrigin())
+        image.SetSpacing(MODELS[model_to_limit_fov_from]["voxel_spacing"])
+        image.SetDirection(image.GetDirection())
+
+    desired_spacing = MODELS[model_name]["voxel_spacing"]
+    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
+                                                                                          desired_spacing)
+    segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_name, accelerator)
 
     if limit_fov:
         segmentation_array = image_processing.expand_segmentation_fov(segmentation_array, original_fov_info)
-        image = original_fov_info["original_image"]
+        image = original_image
 
     segmentation = SimpleITK.GetImageFromArray(segmentation_array)
     segmentation.SetSpacing(resources.MODELS[model_name]["voxel_spacing"])

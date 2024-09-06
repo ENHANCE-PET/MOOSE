@@ -127,28 +127,3 @@ def prediction_pipeline(image: SimpleITK.Image, model_name: str, accelerator: st
 
     segmentation_array = predict_from_array_by_iterator(resampled_array, model_name, accelerator)
     return segmentation_array
-
-
-def limit_fov(image: SimpleITK.Image, model_to_limit_fov_from: str, fov_label: int, accelerator: str):
-
-    segmentation_array = prediction_pipeline(image, model_to_limit_fov_from, accelerator)
-
-    # Convert the images to numpy arrays
-    image_array = SimpleITK.GetArrayFromImage(image)
-
-    # Find the z-axis indices where the label matches the target intensity
-    z_indices = np.where(segmentation_array == fov_label)[0]  # Note: SimpleITK uses [z,y,x] indexing
-    z_min, z_max = np.min(z_indices), np.max(z_indices)
-
-    # Crop the CT data along the z-axis
-    limited_fov_array = image_array[z_min:z_max + 1, :, :]  # Note: SimpleITK uses [z,y,x] indexing
-
-    # Convert the cropped numpy array back to a SimpleITK image
-    limited_fov_image = SimpleITK.GetImageFromArray(limited_fov_array)
-
-    # Set the same origin, spacing, and direction as the original image
-    limited_fov_image.SetOrigin(image.GetOrigin())
-    limited_fov_image.SetSpacing(image.GetSpacing())
-    limited_fov_image.SetDirection(image.GetDirection())
-
-    return limited_fov_image, {"z_min": z_min, "z_max": z_max, "original_shape": image_array.shape, "original_image": image}
