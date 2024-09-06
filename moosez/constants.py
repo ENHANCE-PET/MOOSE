@@ -66,17 +66,20 @@ LIMIT_FOV_WORKFLOWS = {
     "clin_ct_liver_segments": {
         "model_to_crop_from": "clin_ct_fast_organs",
         "inference_fov_intensities": 8,
-        "label_intensity_to_crop_from": 8
+        "label_intensity_to_crop_from": 8,
+        "largest_component_only": False
     },
     "clin_ct_aorta": {
         "model_to_crop_from": "clin_ct_cardiac",
         "inference_fov_intensities": 6,
-        "label_intensity_to_crop_from": 6
+        "label_intensity_to_crop_from": 6,
+        "largest_component_only": False
     },
     "clin_ct_body_composition": {
         "model_to_crop_from": "clin_ct_vertebrae",
         "inference_fov_intensities": [20, 24],
-        "label_intensity_to_crop_from": 22
+        "label_intensity_to_crop_from": 22,
+        "largest_component_only": True
     }
 }
 

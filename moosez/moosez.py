@@ -330,7 +330,8 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
         limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array,
                                                                        fov_limiting_segmentation_array,
                                                                        constants.LIMIT_FOV_WORKFLOWS[model_name][
-                                                                           "label_intensity_to_crop_from"])
+                                                                           "label_intensity_to_crop_from"],
+                                                                            constants.LIMIT_FOV_WORKFLOWS[model_name]["largest_component_only"])
         segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
         image = original_image
 

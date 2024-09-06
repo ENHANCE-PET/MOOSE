@@ -21,6 +21,7 @@ import SimpleITK
 import dask.array as da
 import numpy as np
 import pandas as pd
+import scipy.ndimage as ndimage
 from moosez.constants import CHUNK_THRESHOLD
 from moosez.resources import MODELS
 
@@ -91,7 +92,10 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: 
     stats_df.to_csv(out_csv)
 
 
-def limit_fov(image_array: np.array, segmentation_array: np.array,fov_label):
+def limit_fov(image_array: np.array, segmentation_array: np.array,fov_label, largest_component_only: bool = False):
+
+    if largest_component_only:
+        segmentation_array = largest_connected_component(segmentation_array, fov_label)
 
     if type(fov_label) is list:
         z_indices = np.where((segmentation_array >= fov_label[0]) & (segmentation_array <= fov_label[1]))[0]
@@ -116,6 +120,54 @@ def expand_segmentation_fov(limited_fov_segmentation_array: np.ndarray, original
     filled_segmentation_array[z_min:z_max + 1, :, :] = limited_fov_segmentation_array
 
     return filled_segmentation_array
+
+
+def largest_connected_component(segmentation_array, intensities):
+    """
+    Extracts the largest connected component for one or more specific intensities from a multilabel segmentation array
+    and returns a new multilabel array where the largest components retain their original intensity.
+
+    Parameters:
+    - segmentation_array: 3D or 2D numpy array with multiple labels.
+    - intensities: A single intensity or a list of intensities for which the largest component(s) should be extracted.
+
+    Returns:
+    - largest_components_multilabel: A multilabel array of the same shape as `segmentation_array`,
+      where the largest connected component(s) of the specified intensity or intensities retain their original intensity,
+      and all other areas are 0.
+    """
+
+    # Ensure intensities is a list (even if only one intensity is provided)
+    if not isinstance(intensities, (list, tuple, np.ndarray)):
+        intensities = [intensities]
+
+    # Initialize an array to store the largest connected components
+    largest_components_multilabel = np.zeros_like(segmentation_array, dtype=segmentation_array.dtype)
+
+    # Loop over each intensity
+    for intensity in intensities:
+        # Create a binary mask for the current intensity
+        binary_mask = segmentation_array == intensity
+
+        # Label connected components in the binary mask
+        labeled_array, num_features = ndimage.label(binary_mask)
+
+        # Find the sizes of each connected component
+        component_sizes = np.bincount(labeled_array.ravel())
+
+        # Ignore the background (component 0)
+        component_sizes[0] = 0
+
+        # Find the largest connected component for this intensity
+        largest_component_label = component_sizes.argmax()
+
+        # Create a mask for the largest connected component of this intensity
+        largest_component = labeled_array == largest_component_label
+
+        # Assign the original intensity value to the largest connected component
+        largest_components_multilabel[largest_component] = intensity
+
+    return largest_components_multilabel
 
 
 class ImageResampler:
