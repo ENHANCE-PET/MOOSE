@@ -18,24 +18,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import logging
-import multiprocessing
 import os
 from typing import List
-
-import nibabel as nib
 from moosez import constants
-
-
-def check_directory_exists(directory_path: str) -> None:
-    """
-    Checks if the specified directory exists.
-
-    :param directory_path: The path to the directory.
-    :type directory_path: str
-    :raises: Exception if the directory does not exist.
-    """
-    if not os.path.isdir(directory_path):
-        raise Exception(f"Error: The directory '{directory_path}' does not exist.")
 
 
 def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: List[str]) -> List[str]:

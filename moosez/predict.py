@@ -25,7 +25,6 @@ import numpy as np
 from moosez import constants
 from moosez import image_processing
 from moosez.resources import MODELS, AVAILABLE_MODELS, check_device
-
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
 
@@ -51,7 +50,7 @@ def initialize_predictor(model_name: str, accelerator: str) -> nnUNetPredictor:
 
 
 @dask.delayed
-def process_case(preprocessor, chunk: np.ndarray, chunk_properties: dict, predictor, location: tuple):
+def process_case(preprocessor, chunk: np.ndarray, chunk_properties: dict, predictor, location: tuple) -> dict:
     data, seg = preprocessor.run_case_npy(chunk,
                                           None,
                                           chunk_properties,
@@ -62,7 +61,7 @@ def process_case(preprocessor, chunk: np.ndarray, chunk_properties: dict, predic
             'location': location}
 
 
-def preprocessing_iterator_from_dask_array(dask_array: da.Array, image_properties: dict, predictor):
+def preprocessing_iterator_from_dask_array(dask_array: da.Array, image_properties: dict, predictor: nnUNetPredictor) -> (iter, list):
     preprocessor = predictor.configuration_manager.preprocessor_class(verbose=predictor.verbose)
 
     chunk_indices = []
@@ -81,7 +80,7 @@ def preprocessing_iterator_from_dask_array(dask_array: da.Array, image_propertie
     return iterator, chunk_indices
 
 
-def reconstruct_array_from_chunks(chunks: list[np.array], chunk_positions: list[tuple], original_shape: tuple):
+def reconstruct_array_from_chunks(chunks: list[np.ndarray], chunk_positions: list[tuple], original_shape: tuple) -> np.ndarray:
     reconstructed_array = np.empty(original_shape, dtype=chunks[0].dtype)
 
     for chunk, position in zip(chunks, chunk_positions):
@@ -92,43 +91,60 @@ def reconstruct_array_from_chunks(chunks: list[np.array], chunk_positions: list[
     return np.squeeze(reconstructed_array)
 
 
-def predict_from_array_by_iterator(image_array: np.ndarray, model_name: str, accelerator: str = None):
+def predict_from_array_by_iterator(image_array: np.ndarray, model_name: str, accelerator: str = None, nnunet_log_filename: str = None):
     image_array = image_array[None, ...]
     chunks = [axis / image_processing.ImageResampler.chunk_along_axis(axis) for axis in image_array.shape]
     prediction_array = da.from_array(image_array, chunks=chunks)
 
-    with open(os.devnull, 'w') as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    if nnunet_log_filename is not None:
+        nnunet_log_file = open(nnunet_log_filename, "a")
+        sys.stdout = nnunet_log_file
+        sys.stderr = nnunet_log_file
 
-        try:
-            if accelerator is None:
-                accelerator = check_device()
-            predictor = initialize_predictor(model_name, accelerator)
-            image_properties = {
-                'spacing': MODELS[model_name]["voxel_spacing"]
-            }
-            iterator, chunk_locations = preprocessing_iterator_from_dask_array(prediction_array, image_properties,
-                                                                               predictor)
-            segmentations = predictor.predict_from_data_iterator(iterator)
-            combined_segmentations = reconstruct_array_from_chunks(segmentations, chunk_locations, prediction_array.shape)
-            return combined_segmentations
+    try:
+        if accelerator is None:
+            accelerator = check_device()
 
-        finally:
-            sys.stdout = old_stdout
+        predictor = initialize_predictor(model_name, accelerator)
+        image_properties = {
+            'spacing': MODELS[model_name]["voxel_spacing"]
+        }
+
+        iterator, chunk_locations = preprocessing_iterator_from_dask_array(prediction_array, image_properties, predictor)
+        segmentations = predictor.predict_from_data_iterator(iterator)
+        combined_segmentations = reconstruct_array_from_chunks(segmentations, chunk_locations, prediction_array.shape)
+
+        return combined_segmentations
+
+    finally:
+        sys.stdout = original_stdout
+        sys.stderr = original_stderr
+        if nnunet_log_filename is not None:
+            nnunet_log_file.close()
 
 
-def construct_prediction_routine(models: str | list[str]) -> dict[tuple, list[str]]:
-    if isinstance(models, str):
-        models = [models]
+def construct_prediction_routines(desired_models: str | list[str]) -> dict[tuple, list[list[str]]]:
+    if isinstance(desired_models, str):
+        desired_models = [desired_models]
 
-    prediction_routine = {}
-    for model in models:
-        if model in AVAILABLE_MODELS:
-            model_spacing = tuple(MODELS[model]["voxel_spacing"])
-            if model_spacing in prediction_routine:
-                prediction_routine[model_spacing].append(model)
+    prediction_routines = {}
+    for desired_model in desired_models:
+        model_routine = []
+        if desired_model in AVAILABLE_MODELS:
+            model_spacing = tuple(MODELS[desired_model]["voxel_spacing"])
+
+            if MODELS[desired_model]["limit_fov"]:
+                model_to_crop_from = MODELS[desired_model]["limit_fov"]["model_to_crop_from"]
+                model_routine.append(model_to_crop_from)
+                model_spacing = tuple(MODELS[model_to_crop_from]["voxel_spacing"])
+
+            model_routine.append(desired_model)
+
+            if model_spacing in prediction_routines:
+                prediction_routines[model_spacing].append(model_routine)
             else:
-                prediction_routine[model_spacing] = [model]
+                prediction_routines[model_spacing] = [model_routine]
 
-    return prediction_routine
+    return prediction_routines

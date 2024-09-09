@@ -26,7 +26,6 @@ import glob
 import logging
 import time
 from datetime import datetime
-import sys
 import SimpleITK
 import colorama
 import emoji
@@ -46,10 +45,6 @@ from moosez.resources import MODELS, AVAILABLE_MODELS
 
 
 def main():
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                        filename=datetime.now().strftime('moosez-v.3.0.0.%H-%M-%d-%m-%Y.log'), filemode='w')
-    nnunet_log_filename = datetime.now().strftime('nnunet.%H-%M-%d-%m-%Y.log')
-
     colorama.init()
 
     # Argument parser
@@ -93,6 +88,10 @@ def main():
     parent_folder = os.path.abspath(args.main_directory)
     model_names = args.model_names
 
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
+                        filename=os.path.join(parent_folder, datetime.now().strftime('moosez-v.3.0.0.%H-%M-%d-%m-%Y.log')), filemode='w')
+    nnunet_log_filename = os.path.join(parent_folder,datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
+
     display.logo()
     display.citation()
 
@@ -106,7 +105,6 @@ def main():
 
     logging.info(' ')
     logging.info('- Main directory: ' + parent_folder)
-    logging.info('- Model name: ' + model_names)
     logging.info(' ')
     print(' ')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
@@ -115,7 +113,6 @@ def main():
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     logging.info('- Custom trainer: ' + custom_trainer_status)
     accelerator = resources.check_device()
-    cropping = resources.check_cropping(model_names)
 
     # ----------------------------------
     # DOWNLOADING THE MODEL
@@ -126,9 +123,12 @@ def main():
     print('')
     model_path = constants.NNUNET_RESULTS_FOLDER
     file_utilities.create_directory(model_path)
-    download.model(model_names, model_path)
-    if cropping:
-        download.model(constants.LIMIT_FOV_WORKFLOWS[model_names]["model_to_crop_from"], model_path)
+
+    for model_name in model_names:
+        logging.info('- Model name: ' + model_name)
+        download.model(model_name, model_path)
+        if MODELS[model_name]["limit_fov"] is not None:
+            download.model(MODELS[model_name]["limit_fov"]["model_to_crop_from"], model_path)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
@@ -176,7 +176,7 @@ def main():
         # SETTING UP DIRECTORY STRUCTURE
         spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {os.path.basename(subject)}...'
         logging.info(' ')
-        logging.info(f'{constants.ANSI_VIOLET} SETTING UP MOOSE-Z DIRECTORY:{constants.ANSI_RESET}')
+        logging.info(f' SETTING UP MOOSE-Z DIRECTORY:')
         logging.info(' ')
         moose_dir, segmentations_dir, stats_dir = file_utilities.moose_folder_structure(subject)
         logging.info(f" MOOSE directory for subject {os.path.basename(subject)} at: {moose_dir}")
@@ -186,68 +186,102 @@ def main():
         logging.info(' ')
         logging.info(' RUNNING PREDICTION:')
         logging.info(' ')
-        spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_names}...'
 
-        original_stdout = sys.stdout
-        original_stderr = sys.stderr
-        with open(nnunet_log_filename, "w") as nnunet_log_file:
-            sys.stdout = nnunet_log_file
-            sys.stderr = nnunet_log_file
+        file_path = file_utilities.get_files(subject, '.nii.gz')[0]
+        image = SimpleITK.ReadImage(file_path)
+        file_name = file_utilities.get_nifti_file_stem(file_path)
 
-            file_path = file_utilities.get_files(subject, '.nii.gz')[0]
-            moose(file_path, model_names, segmentations_dir, accelerator)
-        sys.stdout = original_stdout
-        sys.stderr = original_stderr
+        prediction_routine = predict.construct_prediction_routines(model_names)
+        for desired_spacing, routines in prediction_routine.items():
 
-        logging.info(f"Prediction complete using {model_names}.")
+            resampling_time_start = time.time()
+            resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+            logging.info(f' - Resampling at {"x".join(map(str,desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
+
+            for routine in routines:
+                model = routine[0]
+                model_time_start = time.time()
+                spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model}...'
+                logging.info(f' - Model {model}')
+                segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, nnunet_log_filename)
+
+                if len(routine) > 1:
+                    model = routine[1]
+                    model_fov_information = resources.MODELS[model]["limit_fov"]
+                    limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array, segmentation_array, model_fov_information["inference_fov_intensities"])
+
+                    cropped_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
+                    cropped_image.SetOrigin(image.GetOrigin())
+                    cropped_image.SetSpacing(MODELS[model]["voxel_spacing"])
+                    cropped_image.SetDirection(image.GetDirection())
+
+                    desired_spacing = MODELS[model]["voxel_spacing"]
+                    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(cropped_image, 'bspline', desired_spacing)
+                    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, nnunet_log_filename)
+
+                    expanded_segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+                    limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array, segmentation_array, model_fov_information["label_intensity_to_crop_from"], model_fov_information["largest_component_only"])
+                    segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+
+                segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+                segmentation.SetSpacing(desired_spacing)
+                segmentation.SetOrigin(image.GetOrigin())
+                segmentation.SetDirection(image.GetDirection())
+                resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
+
+                segmentation_image_path = os.path.join(segmentations_dir, f"{MODELS[model]['multilabel_prefix']}segmentation_{file_name}.nii.gz")
+                SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
+                logging.info(f"   - Prediction complete for {model} within {round((time.time() - model_time_start)/ 60, 1)} min.")
 
         end_time = time.time()
         elapsed_time = end_time - start_time
-        spinner.text = f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {model_names}!' \
+        spinner.text = f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {len(model_names)} models: ' \
                        f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}'
         time.sleep(3)
-        logging.info(f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {model_names}!' f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}')
+        logging.info(f' [{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {len(model_names)} models: {", ".join(model_names)}!' 
+                     f' | Elapsed time: {round(elapsed_time / 60, 1)} min')
 
         # ----------------------------------
         # EXTRACT PET ACTIVITY
         # ----------------------------------
         pet_file = file_utilities.find_pet_file(subject)
-        if pet_file is not None:
-            pet_image = SimpleITK.ReadImage(pet_file)
-            spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {os.path.basename(subject)}...'
-            multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_names]["multilabel_prefix"] + '*nii*'))[0]
-            multilabel_image = SimpleITK.ReadImage(multilabel_file)
-            resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
-                                                                         moving_image=multilabel_image,
-                                                                         is_label_image=True)
-            out_csv = os.path.join(stats_dir, MODELS[model_names]["multilabel_prefix"] + os.path.basename(subject) + '_pet_activity.csv')
-            image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model_names, out_csv)
-            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {os.path.basename(subject)}! ' \
-                           f'{constants.ANSI_RESET}'
-            time.sleep(3)
+        for model_name in model_names:
+            if pet_file is not None:
+                pet_image = SimpleITK.ReadImage(pet_file)
+                spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {os.path.basename(subject)} ({model_name})...'
+                multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
+                multilabel_image = SimpleITK.ReadImage(multilabel_file)
+                resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
+                                                                             moving_image=multilabel_image,
+                                                                             is_label_image=True)
+                out_csv = os.path.join(stats_dir, MODELS[model_name]["multilabel_prefix"] + os.path.basename(subject) + '_pet_activity.csv')
+                image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model_name, out_csv)
+                spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {os.path.basename(subject)}! ' \
+                               f'{constants.ANSI_RESET}'
+                time.sleep(3)
 
-        # ----------------------------------
-        # EXTRACT VOLUME STATISTICS
-        # ----------------------------------
-        spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {os.path.basename(subject)}...'
-        multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_names]["multilabel_prefix"] + '*nii*'))[0]
-        multilabel_image = SimpleITK.ReadImage(multilabel_file)
-        out_csv = os.path.join(stats_dir, MODELS[model_names]["multilabel_prefix"] + os.path.basename(subject) + '_ct_volume.csv')
-        image_processing.get_shape_statistics(multilabel_image, model_names, out_csv)
-        spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
-                       f'{constants.ANSI_RESET}'
-        time.sleep(1)
+            # ----------------------------------
+            # EXTRACT VOLUME STATISTICS
+            # ----------------------------------
+            spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {os.path.basename(subject)} ({model_name})...'
+            multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
+            multilabel_image = SimpleITK.ReadImage(multilabel_file)
+            out_csv = os.path.join(stats_dir, MODELS[model_name]["multilabel_prefix"] + os.path.basename(subject) + '_ct_volume.csv')
+            image_processing.get_shape_statistics(multilabel_image, model_name, out_csv)
+            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
+                           f'{constants.ANSI_RESET}'
+            time.sleep(1)
 
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
     time_per_dataset = total_elapsed_time / len(moose_compliant_subjects)
 
     spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
-                    f'{len(moose_compliant_subjects)} datasets: {round(total_elapsed_time, 1)} min'
+                    f'{len(moose_compliant_subjects)} datasets, {len(model_names)} models: {round(total_elapsed_time, 1)} min'
                     f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
 
 
-def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: str = None) -> None:
+def moose(file_path: str, model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> None:
     """
     Execute the MOOSE 3.0 image segmentation process.
 
@@ -258,9 +292,9 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
     4. Validates and prepares the input directory to be compatible with nnUNet.
     5. Executes the prediction process.
 
-    :param model_name: The name of the model to be used for predictions. This model will be downloaded and used
+    :param model_names: The name of the model to be used for predictions. This model will be downloaded and used
                        for the image segmentation process.
-    :type model_name: str
+    :type model_names: str
 
     :param file_path: Path to the file (in nifti, either .nii or .nii.gz) to be processed.
     :type file_path: str
@@ -277,126 +311,53 @@ def moose(file_path: str, model_name: str, output_dir: str = None, accelerator: 
 
     :Example:
 
-    >>> moose('clin_ct_organs', '/path/to/input/images', '/path/to/save/output', 'cuda')
+    >>> moose('/path/to/input/file', '[list, of, models]', '/path/to/save/output', 'cuda')
 
     """
-    limit_fov = resources.check_cropping(model_name)
-    model_path = constants.NNUNET_RESULTS_FOLDER
-    file_utilities.create_directory(model_path)
-    download.model(model_name, model_path)
-    if limit_fov:
-        model_to_limit_fov_from = constants.LIMIT_FOV_WORKFLOWS[model_name]["model_to_crop_from"]
-        download.model(model_to_limit_fov_from, model_path)
-
-    add_custom_trainers_to_local_nnunetv2()
-
-    image = SimpleITK.ReadImage(file_path)
-    if limit_fov:
-        original_image = image
-        desired_spacing = MODELS[model_to_limit_fov_from]["voxel_spacing"]
-        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
-                                                                                              desired_spacing)
-        fov_limiting_segmentation_array = predict.predict_from_array_by_iterator(resampled_array,
-                                                                                 model_to_limit_fov_from,
-                                                                                 accelerator)
-
-        limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array,
-                                                                                fov_limiting_segmentation_array,
-                                                                                constants.LIMIT_FOV_WORKFLOWS[model_name]["inference_fov_intensities"])
-
-        image = SimpleITK.GetImageFromArray(limited_fov_image_array)
-        image.SetOrigin(image.GetOrigin())
-        image.SetSpacing(MODELS[model_to_limit_fov_from]["voxel_spacing"])
-        image.SetDirection(image.GetDirection())
-
-    desired_spacing = MODELS[model_name]["voxel_spacing"]
-    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
-                                                                                          desired_spacing)
-    segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_name, accelerator)
-
-    if limit_fov:
-        expanded_segmentation_array = image_processing.expand_segmentation_fov(segmentation_array, original_fov_info)
-        limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array,
-                                                                       fov_limiting_segmentation_array,
-                                                                       constants.LIMIT_FOV_WORKFLOWS[model_name][
-                                                                           "label_intensity_to_crop_from"],
-                                                                            constants.LIMIT_FOV_WORKFLOWS[model_name]["largest_component_only"])
-        segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-        image = original_image
-
-    segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-    segmentation.SetSpacing(resources.MODELS[model_name]["voxel_spacing"])
-    segmentation.SetOrigin(image.GetOrigin())
-    segmentation.SetDirection(image.GetDirection())
-    resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
-
-    if output_dir is None:
-        output_dir = os.path.dirname(file_path)
-    file_name = file_utilities.get_nifti_file_stem(file_path)
-    segmentation_image_path = os.path.join(output_dir, f"{MODELS[model_name]['multilabel_prefix']}segmentation_{file_name}.nii.gz")
-    SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
-
-
-if __name__ == '__main__':
-    main()
-
-
-def moose_3(file_path: str, models: str, output_dir: str = None, accelerator: str = None) -> None:
-    """
-    Execute the MOOSE 3.0 image segmentation process.
-
-    This function carries out the following steps:
-    1. Sets the path for model results.
-    2. Creates the required directory for the model.
-    3. Downloads the model based on the provided `model_name`.
-    4. Validates and prepares the input directory to be compatible with nnUNet.
-    5. Executes the prediction process.
-
-    :param models: The names of the models to be used for predictions. These models will be downloaded and used
-                   for the image segmentation process.
-    :type models: str
-
-    :param file_path: Path to the file (in nifti, either .nii or .nii.gz) to be processed.
-    :type file_path: str
-
-    :param output_dir: Path to the directory where the segmented output will be saved.
-    :type output_dir: str
-
-    :param accelerator: Specifies the type of accelerator to be used. Common values include "cpu" and "cuda" for
-                        GPU acceleration.
-    :type accelerator: str
-
-    :return: None
-    :rtype: None
-
-    :Example:
-
-    >>> moose('clin_ct_organs', '/path/to/input/images', '/path/to/save/output', 'cuda')
-
-    """
-
-    if isinstance(models, str):
-        models = [models]
-
-    model_path = constants.NNUNET_RESULTS_FOLDER
-    file_utilities.create_directory(model_path)
-    for model in models:
-        download.model(model, model_path)
-        limit_fov = resources.check_cropping(model)
-        if limit_fov:
-            model_to_limit_fov_from = constants.LIMIT_FOV_WORKFLOWS[model]["model_to_crop_from"]
-            download.model(model_to_limit_fov_from, model_path)
-    add_custom_trainers_to_local_nnunetv2()
 
     image = SimpleITK.ReadImage(file_path)
     file_name = file_utilities.get_nifti_file_stem(file_path)
 
-    prediction_routine = predict.construct_prediction_routine(models)
-    for desired_spacing, models in prediction_routine:
+    if isinstance(model_names, str):
+        model_names = [model_names]
+
+    model_path = constants.NNUNET_RESULTS_FOLDER
+    file_utilities.create_directory(model_path)
+
+    for model_name in model_names:
+        logging.info('- Model name: ' + model_name)
+        download.model(model_name, model_path)
+        if MODELS[model_name]["limit_fov"] is not None:
+            download.model(MODELS[model_name]["limit_fov"]["model_to_crop_from"], model_path)
+
+    prediction_routine = predict.construct_prediction_routines(model_names)
+    for desired_spacing, routines in prediction_routine.items():
         resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
 
-        for model in models:
-            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator)
+        for routine in routines:
+            model = routine[0]
+            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, os.devnull)
+
+            if len(routine) > 1:
+                model = routine[1]
+                model_fov_information = resources.MODELS[model]["limit_fov"]
+                limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array, segmentation_array, model_fov_information["inference_fov_intensities"])
+
+                cropped_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
+                cropped_image.SetOrigin(image.GetOrigin())
+                cropped_image.SetSpacing(MODELS[model]["voxel_spacing"])
+                cropped_image.SetDirection(image.GetDirection())
+
+                desired_spacing = MODELS[model]["voxel_spacing"]
+                resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(cropped_image, 'bspline', desired_spacing)
+                limited_fov_segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, os.devnull)
+
+                expanded_segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+                limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(
+                    expanded_segmentation_array, segmentation_array,
+                    model_fov_information["label_intensity_to_crop_from"],
+                    model_fov_information["largest_component_only"])
+                segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
@@ -409,38 +370,6 @@ def moose_3(file_path: str, models: str, output_dir: str = None, accelerator: st
             segmentation_image_path = os.path.join(output_dir, f"{MODELS[model]['multilabel_prefix']}segmentation_{file_name}.nii.gz")
             SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
 
-    '''
-    limit_fov = resources.check_cropping(model)
-    if limit_fov:
-        original_image = image
-        desired_spacing = MODELS[model_to_limit_fov_from]["voxel_spacing"]
-        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
-                                                                                              desired_spacing)
-        fov_limiting_segmentation_array = predict.predict_from_array_by_iterator(resampled_array,
-                                                                                 model_to_limit_fov_from,
-                                                                                 accelerator)
 
-        limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array,
-                                                                                fov_limiting_segmentation_array,
-                                                                                constants.LIMIT_FOV_WORKFLOWS[models]["inference_fov_intensities"])
-
-        image = SimpleITK.GetImageFromArray(limited_fov_image_array)
-        image.SetOrigin(image.GetOrigin())
-        image.SetSpacing(MODELS[model_to_limit_fov_from]["voxel_spacing"])
-        image.SetDirection(image.GetDirection())
-
-    desired_spacing = MODELS[models]["voxel_spacing"]
-    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
-                                                                                          desired_spacing)
-    segmentation_array = predict.predict_from_array_by_iterator(resampled_array, models, accelerator)
-
-    if limit_fov:
-        expanded_segmentation_array = image_processing.expand_segmentation_fov(segmentation_array, original_fov_info)
-        limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array,
-                                                                                       fov_limiting_segmentation_array,
-                                                                                       constants.LIMIT_FOV_WORKFLOWS[models][
-                                                                           "label_intensity_to_crop_from"],
-                                                                                       constants.LIMIT_FOV_WORKFLOWS[models]["largest_component_only"])
-        segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-        image = original_image
-    '''
+if __name__ == '__main__':
+    main()

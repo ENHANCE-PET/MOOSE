@@ -40,7 +40,7 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     :type out_csv: str
     :return: None
     """
-    intensity_statistics = sitk.LabelIntensityStatisticsImageFilter()
+    intensity_statistics = SimpleITK.LabelIntensityStatisticsImageFilter()
     intensity_statistics.Execute(mask_image, image)
     stats_list = [(intensity_statistics.GetMean(i), intensity_statistics.GetStandardDeviation(i),
                    intensity_statistics.GetMedian(i), intensity_statistics.GetMaximum(i),
@@ -92,7 +92,7 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: 
     stats_df.to_csv(out_csv)
 
 
-def limit_fov(image_array: np.array, segmentation_array: np.array,fov_label, largest_component_only: bool = False):
+def limit_fov(image_array: np.array, segmentation_array: np.array, fov_label: list[int] | int, largest_component_only: bool = False):
 
     if largest_component_only:
         segmentation_array = largest_connected_component(segmentation_array, fov_label)
@@ -101,7 +101,6 @@ def limit_fov(image_array: np.array, segmentation_array: np.array,fov_label, lar
         z_indices = np.where((segmentation_array >= fov_label[0]) & (segmentation_array <= fov_label[1]))[0]
     else:
         z_indices = np.where(segmentation_array == fov_label)[0]
-
     z_min, z_max = np.min(z_indices), np.max(z_indices)
 
     # Crop the CT data along the z-axis

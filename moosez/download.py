@@ -4,6 +4,12 @@
 import logging
 import os
 import zipfile
+import requests
+from moosez import constants
+from moosez import resources
+from rich.console import Console
+from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
@@ -20,28 +26,6 @@ import zipfile
 # binaries and models for the moosez.
 #
 # ----------------------------------------------------------------------------------------------------------------------
-import requests
-from moosez import constants
-from moosez import resources
-from rich.console import Console
-from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
-
-
-def binary(system_info, url):
-    """
-    Downloads the binary for the current system.
-
-    :param system_info: A dictionary containing the system information.
-    :type system_info: dict
-    :param url: The url to download the binary from.
-    :type url: str
-    """
-    binary_name = "{}_{}_{}".format(system_info["os_type"], system_info["cpu_architecture"], system_info["cpu_brand"])
-    print("Binary to download: " + binary_name)
-    response = requests.get(url + binary_name)
-
-    with open(binary_name, "wb") as f:
-        f.write(response.content)
 
 
 def model(model_name, model_path):

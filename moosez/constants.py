@@ -27,16 +27,13 @@ ANSI_RED = '\033[38;5;196m'
 ANSI_RESET = '\033[0m'
 
 # SUPPORTED TRACERS (limited patch)
-
 TRACER_FDG = 'FDG'
 
 # FOLDER NAMES
-
 SEGMENTATIONS_FOLDER = 'segmentations'
 STATS_FOLDER = 'stats'
 
 # PREPROCESSING PARAMETERS
-
 MATRIX_THRESHOLD = 200 * 200 * 600
 Z_AXIS_THRESHOLD = 200
 MARGIN_PADDING = 20
@@ -44,44 +41,12 @@ INTERPOLATION = 'bspline'
 CHUNK_THRESHOLD = 100
 
 # POSTPROCESSING PARAMETERS
-
 TUMOR_LABEL = 12
 
-# FILE NAMES
-
-RESAMPLED_IMAGE_FILE_NAME = 'resampled_image_0000.nii.gz'
-RESAMPLED_MASK_FILE_NAME = 'resampled_mask.nii.gz'
-CHUNK_FILENAMES = ["chunk01_0000.nii.gz", "chunk02_0000.nii.gz", "chunk03_0000.nii.gz"]
-CHUNK_PREFIX = 'chunk'
-
 # DISPLAY PARAMETERS
-
 MIP_ROTATION_STEP = 40
 DISPLAY_VOXEL_SPACING = (3, 3, 3)
 FRAME_DURATION = 0.4
-
-# CROPPING WORKFLOWS
-
-LIMIT_FOV_WORKFLOWS = {
-    "clin_ct_liver_segments": {
-        "model_to_crop_from": "clin_ct_fast_organs",
-        "inference_fov_intensities": 8,
-        "label_intensity_to_crop_from": 8,
-        "largest_component_only": False
-    },
-    "clin_ct_aorta": {
-        "model_to_crop_from": "clin_ct_cardiac",
-        "inference_fov_intensities": 6,
-        "label_intensity_to_crop_from": 6,
-        "largest_component_only": False
-    },
-    "clin_ct_body_composition": {
-        "model_to_crop_from": "clin_ct_vertebrae",
-        "inference_fov_intensities": [20, 24],
-        "label_intensity_to_crop_from": 22,
-        "largest_component_only": True
-    }
-}
 
 """
 
@@ -108,10 +73,6 @@ This module contains the following constants:
 - `INTERPOLATION`: A constant that stores the interpolation method used by the moosez algorithm.
 - `CHUNK_THRESHOLD`: A constant that stores the chunk threshold used by the moosez algorithm.
 - `TUMOR_LABEL`: A constant that stores the label used for tumors by the moosez algorithm.
-- `RESAMPLED_IMAGE_FILE_NAME`: A constant that stores the name of the resampled image file used by the moosez algorithm.
-- `RESAMPLED_MASK_FILE_NAME`: A constant that stores the name of the resampled mask file used by the moosez algorithm.
-- `CHUNK_FILENAMES`: A constant that stores the names of the chunk files used by the moosez algorithm.
-- `CHUNK_PREFIX`: A constant that stores the prefix used for chunk files by the moosez algorithm.
 - `MIP_ROTATION_STEP`: A constant that stores the MIP rotation step used by the moosez algorithm.
 - `DISPLAY_VOXEL_SPACING`: A constant that stores the display voxel spacing used by the moosez algorithm.
 - `FRAME_DURATION`: A constant that stores the frame duration used by the moosez algorithm.

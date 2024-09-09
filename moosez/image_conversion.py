@@ -86,9 +86,9 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         _, filename = os.path.split(input_path)
         if filename.startswith('.') or filename.endswith(('.nii.gz', '.nii')):
             return
-        else:
-            output_image = SimpleITK.ReadImage(input_path)
-            output_image_basename = f"{os.path.splitext(filename)[0]}.nii"
+
+    output_image = SimpleITK.ReadImage(input_path)
+    output_image_basename = f"{os.path.splitext(filename)[0]}.nii"
 
     if output_directory is None:
         output_directory = os.path.dirname(input_path)

@@ -137,24 +137,6 @@ def select_files_by_modality(moose_compliant_subjects: list[str], modality_tag: 
     return selected_files
 
 
-def organise_files_by_modality(moose_compliant_subjects: list[str], modalities: list[str], moose_dir: str) -> None:
-    """
-    Organises the files by modality.
-    
-    :param moose_compliant_subjects: The list of moose-compliant subjects paths.
-    :type moose_compliant_subjects: list
-    
-    :param modalities: The list of modalities.
-    :type modalities: list
-    
-    :param moose_dir: The path to the moose directory.
-    :type moose_dir: str
-    """
-    for modality in modalities:
-        files_to_copy = select_files_by_modality(moose_compliant_subjects, modality)
-        copy_files_to_destination(files_to_copy, os.path.join(moose_dir, modality))
-
-
 def find_pet_file(folder: str) -> str | None:
     """
     Finds the PET file in the specified folder.

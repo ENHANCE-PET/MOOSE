@@ -3,7 +3,6 @@
 
 import logging
 import torch
-from moosez import constants
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
@@ -53,7 +52,8 @@ MODELS = {
             3: "lung_upper_lobe_right",
             4: "lung_middle_lobe_right",
             5: "lung_lower_lobe_right"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_organs": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_05082024.zip",
@@ -84,7 +84,8 @@ MODELS = {
             17: "thyroid_left",
             18: "thyroid_right",
             19: "trachea"
-        }
+        },
+        "limit_fov": None
     },
     "preclin_mr_all": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_mr_all_05122023.zip",
@@ -117,7 +118,8 @@ MODELS = {
             19: "Aorta",
             20: "Lung",
             21: "Stomach",
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_body": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_27112023.zip",
@@ -133,7 +135,8 @@ MODELS = {
             2: "Body",
             3: "Head",
             4: "Arms"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_ribs": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ribs_11082024.zip",
@@ -172,7 +175,8 @@ MODELS = {
             25: "rib_right_12",
             26: "rib_right_13",
             27: "sternum"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_muscles": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_muscles_09082024.zip",
@@ -194,7 +198,8 @@ MODELS = {
             8: "gluteus_minimus_right",
             9: "iliopsoas_left",
             10: "iliopsoas_right"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_peripheral_bones": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_05082024.zip",
@@ -237,7 +242,8 @@ MODELS = {
             29: "toes_right",
             30: "ulna_left",
             31: "ulna_right"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_fat": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
@@ -257,7 +263,8 @@ MODELS = {
             6: "eyes",
             7: "testicles",
             8: "prostate"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_vertebrae": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_11082024.zip",
@@ -297,7 +304,8 @@ MODELS = {
             26: "hip_left",
             27: "hip_right",
             28: "sacrum"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_cardiac": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac_09082024.zip",
@@ -322,7 +330,8 @@ MODELS = {
             11: "inferior_vena_cava",
             12: "portal_splenic_vein",
             13: "pulmonary_artery"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_digestive": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
@@ -341,7 +350,8 @@ MODELS = {
             5: "colon",
             6: "urinary_bladder",
             7: "face"
-        }
+        },
+        "limit_fov": None
     },
     "preclin_ct_legs": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
@@ -355,7 +365,8 @@ MODELS = {
         "organ_indices": {
             1: "right_leg_muscle",
             2: "left_leg_muscle"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_all_bones_v1": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
@@ -387,7 +398,8 @@ MODELS = {
             18: "tibia",
             19: "toes",
             20: "ulna"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_PUMA": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA_1k_23052024.zip",
@@ -423,7 +435,8 @@ MODELS = {
             21: "Skeleton",
             22: "Muscles",
             23: "Bladder"
-        }
+        },
+        "limit_fov": None
     },
     "clin_pt_fdg_brain_v1": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_fdg_pt_brain_v1_17112023.zip",
@@ -519,12 +532,13 @@ MODELS = {
             81: "R-Pre-subgenual frontal cortex",
             82: "L-Superior temporal gyrus anterior part",
             83: "R-Superior temporal gyrus anterior part"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_ALPACA": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ALPACA.zip",
-        "filename": "Dataset080_ALPACA.zip",
-        "directory": "Dataset080_ALPACA",
+        "filename": "Dataset080_Alpaca.zip",
+        "directory": "Dataset080_Alpaca",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
         "multilabel_prefix": "Clin_CT_ALPACA_",
@@ -537,7 +551,8 @@ MODELS = {
             4: "iliac_artery_left",
             5: "iliac_artery_right",
             6: "aorta"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_PUMA4": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
@@ -568,7 +583,8 @@ MODELS = {
             16: "Muscles",
             17: "Bladder",
             18: "Filler"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_liver_segments": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_liver_segments_02092024.zip",
@@ -588,6 +604,12 @@ MODELS = {
             6: "segment_VI",
             7: "segment_VII",
             8: "segment_VIII"
+        },
+        "limit_fov": {
+            "model_to_crop_from": "clin_ct_fast_organs",
+            "inference_fov_intensities": 8,
+            "label_intensity_to_crop_from": 8,
+            "largest_component_only": False
         }
     },
     "clin_ct_fast_organs": {
@@ -619,7 +641,8 @@ MODELS = {
             17: "thyroid_left",
             18: "thyroid_right",
             19: "trachea"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_aorta": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_aorta_02092024.zip",
@@ -654,12 +677,19 @@ MODELS = {
             21: "left_internal_iliac_artery",
             22: "right_external_iliac_artery",
             23: "left_external_iliac_artery"
+        },
+        "limit_fov": {
+            "model_to_crop_from": "clin_ct_cardiac",
+            "inference_fov_intensities": 6,
+            "label_intensity_to_crop_from": 6,
+            "largest_component_only": False
         }
     },
     "clin_pt_fdg_tumor": {
         "organ_indices": {
             1: "tumor"
-        }
+        },
+        "limit_fov": None
     },
     "clin_ct_body_composition": {
         "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_composition_05092024.zip",
@@ -671,10 +701,16 @@ MODELS = {
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans",
         "organ_indices": {
-            1: "skeletal_muscle",
-            2: "subcutaneous_fat",
-            3: "visceral_fat"
+                1: "skeletal_muscle",
+                2: "subcutaneous_fat",
+                3: "visceral_fat"
             }
+        },
+        "limit_fov": {
+            "model_to_crop_from": "clin_ct_vertebrae",
+            "inference_fov_intensities": [20, 24],
+            "label_intensity_to_crop_from": 22,
+            "largest_component_only": True
         }
     # More dictionaries for other models...
 }
@@ -756,9 +792,3 @@ def check_device() -> str:
     else:
         print(" CUDA/MPS not available. Predictions will be run on CPU.")
         return "cpu"
-
-
-def check_cropping(model_name: str) -> bool:
-    if model_name in constants.LIMIT_FOV_WORKFLOWS.keys():
-        return True
-    return False
