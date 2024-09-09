@@ -22,7 +22,6 @@ import shutil
 import sys
 from datetime import datetime
 from multiprocessing import Pool
-
 from moosez import constants
 
 
@@ -69,35 +68,24 @@ def get_files(directory: str, wildcard: str) -> list[str]:
     return files
 
 
-def moose_folder_structure(parent_directory: str, model_name: str, modalities: list[str]) -> tuple[str, list[str], str, str]:
+def moose_folder_structure(parent_directory: str) -> tuple[str, str, str]:
     """
     Creates the moose folder structure.
     
     :param parent_directory: The path to the parent directory.
     :type parent_directory: str
     
-    :param model_name: The name of the model.
-    :type model_name: str
-    
-    :param modalities: The list of modalities.
-    :type modalities: list
-    
     :return: A tuple containing the paths to the moose directory, input directories, output directory, and stats directory.
     :rtype: tuple
     """
-    moose_dir = os.path.join(parent_directory,
-                             'moosez-' + model_name + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
+    moose_dir = os.path.join(parent_directory, 'moosez-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     create_directory(moose_dir)
-    input_dirs = []
-    for modality in modalities:
-        input_dirs.append(os.path.join(moose_dir, modality))
-        create_directory(input_dirs[-1])
 
-    output_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
+    segmentation_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
     stats_dir = os.path.join(moose_dir, constants.STATS_FOLDER)
-    create_directory(output_dir)
+    create_directory(segmentation_dir)
     create_directory(stats_dir)
-    return moose_dir, input_dirs, output_dir, stats_dir
+    return moose_dir, segmentation_dir, stats_dir
 
 
 def copy_file(file: str, destination: str) -> None:

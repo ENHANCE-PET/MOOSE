@@ -758,7 +758,7 @@ def check_device() -> str:
         return "cpu"
 
 
-def check_cropping(model_name):
+def check_cropping(model_name: str) -> bool:
     if model_name in constants.LIMIT_FOV_WORKFLOWS.keys():
         return True
     return False

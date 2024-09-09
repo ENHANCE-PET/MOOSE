@@ -50,7 +50,7 @@ def logo():
     print(' ')
     logo_color_code = constants.ANSI_VIOLET
     slogan_color_code = constants.ANSI_VIOLET
-    result = logo_color_code + pyfiglet.figlet_format(" MOOSE 2.0", font="smslant").rstrip() + "\033[0m"
+    result = logo_color_code + pyfiglet.figlet_format(" MOOSE 3.0", font="smslant").rstrip() + "\033[0m"
     text = slogan_color_code + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of " \
                                "PET imaging together." + "\033[0m"
     print(result)

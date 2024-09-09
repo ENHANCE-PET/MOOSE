@@ -21,11 +21,10 @@ import dask.array as da
 import dask
 import sys
 import torch
-import SimpleITK
 import numpy as np
 from moosez import constants
 from moosez import image_processing
-from moosez.resources import MODELS, check_device
+from moosez.resources import MODELS, AVAILABLE_MODELS, check_device
 
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
@@ -119,11 +118,17 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model_name: str, acc
             sys.stdout = old_stdout
 
 
-def prediction_pipeline(image: SimpleITK.Image, model_name: str, accelerator: str):
+def construct_prediction_routine(models: str | list[str]) -> dict[tuple, list[str]]:
+    if isinstance(models, str):
+        models = [models]
 
-    desired_spacing = MODELS[model_name]["voxel_spacing"]
-    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
-                                                                                          desired_spacing)
+    prediction_routine = {}
+    for model in models:
+        if model in AVAILABLE_MODELS:
+            model_spacing = tuple(MODELS[model]["voxel_spacing"])
+            if model_spacing in prediction_routine:
+                prediction_routine[model_spacing].append(model)
+            else:
+                prediction_routine[model_spacing] = [model]
 
-    segmentation_array = predict_from_array_by_iterator(resampled_array, model_name, accelerator)
-    return segmentation_array
+    return prediction_routine
