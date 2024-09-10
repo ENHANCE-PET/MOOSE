@@ -587,12 +587,12 @@ MODELS = {
         "limit_fov": None
     },
     "clin_ct_liver_segments": {
-        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_liver_segments_02092024.zip",
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_liver_segments_10092024.zip",
         "filename": "Dataset134_Couinaud.zip",
         "directory": "Dataset134_Couinaud",
-        "trainer": "nnUNetTrainer_2000epochs",
-        "voxel_spacing": [5.0, 0.7753905057907104, 0.7753905057907104],
-        "multilabel_prefix": "Clin_CT_liver_segments",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [1.5, 1.5, 1.5],
+        "multilabel_prefix": "Clin_CT_liver_segments_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans",
         "organ_indices": {
@@ -618,7 +618,7 @@ MODELS = {
         "directory": "Dataset145_Fast_organs",
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [6, 6, 6],
-        "multilabel_prefix": "Clin_CT_fast_organs",
+        "multilabel_prefix": "Clin_CT_fast_organs_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans",
         "organ_indices": {
@@ -650,7 +650,7 @@ MODELS = {
         "directory": "Dataset321_Aorta",
         "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "Clin_CT_aorta",
+        "multilabel_prefix": "Clin_CT_aorta_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans",
         "organ_indices": {
@@ -679,7 +679,7 @@ MODELS = {
             23: "left_external_iliac_artery"
         },
         "limit_fov": {
-            "model_to_crop_from": "clin_ct_cardiac",
+            "model_to_crop_from": "clin_ct_fast_cardiac",
             "inference_fov_intensities": 6,
             "label_intensity_to_crop_from": 6,
             "largest_component_only": False
@@ -697,21 +697,90 @@ MODELS = {
         "directory": "Dataset778_Body_composition",
         "trainer": "nnUNetTrainer_2000epochs",
         "voxel_spacing": [1.5, 1.5, 1.5],
-        "multilabel_prefix": "Clin_CT_body_composition",
+        "multilabel_prefix": "Clin_CT_body_composition_",
         "configuration": "3d_fullres",
         "planner": "nnUNetPlans",
         "organ_indices": {
                 1: "skeletal_muscle",
                 2: "subcutaneous_fat",
                 3: "visceral_fat"
-            }
         },
         "limit_fov": {
-            "model_to_crop_from": "clin_ct_vertebrae",
+            "model_to_crop_from": "clin_ct_fast_vertebrae",
             "inference_fov_intensities": [20, 24],
             "label_intensity_to_crop_from": 22,
             "largest_component_only": True
         }
+    },
+    "clin_ct_fast_vertebrae": {
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae3_10092024.zip",
+        "filename": "Dataset112_FastVertebrae.zip",
+        "directory": "Dataset112_FastVertebrae",
+        "trainer": "nnUNetTrainer_2000_epochs_DA5NoMirroring",
+        "voxel_spacing": [3, 3, 3],
+        "multilabel_prefix": "Clin_CT_fast_vertebrae_",
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans",
+        "organ_indices": {
+            1: "vertebra_C1",
+            2: "vertebra_C2",
+            3: "vertebra_C3",
+            4: "vertebra_C4",
+            5: "vertebra_C5",
+            6: "vertebra_C6",
+            7: "vertebra_C7",
+            8: "vertebra_T1",
+            9: "vertebra_T2",
+            10: "vertebra_T3",
+            11: "vertebra_T4",
+            12: "vertebra_T5",
+            13: "vertebra_T6",
+            14: "vertebra_T7",
+            15: "vertebra_T8",
+            16: "vertebra_T9",
+            17: "vertebra_T10",
+            18: "vertebra_T11",
+            19: "vertebra_T12",
+            20: "vertebra_L1",
+            21: "vertebra_L2",
+            22: "vertebra_L3",
+            23: "vertebra_L4",
+            24: "vertebra_L5",
+            25: "vertebra_L6",
+            26: "hip_left",
+            27: "hip_right",
+            28: "sacrum"
+            },
+        "limit_fov": None
+        },
+    "clin_ct_fast_cardiac": {
+        "url": "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac3_10092024.zip",
+        "filename": "Dataset890_FastCardiac.zip",
+        "directory": "Dataset890_FastCardiac",
+        "trainer": "nnUNetTrainer_2000epochs_NoMirroring",
+        "voxel_spacing": [3, 3, 3],
+        "multilabel_prefix": "CT_Fast_Cardiac_",
+        "configuration": "3d_fullres",
+        "planner": "nnUNetPlans",
+        "organ_indices": {
+            1: "heart_myocardium",
+            2: "heart_atrium_left",
+            3: "heart_atrium_right",
+            4: "heart_ventricle_left",
+            5: "heart_ventricle_right",
+            6: "aorta",
+            7: "iliac_artery_left",
+            8: "iliac_artery_right",
+            9: "iliac_vena_left",
+            10: "iliac_vena_right",
+            11: "inferior_vena_cava",
+            12: "portal_splenic_vein",
+            13: "pulmonary_artery"
+        },
+        "limit_fov": None
+    }
+
+
     # More dictionaries for other models...
 }
 

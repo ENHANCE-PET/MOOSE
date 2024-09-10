@@ -206,22 +206,7 @@ def main():
                 segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, nnunet_log_filename)
 
                 if len(routine) > 1:
-                    model = routine[1]
-                    model_fov_information = resources.MODELS[model]["limit_fov"]
-                    limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array, segmentation_array, model_fov_information["inference_fov_intensities"])
-
-                    cropped_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
-                    cropped_image.SetOrigin(image.GetOrigin())
-                    cropped_image.SetSpacing(MODELS[model]["voxel_spacing"])
-                    cropped_image.SetDirection(image.GetDirection())
-
-                    desired_spacing = MODELS[model]["voxel_spacing"]
-                    resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(cropped_image, 'bspline', desired_spacing)
-                    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, nnunet_log_filename)
-
-                    expanded_segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-                    limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array, segmentation_array, model_fov_information["label_intensity_to_crop_from"], model_fov_information["largest_component_only"])
-                    segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+                    model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelerator, nnunet_log_filename)
 
                 segmentation = SimpleITK.GetImageFromArray(segmentation_array)
                 segmentation.SetSpacing(desired_spacing)
@@ -339,25 +324,9 @@ def moose(file_path: str, model_names: str | list[str], output_dir: str = None, 
             segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, os.devnull)
 
             if len(routine) > 1:
-                model = routine[1]
-                model_fov_information = resources.MODELS[model]["limit_fov"]
-                limited_fov_image_array, original_fov_info = image_processing.limit_fov(resampled_array, segmentation_array, model_fov_information["inference_fov_intensities"])
-
-                cropped_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
-                cropped_image.SetOrigin(image.GetOrigin())
-                cropped_image.SetSpacing(MODELS[model]["voxel_spacing"])
-                cropped_image.SetDirection(image.GetDirection())
-
-                desired_spacing = MODELS[model]["voxel_spacing"]
-                resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(cropped_image, 'bspline', desired_spacing)
-                limited_fov_segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, os.devnull)
-
-                expanded_segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-                limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(
-                    expanded_segmentation_array, segmentation_array,
-                    model_fov_information["label_intensity_to_crop_from"],
-                    model_fov_information["largest_component_only"])
-                segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+                model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array,
+                                                                                             routine, accelerator,
+                                                                                             nnunet_log_filename)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
