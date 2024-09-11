@@ -326,7 +326,7 @@ def moose(file_path: str, model_names: str | list[str], output_dir: str = None, 
             if len(routine) > 1:
                 model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array,
                                                                                              routine, accelerator,
-                                                                                             nnunet_log_filename)
+                                                                                             os.devnull)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
