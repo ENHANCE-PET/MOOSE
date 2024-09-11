@@ -17,6 +17,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 import os
 
+from sympy.stats.sampling.sample_numpy import numpy
+
 os.environ["nnUNet_raw"] = ""
 os.environ["nnUNet_preprocessed"] = ""
 os.environ["nnUNet_results"] = ""
@@ -206,6 +208,15 @@ def main():
                 segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, nnunet_log_filename)
 
                 if len(routine) > 1:
+                    inference_fov_intensities = MODELS[routine[1]]["limit_fov"]["inference_fov_intensities"]
+                    if isinstance(inference_fov_intensities, int):
+                        inference_fov_intensities = [inference_fov_intensities]
+
+                    existing_intensities = numpy.unique(segmentation_array)
+                    if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
+                        print("Organ to crop from not in initial FOV.")
+                        continue
+
                     model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelerator, nnunet_log_filename)
 
                 segmentation = SimpleITK.GetImageFromArray(segmentation_array)
@@ -226,16 +237,32 @@ def main():
         logging.info(f' [{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {len(model_names)} models: {", ".join(model_names)}!' 
                      f' | Elapsed time: {round(elapsed_time / 60, 1)} min')
 
-        # ----------------------------------
-        # EXTRACT PET ACTIVITY
-        # ----------------------------------
+
         pet_file = file_utilities.find_pet_file(subject)
         for model_name in model_names:
+            # ----------------------------------
+            # EXTRACT VOLUME STATISTICS
+            # ----------------------------------
+            multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))
+            if not multilabel_file:
+                spinner.text = f'[{i + 1}/{num_subjects}] Can not extract statistics for {os.path.basename(subject)} ({model_name})...'
+                continue
+
+            spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {os.path.basename(subject)} ({model_name})...'
+            multilabel_file = multilabel_file[0]
+            multilabel_image = SimpleITK.ReadImage(multilabel_file)
+            out_csv = os.path.join(stats_dir, MODELS[model_name]["multilabel_prefix"] + os.path.basename(subject) + '_ct_volume.csv')
+            image_processing.get_shape_statistics(multilabel_image, model_name, out_csv)
+            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
+                           f'{constants.ANSI_RESET}'
+            time.sleep(1)
+
+            # ----------------------------------
+            # EXTRACT PET ACTIVITY
+            # ----------------------------------
             if pet_file is not None:
                 pet_image = SimpleITK.ReadImage(pet_file)
                 spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {os.path.basename(subject)} ({model_name})...'
-                multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
-                multilabel_image = SimpleITK.ReadImage(multilabel_file)
                 resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
                                                                              moving_image=multilabel_image,
                                                                              is_label_image=True)
@@ -244,18 +271,6 @@ def main():
                 spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {os.path.basename(subject)}! ' \
                                f'{constants.ANSI_RESET}'
                 time.sleep(3)
-
-            # ----------------------------------
-            # EXTRACT VOLUME STATISTICS
-            # ----------------------------------
-            spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {os.path.basename(subject)} ({model_name})...'
-            multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))[0]
-            multilabel_image = SimpleITK.ReadImage(multilabel_file)
-            out_csv = os.path.join(stats_dir, MODELS[model_name]["multilabel_prefix"] + os.path.basename(subject) + '_ct_volume.csv')
-            image_processing.get_shape_statistics(multilabel_image, model_name, out_csv)
-            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
-                           f'{constants.ANSI_RESET}'
-            time.sleep(1)
 
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
