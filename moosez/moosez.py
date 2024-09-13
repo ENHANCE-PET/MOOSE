@@ -192,33 +192,31 @@ def main():
             logging.info(f' - Resampling at {"x".join(map(str,desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
 
             for model_sequence in model_sequences:
-                for model in model_sequence:
-                    model_time_start = time.time()
-                    spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model}...'
-                    logging.info(f' - Model {model}')
-                    segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, nnunet_log_filename)
+                model_time_start = time.time()
+                spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model_sequence[0]}...'
+                logging.info(f' - Model {model_sequence[0]}')
+                segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_sequence[0], accelerator, nnunet_log_filename)
 
-                    if len(model_sequence) > 1:
-                        inference_fov_intensities = model_sequence[1].limit_fov["inference_fov_intensities"]
-                        if isinstance(inference_fov_intensities, int):
-                            inference_fov_intensities = [inference_fov_intensities]
+                if len(model_sequence) == 2:
+                    inference_fov_intensities = model_sequence[1].limit_fov["inference_fov_intensities"]
+                    if isinstance(inference_fov_intensities, int):
+                        inference_fov_intensities = [inference_fov_intensities]
 
-                        existing_intensities = numpy.unique(segmentation_array)
-                        if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
-                            print("Organ to crop from not in initial FOV.")
-                            break
+                    existing_intensities = numpy.unique(segmentation_array)
+                    if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
+                        print("Organ to crop from not in initial FOV.")
 
-                        model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, model_sequence, accelerator, nnunet_log_filename)
+                    model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, model_sequence, accelerator, nnunet_log_filename)
 
-                    segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-                    segmentation.SetSpacing(desired_spacing)
-                    segmentation.SetOrigin(image.GetOrigin())
-                    segmentation.SetDirection(image.GetDirection())
-                    resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
+                segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+                segmentation.SetSpacing(desired_spacing)
+                segmentation.SetOrigin(image.GetOrigin())
+                segmentation.SetDirection(image.GetDirection())
+                resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
 
-                    segmentation_image_path = os.path.join(segmentations_dir, f"{model_sequence.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz")
-                    SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
-                    logging.info(f"   - Prediction complete for {model} within {round((time.time() - model_time_start)/ 60, 1)} min.")
+                segmentation_image_path = os.path.join(segmentations_dir, f"{model_sequence.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz")
+                SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
+                logging.info(f"   - Prediction complete for {model} within {round((time.time() - model_time_start)/ 60, 1)} min.")
 
         end_time = time.time()
         elapsed_time = end_time - start_time
