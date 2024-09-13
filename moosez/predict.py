@@ -16,36 +16,31 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import os
 import dask.array as da
 import dask
 import sys
 import torch
 import numpy as np
-from moosez import constants
+from moosez import models
 from moosez import image_processing
-from moosez.resources import MODELS, AVAILABLE_MODELS, check_device
+from moosez.resources import check_device
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
 
-def initialize_predictor(model_name: str, accelerator: str) -> nnUNetPredictor:
+def initialize_predictor(model: models.Model, accelerator: str) -> nnUNetPredictor:
     """
     Initializes the model for prediction.
 
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model: The model object.
+    :type model: Model
     :param accelerator: The accelerator for prediction.
-    :type model_name: str
+    :type accelerator: str
     :return: The initialized predictor object.
     :rtype: nnUNetPredictor
     """
-    model_folder_name = MODELS[model_name]["directory"]
-    trainer = MODELS[model_name]["trainer"]
-    configuration = MODELS[model_name]["configuration"]
-    planner = MODELS[model_name]["planner"]
     device = torch.device(accelerator)
     predictor = nnUNetPredictor(allow_tqdm=False, device=device)
-    predictor.initialize_from_trained_model_folder(os.path.join(constants.NNUNET_RESULTS_FOLDER, model_folder_name, f"{trainer}__{planner}__{configuration}"), use_folds=("all", ))
+    predictor.initialize_from_trained_model_folder(model.configuration_directory, use_folds=("all",))
     return predictor
 
 
@@ -91,7 +86,7 @@ def reconstruct_array_from_chunks(chunks: list[np.ndarray], chunk_positions: lis
     return np.squeeze(reconstructed_array)
 
 
-def predict_from_array_by_iterator(image_array: np.ndarray, model_name: str, accelerator: str = None, nnunet_log_filename: str = None):
+def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model, accelerator: str = None, nnunet_log_filename: str = None):
     image_array = image_array[None, ...]
     chunks = [axis / image_processing.ImageResampler.chunk_along_axis(axis) for axis in image_array.shape]
     prediction_array = da.from_array(image_array, chunks=chunks)
@@ -107,9 +102,9 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model_name: str, acc
         if accelerator is None:
             accelerator = check_device()
 
-        predictor = initialize_predictor(model_name, accelerator)
+        predictor = initialize_predictor(model, accelerator)
         image_properties = {
-            'spacing': MODELS[model_name]["voxel_spacing"]
+            'spacing': model.voxel_spacing
         }
 
         iterator, chunk_locations = preprocessing_iterator_from_dask_array(prediction_array, image_properties, predictor)
@@ -123,28 +118,3 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model_name: str, acc
         sys.stderr = original_stderr
         if nnunet_log_filename is not None:
             nnunet_log_file.close()
-
-
-def construct_prediction_routines(desired_models: str | list[str]) -> dict[tuple, list[list[str]]]:
-    if isinstance(desired_models, str):
-        desired_models = [desired_models]
-
-    prediction_routines = {}
-    for desired_model in desired_models:
-        model_routine = []
-        if desired_model in AVAILABLE_MODELS:
-            model_spacing = tuple(MODELS[desired_model]["voxel_spacing"])
-
-            if MODELS[desired_model]["limit_fov"]:
-                model_to_crop_from = MODELS[desired_model]["limit_fov"]["model_to_crop_from"]
-                model_routine.append(model_to_crop_from)
-                model_spacing = tuple(MODELS[model_to_crop_from]["voxel_spacing"])
-
-            model_routine.append(desired_model)
-
-            if model_spacing in prediction_routines:
-                prediction_routines[model_spacing].append(model_routine)
-            else:
-                prediction_routines[model_spacing] = [model_routine]
-
-    return prediction_routines
