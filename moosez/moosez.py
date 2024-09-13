@@ -206,7 +206,7 @@ def main():
                         existing_intensities = numpy.unique(segmentation_array)
                         if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
                             print("Organ to crop from not in initial FOV.")
-                            continue
+                            break
 
                         model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, model_sequence, accelerator, nnunet_log_filename)
 
