@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Author: Lalith Kumar Shiyam Sundar
+# Author: Lalith Kumar Shyam Sundar
 # Institution: Medical University of Vienna
 # Research Group: Quantitative Imaging and Medical Physics (QIMP) Team
 # Date: 13.02.2023
@@ -19,7 +19,6 @@
 import glob
 import os
 import shutil
-import sys
 from datetime import datetime
 from multiprocessing import Pool
 from moosez import constants
@@ -34,18 +33,6 @@ def create_directory(directory_path: str) -> None:
     """
     if not os.path.isdir(directory_path):
         os.makedirs(directory_path)
-
-
-def get_virtual_env_root() -> str:
-    """
-    Returns the root directory of the virtual environment.
-    
-    :return: The root directory of the virtual environment.
-    :rtype: str
-    """
-    python_exe = sys.executable
-    virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
-    return virtual_env_root
 
 
 def get_files(directory: str, wildcard: str) -> list[str]:
@@ -75,7 +62,7 @@ def moose_folder_structure(parent_directory: str) -> tuple[str, str, str]:
     :param parent_directory: The path to the parent directory.
     :type parent_directory: str
     
-    :return: A tuple containing the paths to the moose directory, input directories, output directory, and stats directory.
+    :return: A tuple containing the paths to the moose directory, output directory, and stats directory.
     :rtype: tuple
     """
     moose_dir = os.path.join(parent_directory, 'moosez-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))

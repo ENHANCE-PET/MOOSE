@@ -6,9 +6,9 @@ import logging
 from rich.console import Console
 from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
 
-from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, MODELS_DIRECTORY_PATH, DEFAULT_SPACING,
+from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING,
                               FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
-from moosez.resources import MODELS
+from moosez.resources import MODELS, MODELS_DIRECTORY_PATH
 
 
 class Model:

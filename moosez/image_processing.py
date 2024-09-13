@@ -25,9 +25,10 @@ import scipy.ndimage as ndimage
 from moosez.constants import CHUNK_THRESHOLD
 from moosez.resources import MODELS
 from moosez import predict
+from moosez import models
 
 
-def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model_name: str, out_csv: str) -> None:
+def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
     """
     Get the intensity statistics of a NIFTI image file.
 
@@ -35,8 +36,8 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     :type image: sitk.Image
     :param mask_image: The multilabel mask image.
     :type mask_image: sitk.Image
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model: The model.
+    :type model: Model
     :param out_csv: The path to the output CSV file.
     :type out_csv: str
     :return: None
@@ -50,7 +51,7 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = MODELS[model_name]["organ_indices"]
+    organ_indices_dict = model.organ_indices
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
@@ -60,14 +61,14 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     stats_df.to_csv(out_csv)
 
 
-def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: str) -> None:
+def get_shape_statistics(mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
     """
     Get the shape statistics of a NIFTI image file.
 
     :param mask_image: The multilabel mask image.
     :type mask_image: sitk.Image
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model: The model.
+    :type model: Model
     :param out_csv: The path to the output CSV file.
     :type out_csv: str
     :return: None
@@ -83,7 +84,7 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: 
 
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = MODELS[model_name]["organ_indices"]
+    organ_indices_dict = model.organ_indices
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
@@ -132,9 +133,9 @@ def largest_connected_component(segmentation_array, intensities):
     - intensities: A single intensity or a list of intensities for which the largest component(s) should be extracted.
 
     Returns:
-    - largest_components_multilabel: A multilabel array of the same shape as `segmentation_array`,
-      where the largest connected component(s) of the specified intensity or intensities retain their original intensity,
-      and all other areas are 0.
+    - largest_components_multilabel: A multilabel array of the same shape as `segmentation_array`, where the largest
+      connected component(s) of the specified intensity or intensities retain their original intensity, and all other
+      areas are 0.
     """
 
     # Ensure intensities is a list (even if only one intensity is provided)
@@ -169,14 +170,15 @@ def largest_connected_component(segmentation_array, intensities):
 
     return largest_components_multilabel
 
-def cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelerator, nnunet_log_filename):
+
+def cropped_fov_prediction_pipeline(image, segmentation_array, routine: models.ModelSequence, accelerator, nnunet_log_filename):
     """
     Process segmentation by resampling, limiting FOV, and predicting.
 
     Parameters:
         image (SimpleITK.Image): The input image.
         segmentation_array (np.array): The segmentation array to be processed.
-        routine (list): List of routines where the second element contains model info.
+        routine (models.ModelSequence): List of routines where the second element contains model info.
         accelerator (any): The accelerator used for prediction.
         nnunet_log_filename (str): Path to the nnunet log file.
 
@@ -188,7 +190,7 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelera
     second_model = routine[1]
     model_fov_information = MODELS[second_model]["limit_fov"]
 
-    # Convert segmentation array to SimpleITK image and set properties
+    # Convert the segmentation array to SimpleITK image and set properties
     to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
     to_crop_segmentation.SetOrigin(image.GetOrigin())
     to_crop_segmentation.SetSpacing(MODELS[routine[0]]["voxel_spacing"])
@@ -219,7 +221,6 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelera
     to_write_image.SetSpacing(desired_spacing)
     to_write_image.SetDirection(image.GetDirection())
 
-
     # Predict the limited FOV segmentation
     limited_fov_segmentation_array = predict.predict_from_array_by_iterator(
         limited_fov_image_array,
@@ -245,6 +246,7 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelera
     # Return the final model and segmentation array
     model = second_model
     return model, segmentation_array, desired_spacing
+
 
 class ImageResampler:
     @staticmethod
@@ -273,7 +275,7 @@ class ImageResampler:
         # Determine the maximum number of chunks that the axis can be split into
         split = axis // CHUNK_THRESHOLD
 
-        # Reduce the number of chunks until axis is evenly divisible by split
+        # Reduce the number of chunks until the axis is evenly divisible by split
         while axis % split != 0:
             split -= 1
 
@@ -302,8 +304,9 @@ class ImageResampler:
         sitk_image_chunk.SetSpacing(input_spacing)
 
         resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
-                                             interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
-                                             sitk_image_chunk.GetDirection(), 0.0, sitk_image_chunk.GetPixelIDValue())
+                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
+                                                  sitk_image_chunk.GetDirection(), 0.0,
+                                                  sitk_image_chunk.GetPixelIDValue())
 
         resampled_array = SimpleITK.GetArrayFromImage(resampled_sitk_image)
         return resampled_array
@@ -404,7 +407,7 @@ class ImageResampler:
     @staticmethod
     def resample_segmentation(reference_image: SimpleITK.Image, segmentation_image: SimpleITK.Image):
         resampled_sitk_image = SimpleITK.Resample(segmentation_image, reference_image.GetSize(), SimpleITK.Transform(),
-                                             SimpleITK.sitkNearestNeighbor,
-                                             reference_image.GetOrigin(), reference_image.GetSpacing(),
-                                             reference_image.GetDirection(), 0.0, segmentation_image.GetPixelIDValue())
+                                                  SimpleITK.sitkNearestNeighbor, reference_image.GetOrigin(),
+                                                  reference_image.GetSpacing(), reference_image.GetDirection(), 0.0,
+                                                  segmentation_image.GetPixelIDValue())
         return resampled_sitk_image

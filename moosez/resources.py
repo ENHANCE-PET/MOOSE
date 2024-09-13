@@ -3,6 +3,8 @@
 
 import logging
 import torch
+import os
+import sys
 from moosez.constants import KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -224,12 +226,6 @@ def expected_modality(model_name: str) -> dict:
     return {"Error": "Requested model is not available. Please check the model name."}
 
 
-# This function maps the model name to the task number. This is the number that comes after Dataset in DatasetXXXX,
-# after nnunetv2 training. If your model folder is Dataset123, then the task number is 123.
-# It checks for known model names and returns the associated task number, this is ABSOLUTELY NEEDED for the moosez to
-# work. If the provided model name doesn't match any known model, it raises an exception.
-
-
 def check_device() -> str:
     """
     This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
@@ -252,3 +248,19 @@ def check_device() -> str:
     else:
         print(" CUDA/MPS not available. Predictions will be run on CPU.")
         return "cpu"
+
+
+def get_virtual_env_root() -> str:
+    """
+    Returns the root directory of the virtual environment.
+
+    :return: The root directory of the virtual environment.
+    :rtype: str
+    """
+    python_exe = sys.executable
+    virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
+    return virtual_env_root
+
+
+ENVIRONMENT_ROOT_PATH: str = get_virtual_env_root()
+MODELS_DIRECTORY_PATH: str = os.path.join(ENVIRONMENT_ROOT_PATH, 'models', 'nnunet_trained_models')

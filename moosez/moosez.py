@@ -89,7 +89,7 @@ def main():
 
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                         filename=os.path.join(parent_folder, datetime.now().strftime('moosez-v.3.0.0_%H-%M-%d-%m-%Y.log')), filemode='w')
-    nnunet_log_filename = os.path.join(parent_folder,datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
+    nnunet_log_filename = os.path.join(parent_folder, datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
 
     display.logo()
     display.citation()
@@ -120,7 +120,7 @@ def main():
     print('')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     print('')
-    model_path = constants.MODELS_DIRECTORY_PATH
+    model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine, target_models = models.construct_model_routine(model_names)
 
@@ -228,7 +228,6 @@ def main():
         logging.info(f' [{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {len(model_names)} models: {", ".join(model_names)}!' 
                      f' | Elapsed time: {round(elapsed_time / 60, 1)} min')
 
-
         pet_file = file_utilities.find_pet_file(subject)
         for model in target_models:
             # ----------------------------------
@@ -243,7 +242,7 @@ def main():
             multilabel_file = multilabel_file[0]
             multilabel_image = SimpleITK.ReadImage(multilabel_file)
             out_csv = os.path.join(stats_dir, model.multilabel_prefix + os.path.basename(subject) + '_ct_volume.csv')
-            image_processing.get_shape_statistics(multilabel_image, model.model_identifier, out_csv)
+            image_processing.get_shape_statistics(multilabel_image, model, out_csv)
             spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
                            f'{constants.ANSI_RESET}'
             time.sleep(1)
@@ -258,7 +257,7 @@ def main():
                                                                              moving_image=multilabel_image,
                                                                              is_label_image=True)
                 out_csv = os.path.join(stats_dir, model.multilabel_prefix + os.path.basename(subject) + '_pet_activity.csv')
-                image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model.model_identifier, out_csv)
+                image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model, out_csv)
                 spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {os.path.basename(subject)}! ' \
                                f'{constants.ANSI_RESET}'
                 time.sleep(3)
@@ -312,7 +311,7 @@ def moose(file_path: str, model_names: str | list[str], output_dir: str = None, 
     if isinstance(model_names, str):
         model_names = [model_names]
 
-    model_path = constants.MODELS_DIRECTORY_PATH
+    model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
 
     model_routine, target_models = models.construct_model_routine(model_names)
@@ -325,9 +324,9 @@ def moose(file_path: str, model_names: str | list[str], output_dir: str = None, 
             segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, os.devnull)
 
             if len(routine) > 1:
-                model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array,
-                                                                                             routine, accelerator,
-                                                                                             os.devnull)
+                model, segmentation_array, desired_spacing = (
+                    image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelerator,
+                                                                     os.devnull))
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
