@@ -187,17 +187,18 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine: models.M
         segmentation_array (np.array): The final processed segmentation array.
     """
     # Get the second model from the routine
-    second_model = routine[1]
-    model_fov_information = MODELS[second_model]["limit_fov"]
+    model_to_crop_from = routine[0]
+    target_model = routine[1]
+    target_model_fov_information = target_model.limit_fov
 
     # Convert the segmentation array to SimpleITK image and set properties
     to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
     to_crop_segmentation.SetOrigin(image.GetOrigin())
-    to_crop_segmentation.SetSpacing(MODELS[routine[0]]["voxel_spacing"])
+    to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
     to_crop_segmentation.SetDirection(image.GetDirection())
 
     # Resample the image using the desired spacing
-    desired_spacing = MODELS[second_model]["voxel_spacing"]
+    desired_spacing = target_model.voxel_spacing
     to_crop_image_array = ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
     to_crop_image = SimpleITK.GetImageFromArray(to_crop_image_array)
     to_crop_image.SetOrigin(image.GetOrigin())
@@ -210,11 +211,8 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine: models.M
     resampled_to_crop_segmentation_array = SimpleITK.GetArrayFromImage(resampled_to_crop_segmentation)
 
     # Limit FOV based on model information
-    limited_fov_image_array, original_fov_info = limit_fov(
-        to_crop_image_array,
-        resampled_to_crop_segmentation_array,
-        model_fov_information["inference_fov_intensities"]
-    )
+    limited_fov_image_array, original_fov_info = limit_fov(to_crop_image_array, resampled_to_crop_segmentation_array,
+                                                           target_model_fov_information["inference_fov_intensities"])
 
     to_write_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
     to_write_image.SetOrigin(image.GetOrigin())
@@ -222,30 +220,22 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine: models.M
     to_write_image.SetDirection(image.GetDirection())
 
     # Predict the limited FOV segmentation
-    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(
-        limited_fov_image_array,
-        second_model,
-        accelerator,
-        nnunet_log_filename
-    )
+    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(limited_fov_image_array, target_model,
+                                                                            accelerator, nnunet_log_filename)
 
     # Expand the segmentation to the original FOV
     expanded_segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
     # Limit the FOV again based on label intensities and largest component condition
-    limited_fov_segmentation_array, original_fov_info = limit_fov(
-        expanded_segmentation_array,
-        resampled_to_crop_segmentation_array,
-        model_fov_information["label_intensity_to_crop_from"],
-        model_fov_information["largest_component_only"]
-    )
+    limited_fov_segmentation_array, original_fov_info = limit_fov(expanded_segmentation_array, resampled_to_crop_segmentation_array,
+                                                                  target_model_fov_information["label_intensity_to_crop_from"],
+                                                                  target_model_fov_information["largest_component_only"])
 
     # Expand the segmentation array to the original FOV
     segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
     # Return the final model and segmentation array
-    model = second_model
-    return model, segmentation_array, desired_spacing
+    return target_model, segmentation_array, desired_spacing
 
 
 class ImageResampler:
