@@ -29,6 +29,7 @@ import SimpleITK
 import colorama
 import emoji
 import numpy
+import pandas as pd
 from halo import Halo
 from moosez import constants
 from moosez import display
@@ -42,8 +43,7 @@ from moosez import models
 from moosez.image_processing import ImageResampler
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
 from moosez.resources import AVAILABLE_MODELS
-
-from moosez.benchmarking.utilities import PerformanceObserver
+from moosez.benchmarking.benchmark import PerformanceObserver
 
 
 def main():
@@ -174,6 +174,8 @@ def main():
     spinner.start()
     start_total_time = time.time()
 
+    subject_performance_parameters = []
+
     for i, subject in enumerate(moose_compliant_subjects):
         # SETTING UP DIRECTORY STRUCTURE
         subject_name = os.path.basename(subject)
@@ -202,6 +204,7 @@ def main():
         image = SimpleITK.ReadImage(file_path)
         file_name = file_utilities.get_nifti_file_stem(file_path)
         pet_file = file_utilities.find_pet_file(subject)
+        performance_observer.metadata_image_size = image.GetSize()
         performance_observer.time_phase()
 
         for desired_spacing, model_workflows in model_routine.items():
@@ -287,6 +290,7 @@ def main():
             performance_observer.off()
             output_path = os.path.join(stats_dir, '')
             performance_observer.plot_performance(output_path)
+            subject_performance_parameters.append(performance_observer.get_peak_resources())
 
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
@@ -301,6 +305,11 @@ def main():
     logging.info(f'  - Number of Models:   {len(model_names)}')
     logging.info(f'  - Time (total):       {round(total_elapsed_time, 1)}min')
     logging.info(f'  - Time (per subject): {round(time_per_dataset, 2)}min')
+    if benchmark:
+        df = pd.DataFrame(subject_performance_parameters, columns=['Image', 'Model', 'Image Size', 'Runtime [s]', 'Peak Memory [GB]'])
+        csv_file_path = os.path.join(parent_folder, 'peak_performance_parameters.csv')
+        df.to_csv(csv_file_path, index=False)
+        logging.info(f'  - Resource utilization written to {csv_file_path}')
     logging.info('----------------------------------------------------------------------------------------------------')
     logging.info('                                     FINISHED MOOSE-Z V.3.0.0                                       ')
     logging.info('----------------------------------------------------------------------------------------------------')

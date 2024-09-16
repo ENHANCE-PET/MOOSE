@@ -6,6 +6,7 @@ import os
 import numpy
 import threading
 
+from typing_extensions import runtime
 
 colors = [
     (1, 1, 1),  # white
@@ -56,11 +57,11 @@ custom_cmap = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bins)
 
 
 class PerformanceObserver:
-    def __init__(self, image: str | None = None, model: str | None = None, interval: float = 0.1):
-        self.running = False
-        self.interval = interval
+    def __init__(self, image: str | None = None, model: str | None = None, polling_rate: float = 0.1):
+        self.monitoring = False
+        self.polling_rate = polling_rate
         self.monitoring_thread = None
-        self.process_start_time = None
+        self.monitoring_start_time = None
         self.total_runtime = None
 
         self.memory_timestamps = []
@@ -76,17 +77,16 @@ class PerformanceObserver:
         self.metadata_model = model
 
     def on(self):
-        self.running = True
-        self.process_start_time = time.time()
-        self.monitoring_thread = threading.Thread(target=self.__monitor_memory_usage, args=(self.interval,))
+        self.monitoring = True
+        self.monitoring_start_time = time.time()
+        self.monitoring_thread = threading.Thread(target=self.__monitor_memory_usage, args=(self.polling_rate,))
         self.monitoring_thread.start()
 
     def off(self):
-        self.running = False
+        self.monitoring = False
         if self.monitoring_thread is not None:
             self.monitoring_thread.join()
-        self.total_runtime = time.time() - self.process_start_time
-
+        self.total_runtime = time.time() - self.monitoring_start_time
 
     def __get_memory_usage_of_process_tree(self):
         parent = psutil.Process(os.getpid())
@@ -99,8 +99,8 @@ class PerformanceObserver:
         return memory_usage / (1024 * 1024)  # Convert to MB
 
     def __monitor_memory_usage(self, interval):
-        while self.running:
-            current_time = time.time() - self.process_start_time
+        while self.monitoring:
+            current_time = time.time() - self.monitoring_start_time
             current_memory_MB = self.__get_memory_usage_of_process_tree()
             current_memory_GB = current_memory_MB / 1024
             self.memory_timestamps.append(current_time)
@@ -109,18 +109,18 @@ class PerformanceObserver:
             time.sleep(interval)
 
     def record_phase(self, phase_name: str):
-        if self.running:
-            current_time = time.time() - self.process_start_time
+        if self.monitoring:
+            current_time = time.time() - self.monitoring_start_time
             self.phase_timestamps.append(current_time)
             self.phase_names.append(phase_name)
 
     def time_phase(self):
-        if self.running:
+        if self.monitoring:
             if not self.phase_names:
-                start_time = self.process_start_time
+                start_time = self.monitoring_start_time
             else:
                 start_time = self.phase_timestamps[-1]
-            runtime = (time.time() -  self.process_start_time) - start_time
+            runtime = (time.time() - self.monitoring_start_time) - start_time
             self.phase_runtimes.append(runtime)
 
     def plot_performance(self, path: str):
@@ -163,3 +163,21 @@ class PerformanceObserver:
         plt.tight_layout()
         plt.savefig(os.path.join(path, f'performance_plot.png'))
         plt.close()
+
+    def get_peak_resources(self) -> list:
+        image_name = os.path.basename(self.metadata_image)
+        model_name = self.metadata_model
+        if self.metadata_image_size is not None and isinstance(self.metadata_image_size, (list, tuple)):
+            image_size = "x".join(map(str, self.metadata_image_size))
+        else:
+            image_size = "unknown"
+        if self.total_runtime:
+            runtime = self.total_runtime
+        else:
+            runtime = 0
+        if self.memory_usage_GB:
+            memory_peak = max(self.memory_usage_GB)
+        else:
+            memory_peak = 0
+
+        return [image_name, model_name, image_size, runtime, memory_peak]
