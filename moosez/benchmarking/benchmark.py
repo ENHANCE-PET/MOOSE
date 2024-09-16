@@ -6,7 +6,6 @@ import os
 import numpy
 import threading
 
-from typing_extensions import runtime
 
 colors = [
     (1, 1, 1),  # white

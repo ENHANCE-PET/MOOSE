@@ -35,22 +35,25 @@ def create_directory(directory_path: str) -> None:
         os.makedirs(directory_path)
 
 
-def get_files(directory: str, wildcard: str) -> list[str]:
+def get_files(directory: str, prefix: str, suffix: str) -> list[str]:
     """
     Returns the list of files in the directory with the specified wildcard.
     
     :param directory: The directory path.
     :type directory: str
     
-    :param wildcard: The wildcard to be used.
-    :type wildcard: str
+    :param suffix: The wildcard to be used.
+    :type suffix: str
+
+    :param prefix: The wildcard to be used.
+    :type prefix: str
     
     :return: The list of files.
     :rtype: list
     """
     files = []
     for file in os.listdir(directory):
-        if file.endswith(wildcard):
+        if file.startswith(prefix) and file.endswith(suffix):
             files.append(os.path.join(directory, file))
     return files
 

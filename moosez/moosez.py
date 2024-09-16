@@ -200,7 +200,7 @@ def main():
         logging.info(' ')
 
         performance_observer.record_phase("Loading Image")
-        file_path = file_utilities.get_files(subject, '.nii.gz')[0]
+        file_path = file_utilities.get_files(subject, 'CT_', '.nii.gz')[0]
         image = SimpleITK.ReadImage(file_path)
         file_name = file_utilities.get_nifti_file_stem(file_path)
         pet_file = file_utilities.find_pet_file(subject)
@@ -257,7 +257,7 @@ def main():
                 image_processing.get_shape_statistics(resampled_segmentation, model_workflow.target_model, out_csv)
                 spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {subject_name}! ' \
                                f'{constants.ANSI_RESET}'
-                time.sleep(1)
+                time.sleep(3)
 
                 # ----------------------------------
                 # EXTRACT PET ACTIVITY
@@ -319,13 +319,6 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
     """
     Execute the MOOSE 3.0 image segmentation process.
 
-    This function carries out the following steps:
-    1. Sets the path for model results.
-    2. Creates the required directory for the model.
-    3. Downloads the model based on the provided `model_name`.
-    4. Validates and prepares the input directory to be compatible with nnUNet.
-    5. Executes the prediction process.
-
     :param input_data: This can be either:
                        1. A file path to the NIfTI file (as a string),
                        2. A tuple containing a numpy array and the corresponding spacing (as (array, spacing)),
@@ -346,7 +339,6 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
     :rtype: None
 
     :Example:
-
     >>> moose('/path/to/input/file', '[list, of, models]', '/path/to/save/output', 'cuda')
     >>> moose((numpy_array, (1.5, 1.5, 1.5)), 'model_name', '/path/to/save/output', 'cuda')
     >>> moose(simple_itk_image, 'model_name', '/path/to/save/output', 'cuda')
