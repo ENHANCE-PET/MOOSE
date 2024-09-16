@@ -200,7 +200,7 @@ def main():
         logging.info(' ')
 
         performance_observer.record_phase("Loading Image")
-        file_path = file_utilities.get_files(subject, 'CT_', '.nii.gz')[0]
+        file_path = file_utilities.get_files(subject, 'CT_', ('.nii', '.nii.gz'))[0]
         image = SimpleITK.ReadImage(file_path)
         file_name = file_utilities.get_nifti_file_stem(file_path)
         pet_file = file_utilities.find_pet_file(subject)

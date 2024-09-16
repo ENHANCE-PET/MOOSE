@@ -35,7 +35,7 @@ def create_directory(directory_path: str) -> None:
         os.makedirs(directory_path)
 
 
-def get_files(directory: str, prefix: str, suffix: str) -> list[str]:
+def get_files(directory: str, prefix: str, suffix: str | tuple) -> list[str]:
     """
     Returns the list of files in the directory with the specified wildcard.
     
@@ -51,6 +51,10 @@ def get_files(directory: str, prefix: str, suffix: str) -> list[str]:
     :return: The list of files.
     :rtype: list
     """
+
+    if isinstance(suffix, str):
+        suffix = (suffix,)
+
     files = []
     for file in os.listdir(directory):
         if file.startswith(prefix) and file.endswith(suffix):
