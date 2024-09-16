@@ -18,3 +18,4 @@ rich
 pandas
 dicom2nifti~=2.4.8
 emoji
+requests

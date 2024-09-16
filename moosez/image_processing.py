@@ -23,7 +23,6 @@ import numpy as np
 import pandas as pd
 import scipy.ndimage as ndimage
 from moosez.constants import CHUNK_THRESHOLD
-from moosez.resources import MODELS
 from moosez import predict
 from moosez import models
 
@@ -171,14 +170,14 @@ def largest_connected_component(segmentation_array, intensities):
     return largest_components_multilabel
 
 
-def cropped_fov_prediction_pipeline(image, segmentation_array, routine: models.ModelSequence, accelerator, nnunet_log_filename):
+def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.ModelWorkflow, accelerator, nnunet_log_filename):
     """
     Process segmentation by resampling, limiting FOV, and predicting.
 
     Parameters:
         image (SimpleITK.Image): The input image.
         segmentation_array (np.array): The segmentation array to be processed.
-        routine (models.ModelSequence): List of routines where the second element contains model info.
+        workflow (models.ModelWorkflow): List of routines where the second element contains model info.
         accelerator (any): The accelerator used for prediction.
         nnunet_log_filename (str): Path to the nnunet log file.
 
@@ -187,8 +186,8 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine: models.M
         segmentation_array (np.array): The final processed segmentation array.
     """
     # Get the second model from the routine
-    model_to_crop_from = routine[0]
-    target_model = routine[1]
+    model_to_crop_from = workflow[0]
+    target_model = workflow[1]
     target_model_fov_information = target_model.limit_fov
 
     # Convert the segmentation array to SimpleITK image and set properties
@@ -234,8 +233,8 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine: models.M
     # Expand the segmentation array to the original FOV
     segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
-    # Return the final model and segmentation array
-    return target_model, segmentation_array, desired_spacing
+    # Return the segmentation array and spacing
+    return segmentation_array, desired_spacing
 
 
 class ImageResampler:

@@ -76,11 +76,11 @@ class Model:
 
     def __download(self):
         if os.path.exists(self.directory):
-            logging.info(f" A local instance of {self.model_identifier} ({self.folder_name} has been detected.")
+            logging.info(f"    - A local instance of {self.model_identifier} ({self.folder_name}) has been detected.")
             print(f"{ANSI_GREEN} A local instance of {self.model_identifier} ({self.folder_name}) has been detected. {ANSI_RESET}")
             return
 
-        logging.info(f" Downloading {self.model_identifier} ({self.folder_name})")
+        logging.info(f"    - Downloading {self.model_identifier} ({self.folder_name})")
         if not os.path.exists(MODELS_DIRECTORY_PATH):
             os.makedirs(MODELS_DIRECTORY_PATH)
 
@@ -90,15 +90,14 @@ class Model:
 
         response = requests.get(self.url, stream=True)
         if response.status_code != 200:
+            logging.info(f"    X Failed to download model from {self.url}")
             raise Exception(f"Failed to download model from {self.url}")
         total_size = int(response.headers.get("Content-Length", 0))
         chunk_size = 1024 * 10
 
-        progress = Progress(
-            TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
-            "[progress.percentage]{task.percentage:>3.0f}%", "•",
-            FileSizeColumn(), TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
-
+        progress = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
+                            "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
+                            TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
         with progress:
             task = progress.add_task(f"[white] Downloading {self.model_identifier} ({self.folder_name})...", total=total_size)
             with open(download_file_path, "wb") as f:
@@ -106,13 +105,11 @@ class Model:
                     if chunk:
                         f.write(chunk)
                         progress.update(task, advance=chunk_size)
-        logging.info(f" {self.model_identifier} ({self.folder_name} extracted.")
+        logging.info(f"    - {self.model_identifier} ({self.folder_name} downloaded.")
 
-        progress = Progress(
-            TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
-            "[progress.percentage]{task.percentage:>3.0f}%", "•",
-            FileSizeColumn(), TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
-
+        progress = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
+                            "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
+                            TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
         with progress:
             with zipfile.ZipFile(download_file_path, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
@@ -120,11 +117,11 @@ class Model:
                 for file in zip_ref.infolist():
                     zip_ref.extract(file, MODELS_DIRECTORY_PATH)
                     progress.update(task, advance=file.file_size)
-        logging.info(f" {self.model_identifier} ({self.folder_name} - download complete.")
+        logging.info(f"    - {self.model_identifier} ({self.folder_name}) extracted.")
 
         os.remove(download_file_path)
-
-        print(f"{ANSI_GREEN} {self.model_identifier} ({self.folder_name}) - download complete. {ANSI_RESET}")
+        logging.info(f"    - {self.model_identifier} ({self.folder_name}) - setup complete.")
+        print(f"{ANSI_GREEN} {self.model_identifier} ({self.folder_name}) - setup complete. {ANSI_RESET}")
 
     def __get_organ_indices(self) -> dict[int, str]:
         labels = self.dataset.get('labels', {})
@@ -180,49 +177,46 @@ def model_entry_valid(model_identifier: str) -> bool:
     return True
 
 
-class ModelSequence:
+class ModelWorkflow:
     def __init__(self, model_identifier: str):
-        self.sequence: list[Model] = []
-        self.initial_desired_spacing: None | tuple = None
-        self.target_model: Model | None = None
-        self.construct_sequence(model_identifier)
+        self.workflow: list[Model] = []
+        self.__construct_workflow(model_identifier)
+        if self.workflow:
+            self.initial_desired_spacing = self.workflow[0].voxel_spacing
+            self.target_model = self.workflow[-1]
 
-    def construct_sequence(self, model_identifier: str):
+    def __construct_workflow(self, model_identifier: str):
         model = Model(model_identifier)
-        self.target_model = model
         if model.limit_fov and 'model_to_crop_from' in model.limit_fov:
-            self.construct_sequence(model.limit_fov["model_to_crop_from"])
-        self.sequence.append(model)
-        self.initial_desired_spacing = model.voxel_spacing
+            self.__construct_workflow(model.limit_fov["model_to_crop_from"])
+        self.workflow.append(model)
 
     def __len__(self) -> len:
-        return len(self.sequence)
+        return len(self.workflow)
 
     def __getitem__(self, index) -> Model:
-        return self.sequence[index]
+        return self.workflow[index]
 
     def __iter__(self):
-        return iter(self.sequence)
+        return iter(self.workflow)
 
     def __str__(self) -> str:
-        return " -> ".join([model.model_identifier for model in self.sequence])
+        return " -> ".join([model.model_identifier for model in self.workflow])
 
 
-def construct_model_routine(model_identifiers: str | list[str]) -> tuple[dict[tuple, list[ModelSequence]], list[Model]]:
+def construct_model_routine(model_identifiers: str | list[str]) -> dict[tuple, list[ModelWorkflow]]:
     if isinstance(model_identifiers, str):
         model_identifiers = [model_identifiers]
 
-    model_routine = {}
-    target_models = []
-    logging.info(' Setting up model routine for:')
+    model_routine: dict = {}
+    logging.info(' SETTING UP MODEL WORKFLOWS:')
     for model_identifier in model_identifiers:
-        logging.info('- Model name: ' + model_identifier)
-        model_sequence = ModelSequence(model_identifier)
+        logging.info(' - Model name: ' + model_identifier)
+        model_workflow = ModelWorkflow(model_identifier)
 
-        if model_sequence.initial_desired_spacing in model_routine:
-            model_routine[model_sequence.initial_desired_spacing].append(model_sequence)
+        if model_workflow.initial_desired_spacing in model_routine:
+            model_routine[model_workflow.initial_desired_spacing].append(model_workflow)
         else:
-            model_routine[model_sequence.initial_desired_spacing] = [model_sequence]
-        target_models.append(model_sequence.target_model)
+            model_routine[model_workflow.initial_desired_spacing] = [model_workflow]
 
-    return model_routine, target_models
+    return model_routine
