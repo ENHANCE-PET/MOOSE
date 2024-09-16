@@ -43,6 +43,9 @@ from moosez.image_processing import ImageResampler
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
 from moosez.resources import AVAILABLE_MODELS
 
+import threading
+from moosez.benchmarking.utilities import PerformanceObserver
+
 
 def main():
     colorama.init()
@@ -74,6 +77,13 @@ def main():
         help="Choose the models for segmentation from the following:\n" + "\n".join(AVAILABLE_MODELS)
     )
 
+    parser.add_argument(
+        "-b", "--benchmark",
+        action="store_true",
+        default=False,
+        help="Activate benchmarking."
+    )
+
     # Custom help option
     parser.add_argument(
         "-h", "--help",
@@ -85,6 +95,7 @@ def main():
     args = parser.parse_args()
     parent_folder = os.path.abspath(args.main_directory)
     model_names = args.model_names
+    benchmark = args.benchmark
 
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                         filename=os.path.join(parent_folder, datetime.now().strftime('moosez-v.3.0.0_%H-%M-%d-%m-%Y.log')), filemode='w')
@@ -170,6 +181,11 @@ def main():
         logging.info(' ')
         logging.info(f' SUBJECT: {subject_name}')
 
+        if benchmark:
+            performance_observer = PerformanceObserver(subject_name, ', '.join(model_names))
+            monitoring_thread = threading.Thread(target=performance_observer.monitor_memory_usage, args=(0.1, ))
+            monitoring_thread.start()
+
         spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {subject_name}...'
         logging.info(' ')
         logging.info(f' SETTING UP MOOSE-Z DIRECTORY:')
@@ -183,18 +199,22 @@ def main():
         logging.info(' RUNNING PREDICTION:')
         logging.info(' ')
 
+        performance_observer.record_phase("Loading Image")
         file_path = file_utilities.get_files(subject, '.nii.gz')[0]
         image = SimpleITK.ReadImage(file_path)
         file_name = file_utilities.get_nifti_file_stem(file_path)
         pet_file = file_utilities.find_pet_file(subject)
+        performance_observer.time_phase()
 
         for desired_spacing, model_workflows in model_routine.items():
-
+            performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str,desired_spacing))}")
             resampling_time_start = time.time()
             resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
             logging.info(f' - Resampling at {"x".join(map(str,desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
+            performance_observer.time_phase()
 
             for model_workflow in model_workflows:
+                performance_observer.record_phase(f"Predicting: {model_workflow.target_model}")
                 # ----------------------------------
                 # RUN MODEL WORKFLOW
                 # ----------------------------------
@@ -254,6 +274,8 @@ def main():
                                    f'{constants.ANSI_RESET}'
                     time.sleep(3)
 
+                performance_observer.time_phase()
+
         end_time = time.time()
         elapsed_time = end_time - start_time
         spinner.text = f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {subject_name} using {len(model_names)} models: ' \
@@ -262,6 +284,13 @@ def main():
         logging.info(f' Prediction done for {subject_name} using {len(model_names)} models: {", ".join(model_names)}!' 
                      f' | Elapsed time: {round(elapsed_time / 60, 1)} min')
 
+        performance_observer.record_phase("Total Processing Done")
+        if benchmark:
+            performance_observer.off()
+            monitoring_thread.join()
+            output_path = os.path.join(stats_dir, '')
+            performance_observer.plot_performance(output_path)
+
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
     time_per_dataset = total_elapsed_time / len(moose_compliant_subjects)
@@ -269,6 +298,15 @@ def main():
     spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
                     f'{len(moose_compliant_subjects)} datasets, {len(model_names)} models: {round(total_elapsed_time, 1)} min'
                     f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
+    logging.info(f' ')
+    logging.info(f' ALL SUBJECTS PROCESSED')
+    logging.info(f'  - Number of Subjects: {len(moose_compliant_subjects)}')
+    logging.info(f'  - Number of Models:   {len(model_names)}')
+    logging.info(f'  - Time (total):       {round(total_elapsed_time, 1)}min')
+    logging.info(f'  - Time (per subject): {round(time_per_dataset, 2)}min')
+    logging.info('----------------------------------------------------------------------------------------------------')
+    logging.info('                                     FINISHED MOOSE-Z V.3.0.0                                       ')
+    logging.info('----------------------------------------------------------------------------------------------------')
 
 
 def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | SimpleITK.Image, model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> None:
