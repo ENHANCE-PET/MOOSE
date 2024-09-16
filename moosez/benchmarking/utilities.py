@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import os
 import numpy
+import threading
 
 
 colors = [
@@ -55,10 +56,12 @@ custom_cmap = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bins)
 
 
 class PerformanceObserver:
-    def __init__(self, image: str | None = None, model: str | None = None):
-        self.process_start_time = time.time()
+    def __init__(self, image: str | None = None, model: str | None = None, interval: float = 0.1):
+        self.running = False
+        self.interval = interval
+        self.monitoring_thread = None
+        self.process_start_time = None
         self.total_runtime = None
-        self.running =  True
 
         self.memory_timestamps = []
         self.memory_usage_MB = []
@@ -72,6 +75,19 @@ class PerformanceObserver:
         self.metadata_image_size = None
         self.metadata_model = model
 
+    def on(self):
+        self.running = True
+        self.process_start_time = time.time()
+        self.monitoring_thread = threading.Thread(target=self.__monitor_memory_usage, args=(self.interval,))
+        self.monitoring_thread.start()
+
+    def off(self):
+        self.running = False
+        if self.monitoring_thread is not None:
+            self.monitoring_thread.join()
+        self.total_runtime = time.time() - self.process_start_time
+
+
     def __get_memory_usage_of_process_tree(self):
         parent = psutil.Process(os.getpid())
         memory_usage = parent.memory_info().rss
@@ -82,7 +98,7 @@ class PerformanceObserver:
                 continue
         return memory_usage / (1024 * 1024)  # Convert to MB
 
-    def monitor_memory_usage(self, interval):
+    def __monitor_memory_usage(self, interval):
         while self.running:
             current_time = time.time() - self.process_start_time
             current_memory_MB = self.__get_memory_usage_of_process_tree()
@@ -93,17 +109,19 @@ class PerformanceObserver:
             time.sleep(interval)
 
     def record_phase(self, phase_name: str):
-        current_time = time.time() - self.process_start_time
-        self.phase_timestamps.append(current_time)
-        self.phase_names.append(phase_name)
+        if self.running:
+            current_time = time.time() - self.process_start_time
+            self.phase_timestamps.append(current_time)
+            self.phase_names.append(phase_name)
 
     def time_phase(self):
-        if not self.phase_names:
-            start_time = self.process_start_time
-        else:
-            start_time = self.phase_timestamps[-1]
-        runtime = (time.time() -  self.process_start_time) - start_time
-        self.phase_runtimes.append(runtime)
+        if self.running:
+            if not self.phase_names:
+                start_time = self.process_start_time
+            else:
+                start_time = self.phase_timestamps[-1]
+            runtime = (time.time() -  self.process_start_time) - start_time
+            self.phase_runtimes.append(runtime)
 
     def plot_performance(self, path: str):
         fig, axs = plt.subplots(2, 1, figsize=(22, 12), gridspec_kw={'height_ratios': [3, 1]})
@@ -144,7 +162,4 @@ class PerformanceObserver:
 
         plt.tight_layout()
         plt.savefig(os.path.join(path, f'performance_plot.png'))
-
-    def off(self):
-        self.running = False
-        self.total_runtime = time.time() - self.process_start_time
+        plt.close()

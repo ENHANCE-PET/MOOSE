@@ -43,7 +43,6 @@ from moosez.image_processing import ImageResampler
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
 from moosez.resources import AVAILABLE_MODELS
 
-import threading
 from moosez.benchmarking.utilities import PerformanceObserver
 
 
@@ -181,10 +180,9 @@ def main():
         logging.info(' ')
         logging.info(f' SUBJECT: {subject_name}')
 
+        performance_observer = PerformanceObserver(subject_name, ', '.join(model_names))
         if benchmark:
-            performance_observer = PerformanceObserver(subject_name, ', '.join(model_names))
-            monitoring_thread = threading.Thread(target=performance_observer.monitor_memory_usage, args=(0.1, ))
-            monitoring_thread.start()
+            performance_observer.on()
 
         spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {subject_name}...'
         logging.info(' ')
@@ -287,7 +285,6 @@ def main():
         performance_observer.record_phase("Total Processing Done")
         if benchmark:
             performance_observer.off()
-            monitoring_thread.join()
             output_path = os.path.join(stats_dir, '')
             performance_observer.plot_performance(output_path)
 
