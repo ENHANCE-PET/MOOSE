@@ -307,7 +307,7 @@ def main():
     logging.info(f'  - Time (per subject): {round(time_per_dataset, 2)}min')
     if benchmark:
         df = pd.DataFrame(subject_performance_parameters, columns=['Image', 'Model', 'Image Size', 'Runtime [s]', 'Peak Memory [GB]'])
-        csv_file_path = os.path.join(parent_folder, 'peak_performance_parameters.csv')
+        csv_file_path = os.path.join(parent_folder, 'moosez-v3.0.0_peak_performance_parameters.csv')
         df.to_csv(csv_file_path, index=False)
         logging.info(f'  - Resource utilization written to {csv_file_path}')
     logging.info('----------------------------------------------------------------------------------------------------')

@@ -1,58 +1,9 @@
 import time
 import psutil
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 import os
 import numpy
 import threading
-
-
-colors = [
-    (1, 1, 1),  # white
-    (0.894, 0.102, 0.11),  # red
-    (0.216, 0.494, 0.722),  # blue
-    (0.302, 0.686, 0.29),  # green
-    (0.596, 0.306, 0.639),  # purple
-    (1.0, 0.498, 0.0),  # orange
-    (1.0, 1.0, 0.2),  # yellow
-    (0.651, 0.337, 0.157),  # brown
-    (0.6, 0.6, 0.6),  # gray
-    (0.5, 0.5, 0),  # olive
-    (0, 0.5, 0.5),  # teal
-    (0.5, 0, 0.5),  # purple
-    (0.5, 0.5, 1),  # light blue
-    (0.9, 0.1, 0.7),  # magenta
-    (0.9, 0.7, 0.1),  # gold
-    (0.1, 0.9, 0.9),  # cyan
-    (0.9, 0.4, 0.3),  # coral
-    (0.3, 0.9, 0.4),  # light green
-    (0.7, 0.7, 0.7),  # light gray
-    (0.8, 0.6, 0.2),  # mustard
-    (0.4, 0.2, 0.6),  # plum
-    (0.2, 0.6, 0.8),  # sky blue
-    (0.6, 0.2, 0.4),  # raspberry
-    (0.7, 0.5, 0.9),  # lavender
-    (0.4, 0.7, 0.1),  # lime
-    (0.9, 0.2, 0.4),  # rose
-    (0.1, 0.7, 0.6),  # turquoise
-    (0.9, 0.8, 0.6),  # beige
-    (0.7, 0.1, 0.3),  # maroon
-    (0.5, 0.7, 0.9),  # light sky blue
-    (0.8, 0.4, 0.7),  # orchid
-    (0.3, 0.9, 0.5),  # mint
-    (0.6, 0.1, 0.9),  # violet
-    (0.9, 0.9, 0.2),  # lemon
-    (0.4, 0.6, 0.9),  # periwinkle
-    (0.7, 0.9, 0.1),  # chartreuse
-    (0.9, 0.4, 0.2),  # tangerine
-    (0.2, 0.9, 0.7),  # aqua
-    (0.9, 0.2, 0.9),  # fuchsia
-]
-
-# Create the custom colormap
-n_bins = 256  # Number of bins in the colormap
-cmap_name = 'white_to_colors'
-custom_cmap = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bins)
 
 
 class PerformanceObserver:

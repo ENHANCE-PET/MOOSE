@@ -30,27 +30,22 @@ setup(
     packages=find_packages(),
     install_requires=[
         'nnunetv2',
-        'nibabel~=3.2.2',
         'halo~=0.0.31',
-        'pandas~=1.4.1',
         'SimpleITK~=2.2.1',
         'pydicom~=2.2.2',
         'argparse~=1.4.0',
-        'imageio~=2.16.1',
         'numpy<2.0',
         'mpire~=2.3.3',
         'openpyxl~=3.0.9',
         'pyfiglet~=0.8.post1',
         'natsort~=8.1.0',
-        'pillow>=9.2.0',
         'colorama~=0.4.6',
         'dask',
         'rich',
         'pandas',
         'dicom2nifti~=2.4.8',
         'emoji',
-        'dask[distributed]',
-        'opencv-python-headless',
+        'matplotlib'
     ],
     entry_points={
         'console_scripts': [
