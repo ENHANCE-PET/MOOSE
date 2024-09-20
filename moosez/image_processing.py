@@ -25,6 +25,7 @@ import scipy.ndimage as ndimage
 from moosez.constants import CHUNK_THRESHOLD
 from moosez import predict
 from moosez import models
+import itertools
 
 
 def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
@@ -235,6 +236,86 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.
 
     # Return the segmentation array and spacing
     return segmentation_array, desired_spacing
+
+
+class ImageChunker:
+    @staticmethod
+    def __compute_interior_indices(array_length: int, number_of_chunks: int) -> (list[int], list[int]):
+        start = [int(round(k * array_length / number_of_chunks)) for k in range(number_of_chunks)]
+        end = [int(round((k + 1) * array_length / number_of_chunks)) for k in range(number_of_chunks)]
+        return start, end
+
+    @staticmethod
+    def __chunk_array_with_overlap(array_shape: list[int] | tuple[int, ...], splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> list[dict]:
+        dims = array_shape
+        num_dims = len(array_shape)
+        starts_list = []
+        ends_list = []
+
+        for dimension_index in range(num_dims):
+            array_length = dims[dimension_index]
+            number_of_chunks = splits_per_dimension[dimension_index]
+            start_index, end_index = ImageChunker.__compute_interior_indices(array_length, number_of_chunks)
+            starts_list.append(start_index)
+            ends_list.append(end_index)
+
+        chunk_info = []
+        for idx in itertools.product(*(range(len(s)) for s in starts_list)):
+            chunk_slice = []
+            interior_slice = []
+            dest_slice = []
+            for dimension_index, chunk_index in enumerate(idx):
+                start_index = starts_list[dimension_index]
+                end_index = ends_list[dimension_index]
+                array_length = dims[dimension_index]
+                number_of_chunks = splits_per_dimension[dimension_index]
+                overlap = overlap_per_dimension[dimension_index]
+
+                start = max(0, start_index[chunk_index] - overlap if chunk_index > 0 else start_index[chunk_index])
+                end = min(array_length, end_index[chunk_index] + overlap if chunk_index < number_of_chunks - 1 else end_index[chunk_index])
+
+                start_in_chunk = start_index[chunk_index] - start
+                end_in_chunk = start_in_chunk + (end_index[chunk_index] - start_index[chunk_index])
+
+                start_in_full = start_index[chunk_index]
+                end_in_full = end_index[chunk_index]
+
+                chunk_slice.append(slice(start, end))
+                interior_slice.append(slice(start_in_chunk, end_in_chunk))
+                dest_slice.append(slice(start_in_full, end_in_full))
+
+            chunk_info.append({
+                'chunk_slice': tuple(chunk_slice),
+                'interior_slice': tuple(interior_slice),
+                'dest_slice': tuple(dest_slice)
+            })
+
+        return chunk_info
+
+    @staticmethod
+    def array_to_chunks(image_array: np.ndarray, splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> (list[np.ndarray], list[dict]):
+        chunk_info = ImageChunker.__chunk_array_with_overlap(image_array.shape, splits_per_dimension, overlap_per_dimension)
+        image_chunks = []
+        positions = []
+
+        for info in chunk_info:
+            image_chunk = image_array[info['chunk_slice']]
+            positions.append({
+                'interior_slice': info['interior_slice'],
+                'dest_slice': info['dest_slice']
+            })
+            image_chunks.append(image_chunk)
+
+        return image_chunks, positions
+
+    @staticmethod
+    def chunks_to_array(image_chunks: list[np.ndarray], image_chunk_positions: dict, final_shape: list[int] | tuple[int, ...]) -> np.ndarray:
+        final_arr = np.empty(final_shape, dtype=image_chunks[0].dtype)
+        for image_chunk, image_chunk_position in zip(image_chunks, image_chunk_positions):
+            interior_region = image_chunk[image_chunk_position['interior_slice']]
+            final_arr[image_chunk_position['dest_slice']] = interior_region
+
+        return final_arr
 
 
 class ImageResampler:
