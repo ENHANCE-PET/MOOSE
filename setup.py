@@ -45,7 +45,8 @@ setup(
         'pandas',
         'dicom2nifti~=2.4.8',
         'emoji',
-        'matplotlib'
+        'matplotlib',
+        'psutil'
     ],
     entry_points={
         'console_scripts': [
