@@ -23,11 +23,12 @@ import numpy as np
 import pandas as pd
 import scipy.ndimage as ndimage
 from moosez.constants import CHUNK_THRESHOLD
-from moosez.resources import MODELS
 from moosez import predict
+from moosez import models
+import itertools
 
 
-def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model_name: str, out_csv: str) -> None:
+def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
     """
     Get the intensity statistics of a NIFTI image file.
 
@@ -35,8 +36,8 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     :type image: sitk.Image
     :param mask_image: The multilabel mask image.
     :type mask_image: sitk.Image
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model: The model.
+    :type model: Model
     :param out_csv: The path to the output CSV file.
     :type out_csv: str
     :return: None
@@ -50,7 +51,7 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = MODELS[model_name]["organ_indices"]
+    organ_indices_dict = model.organ_indices
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
@@ -60,14 +61,14 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     stats_df.to_csv(out_csv)
 
 
-def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: str) -> None:
+def get_shape_statistics(mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
     """
     Get the shape statistics of a NIFTI image file.
 
     :param mask_image: The multilabel mask image.
     :type mask_image: sitk.Image
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model: The model.
+    :type model: Model
     :param out_csv: The path to the output CSV file.
     :type out_csv: str
     :return: None
@@ -83,7 +84,7 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model_name: str, out_csv: 
 
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = MODELS[model_name]["organ_indices"]
+    organ_indices_dict = model.organ_indices
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
@@ -132,9 +133,9 @@ def largest_connected_component(segmentation_array, intensities):
     - intensities: A single intensity or a list of intensities for which the largest component(s) should be extracted.
 
     Returns:
-    - largest_components_multilabel: A multilabel array of the same shape as `segmentation_array`,
-      where the largest connected component(s) of the specified intensity or intensities retain their original intensity,
-      and all other areas are 0.
+    - largest_components_multilabel: A multilabel array of the same shape as `segmentation_array`, where the largest
+      connected component(s) of the specified intensity or intensities retain their original intensity, and all other
+      areas are 0.
     """
 
     # Ensure intensities is a list (even if only one intensity is provided)
@@ -169,14 +170,15 @@ def largest_connected_component(segmentation_array, intensities):
 
     return largest_components_multilabel
 
-def cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelerator, nnunet_log_filename):
+
+def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.ModelWorkflow, accelerator, nnunet_log_filename):
     """
     Process segmentation by resampling, limiting FOV, and predicting.
 
     Parameters:
         image (SimpleITK.Image): The input image.
         segmentation_array (np.array): The segmentation array to be processed.
-        routine (list): List of routines where the second element contains model info.
+        workflow (models.ModelWorkflow): List of routines where the second element contains model info.
         accelerator (any): The accelerator used for prediction.
         nnunet_log_filename (str): Path to the nnunet log file.
 
@@ -185,17 +187,18 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelera
         segmentation_array (np.array): The final processed segmentation array.
     """
     # Get the second model from the routine
-    second_model = routine[1]
-    model_fov_information = MODELS[second_model]["limit_fov"]
+    model_to_crop_from = workflow[0]
+    target_model = workflow[1]
+    target_model_fov_information = target_model.limit_fov
 
-    # Convert segmentation array to SimpleITK image and set properties
+    # Convert the segmentation array to SimpleITK image and set properties
     to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
     to_crop_segmentation.SetOrigin(image.GetOrigin())
-    to_crop_segmentation.SetSpacing(MODELS[routine[0]]["voxel_spacing"])
+    to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
     to_crop_segmentation.SetDirection(image.GetDirection())
 
     # Resample the image using the desired spacing
-    desired_spacing = MODELS[second_model]["voxel_spacing"]
+    desired_spacing = target_model.voxel_spacing
     to_crop_image_array = ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
     to_crop_image = SimpleITK.GetImageFromArray(to_crop_image_array)
     to_crop_image.SetOrigin(image.GetOrigin())
@@ -208,43 +211,112 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelera
     resampled_to_crop_segmentation_array = SimpleITK.GetArrayFromImage(resampled_to_crop_segmentation)
 
     # Limit FOV based on model information
-    limited_fov_image_array, original_fov_info = limit_fov(
-        to_crop_image_array,
-        resampled_to_crop_segmentation_array,
-        model_fov_information["inference_fov_intensities"]
-    )
+    limited_fov_image_array, original_fov_info = limit_fov(to_crop_image_array, resampled_to_crop_segmentation_array,
+                                                           target_model_fov_information["inference_fov_intensities"])
 
     to_write_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
     to_write_image.SetOrigin(image.GetOrigin())
     to_write_image.SetSpacing(desired_spacing)
     to_write_image.SetDirection(image.GetDirection())
 
-
     # Predict the limited FOV segmentation
-    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(
-        limited_fov_image_array,
-        second_model,
-        accelerator,
-        nnunet_log_filename
-    )
+    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(limited_fov_image_array, target_model,
+                                                                            accelerator, nnunet_log_filename)
 
     # Expand the segmentation to the original FOV
     expanded_segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
     # Limit the FOV again based on label intensities and largest component condition
-    limited_fov_segmentation_array, original_fov_info = limit_fov(
-        expanded_segmentation_array,
-        resampled_to_crop_segmentation_array,
-        model_fov_information["label_intensity_to_crop_from"],
-        model_fov_information["largest_component_only"]
-    )
+    limited_fov_segmentation_array, original_fov_info = limit_fov(expanded_segmentation_array, resampled_to_crop_segmentation_array,
+                                                                  target_model_fov_information["label_intensity_to_crop_from"],
+                                                                  target_model_fov_information["largest_component_only"])
 
     # Expand the segmentation array to the original FOV
     segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
-    # Return the final model and segmentation array
-    model = second_model
-    return model, segmentation_array, desired_spacing
+    # Return the segmentation array and spacing
+    return segmentation_array, desired_spacing
+
+
+class ImageChunker:
+    @staticmethod
+    def __compute_interior_indices(array_length: int, number_of_chunks: int) -> (list[int], list[int]):
+        start = [int(round(k * array_length / number_of_chunks)) for k in range(number_of_chunks)]
+        end = [int(round((k + 1) * array_length / number_of_chunks)) for k in range(number_of_chunks)]
+        return start, end
+
+    @staticmethod
+    def __chunk_array_with_overlap(array_shape: list[int] | tuple[int, ...], splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> list[dict]:
+        dims = array_shape
+        num_dims = len(array_shape)
+        starts_list = []
+        ends_list = []
+
+        for dimension_index in range(num_dims):
+            array_length = dims[dimension_index]
+            number_of_chunks = splits_per_dimension[dimension_index]
+            start_index, end_index = ImageChunker.__compute_interior_indices(array_length, number_of_chunks)
+            starts_list.append(start_index)
+            ends_list.append(end_index)
+
+        chunk_info = []
+        for idx in itertools.product(*(range(len(s)) for s in starts_list)):
+            chunk_slice = []
+            interior_slice = []
+            dest_slice = []
+            for dimension_index, chunk_index in enumerate(idx):
+                start_index = starts_list[dimension_index]
+                end_index = ends_list[dimension_index]
+                array_length = dims[dimension_index]
+                number_of_chunks = splits_per_dimension[dimension_index]
+                overlap = overlap_per_dimension[dimension_index]
+
+                start = max(0, start_index[chunk_index] - overlap if chunk_index > 0 else start_index[chunk_index])
+                end = min(array_length, end_index[chunk_index] + overlap if chunk_index < number_of_chunks - 1 else end_index[chunk_index])
+
+                start_in_chunk = start_index[chunk_index] - start
+                end_in_chunk = start_in_chunk + (end_index[chunk_index] - start_index[chunk_index])
+
+                start_in_full = start_index[chunk_index]
+                end_in_full = end_index[chunk_index]
+
+                chunk_slice.append(slice(start, end))
+                interior_slice.append(slice(start_in_chunk, end_in_chunk))
+                dest_slice.append(slice(start_in_full, end_in_full))
+
+            chunk_info.append({
+                'chunk_slice': tuple(chunk_slice),
+                'interior_slice': tuple(interior_slice),
+                'dest_slice': tuple(dest_slice)
+            })
+
+        return chunk_info
+
+    @staticmethod
+    def array_to_chunks(image_array: np.ndarray, splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> (list[np.ndarray], list[dict]):
+        chunk_info = ImageChunker.__chunk_array_with_overlap(image_array.shape, splits_per_dimension, overlap_per_dimension)
+        image_chunks = []
+        positions = []
+
+        for info in chunk_info:
+            image_chunk = image_array[info['chunk_slice']]
+            positions.append({
+                'interior_slice': info['interior_slice'],
+                'dest_slice': info['dest_slice']
+            })
+            image_chunks.append(image_chunk)
+
+        return image_chunks, positions
+
+    @staticmethod
+    def chunks_to_array(image_chunks: list[np.ndarray], image_chunk_positions: dict, final_shape: list[int] | tuple[int, ...]) -> np.ndarray:
+        final_arr = np.empty(final_shape, dtype=image_chunks[0].dtype)
+        for image_chunk, image_chunk_position in zip(image_chunks, image_chunk_positions):
+            interior_region = image_chunk[image_chunk_position['interior_slice']]
+            final_arr[image_chunk_position['dest_slice']] = interior_region
+
+        return final_arr
+
 
 class ImageResampler:
     @staticmethod
@@ -273,7 +345,7 @@ class ImageResampler:
         # Determine the maximum number of chunks that the axis can be split into
         split = axis // CHUNK_THRESHOLD
 
-        # Reduce the number of chunks until axis is evenly divisible by split
+        # Reduce the number of chunks until the axis is evenly divisible by split
         while axis % split != 0:
             split -= 1
 
@@ -302,8 +374,9 @@ class ImageResampler:
         sitk_image_chunk.SetSpacing(input_spacing)
 
         resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
-                                             interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
-                                             sitk_image_chunk.GetDirection(), 0.0, sitk_image_chunk.GetPixelIDValue())
+                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
+                                                  sitk_image_chunk.GetDirection(), 0.0,
+                                                  sitk_image_chunk.GetPixelIDValue())
 
         resampled_array = SimpleITK.GetArrayFromImage(resampled_sitk_image)
         return resampled_array
@@ -404,7 +477,7 @@ class ImageResampler:
     @staticmethod
     def resample_segmentation(reference_image: SimpleITK.Image, segmentation_image: SimpleITK.Image):
         resampled_sitk_image = SimpleITK.Resample(segmentation_image, reference_image.GetSize(), SimpleITK.Transform(),
-                                             SimpleITK.sitkNearestNeighbor,
-                                             reference_image.GetOrigin(), reference_image.GetSpacing(),
-                                             reference_image.GetDirection(), 0.0, segmentation_image.GetPixelIDValue())
+                                                  SimpleITK.sitkNearestNeighbor, reference_image.GetOrigin(),
+                                                  reference_image.GetSpacing(), reference_image.GetDirection(), 0.0,
+                                                  segmentation_image.GetPixelIDValue())
         return resampled_sitk_image

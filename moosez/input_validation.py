@@ -10,7 +10,7 @@
 #
 # Description:
 # This module performs input validation for the moosez. It verifies that the inputs provided by the user are valid
-# and meets the required specifications.
+# and meet the required specifications.
 #
 # Usage:
 # The functions in this module can be imported and used in other modules within the moosez to perform input validation.
@@ -29,7 +29,8 @@ def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: Lis
 
     :param subject_paths: The path to the list of subjects that are present in the parent directory.
     :type subject_paths: List[str]
-    :param modality_tags: The list of appropriate modality prefixes that should be attached to the files for them to be moose compliant.
+    :param modality_tags: The list of appropriate modality prefixes that should be attached to the files for
+                          them to be moose compliant.
     :type modality_tags: List[str]
     :return: The list of subject paths that are moose compliant.
     :rtype: List[str]

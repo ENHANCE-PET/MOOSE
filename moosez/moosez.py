@@ -17,33 +17,33 @@
 # ----------------------------------------------------------------------------------------------------------------------
 import os
 
-from sympy.stats.sampling.sample_numpy import numpy
-
 os.environ["nnUNet_raw"] = ""
 os.environ["nnUNet_preprocessed"] = ""
 os.environ["nnUNet_results"] = ""
 
 import argparse
-import glob
 import logging
 import time
 from datetime import datetime
 import SimpleITK
 import colorama
 import emoji
+import numpy
+import pandas as pd
 from halo import Halo
 from moosez import constants
 from moosez import display
-from moosez import download
 from moosez import file_utilities
 from moosez import image_conversion
 from moosez import image_processing
 from moosez import input_validation
 from moosez import predict
 from moosez import resources
+from moosez import models
 from moosez.image_processing import ImageResampler
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
-from moosez.resources import MODELS, AVAILABLE_MODELS
+from moosez.resources import AVAILABLE_MODELS
+from moosez.benchmarking.benchmark import PerformanceObserver
 
 
 def main():
@@ -52,8 +52,8 @@ def main():
     # Argument parser
     parser = argparse.ArgumentParser(
         description=display.get_usage_message(),
-        formatter_class=argparse.RawTextHelpFormatter,  # To retain the custom formatting
-        add_help=False  # We'll add our own help option later
+        formatter_class=argparse.RawTextHelpFormatter,
+        add_help=False
     )
 
     # Main directory containing subject folders
@@ -66,7 +66,6 @@ def main():
     )
 
     # Name of the models to use for segmentation
-    model_help_text = "Choose the models for segmentation from the following:\n" + "\n".join(AVAILABLE_MODELS)
     parser.add_argument(
         "-m", "--model_names",
         nargs='+',
@@ -74,7 +73,14 @@ def main():
         choices=AVAILABLE_MODELS,
         required=True,
         metavar="<MODEL_NAMES>",
-        help=model_help_text
+        help="Choose the models for segmentation from the following:\n" + "\n".join(AVAILABLE_MODELS)
+    )
+
+    parser.add_argument(
+        "-b", "--benchmark",
+        action="store_true",
+        default=False,
+        help="Activate benchmarking."
     )
 
     # Custom help option
@@ -86,13 +92,13 @@ def main():
     )
 
     args = parser.parse_args()
-
     parent_folder = os.path.abspath(args.main_directory)
     model_names = args.model_names
+    benchmark = args.benchmark
 
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
-                        filename=os.path.join(parent_folder, datetime.now().strftime('moosez-v.3.0.0.%H-%M-%d-%m-%Y.log')), filemode='w')
-    nnunet_log_filename = os.path.join(parent_folder,datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
+                        filename=os.path.join(parent_folder, datetime.now().strftime('moosez-v.3.0.0_%H-%M-%d-%m-%Y.log')), filemode='w')
+    nnunet_log_filename = os.path.join(parent_folder, datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
 
     display.logo()
     display.citation()
@@ -123,14 +129,9 @@ def main():
     print('')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     print('')
-    model_path = constants.NNUNET_RESULTS_FOLDER
+    model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
-
-    for model_name in model_names:
-        logging.info('- Model name: ' + model_name)
-        download.model(model_name, model_path)
-        if MODELS[model_name]["limit_fov"] is not None:
-            download.model(MODELS[model_name]["limit_fov"]["model_to_crop_from"], model_path)
+    model_routine = models.construct_model_routine(model_names)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
@@ -168,20 +169,29 @@ def main():
     print('')
     logging.info(' ')
     logging.info(' PERFORMING PREDICTION:')
-    logging.info(' ')
 
     spinner = Halo(text=' Initiating', spinner='dots')
     spinner.start()
     start_total_time = time.time()
 
+    subject_performance_parameters = []
+
     for i, subject in enumerate(moose_compliant_subjects):
         # SETTING UP DIRECTORY STRUCTURE
-        spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {os.path.basename(subject)}...'
+        subject_name = os.path.basename(subject)
+        logging.info(' ')
+        logging.info(f' SUBJECT: {subject_name}')
+
+        performance_observer = PerformanceObserver(subject_name, ', '.join(model_names))
+        if benchmark:
+            performance_observer.on()
+
+        spinner.text = f'[{i + 1}/{num_subjects}] Setting up directory structure for {subject_name}...'
         logging.info(' ')
         logging.info(f' SETTING UP MOOSE-Z DIRECTORY:')
         logging.info(' ')
         moose_dir, segmentations_dir, stats_dir = file_utilities.moose_folder_structure(subject)
-        logging.info(f" MOOSE directory for subject {os.path.basename(subject)} at: {moose_dir}")
+        logging.info(f" MOOSE directory for subject {subject_name} at: {moose_dir}")
 
         # RUN PREDICTION
         start_time = time.time()
@@ -189,35 +199,43 @@ def main():
         logging.info(' RUNNING PREDICTION:')
         logging.info(' ')
 
-        file_path = file_utilities.get_files(subject, '.nii.gz')[0]
+        performance_observer.record_phase("Loading Image")
+        file_path = file_utilities.get_files(subject, 'CT_', ('.nii', '.nii.gz'))[0]
         image = SimpleITK.ReadImage(file_path)
         file_name = file_utilities.get_nifti_file_stem(file_path)
+        pet_file = file_utilities.find_pet_file(subject)
+        performance_observer.metadata_image_size = image.GetSize()
+        performance_observer.time_phase()
 
-        prediction_routine = predict.construct_prediction_routines(model_names)
-        for desired_spacing, routines in prediction_routine.items():
-
+        for desired_spacing, model_workflows in model_routine.items():
+            performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str,desired_spacing))}")
             resampling_time_start = time.time()
             resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
             logging.info(f' - Resampling at {"x".join(map(str,desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
+            performance_observer.time_phase()
 
-            for routine in routines:
-                model = routine[0]
+            for model_workflow in model_workflows:
+                performance_observer.record_phase(f"Predicting: {model_workflow.target_model}")
+                # ----------------------------------
+                # RUN MODEL WORKFLOW
+                # ----------------------------------
                 model_time_start = time.time()
-                spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {os.path.basename(subject)} using {model}...'
-                logging.info(f' - Model {model}')
-                segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, nnunet_log_filename)
+                spinner.text = f'[{i + 1}/{num_subjects}] Running prediction for {subject_name} using {model_workflow[0]}...'
+                logging.info(f'   - Model {model_workflow.target_model}')
+                segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, nnunet_log_filename)
 
-                if len(routine) > 1:
-                    inference_fov_intensities = MODELS[routine[1]]["limit_fov"]["inference_fov_intensities"]
+                if len(model_workflow) == 2:
+                    inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
                     if isinstance(inference_fov_intensities, int):
                         inference_fov_intensities = [inference_fov_intensities]
 
                     existing_intensities = numpy.unique(segmentation_array)
                     if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
-                        print("Organ to crop from not in initial FOV.")
+                        spinner.text = f'[{i + 1}/{num_subjects}] Organ to crop from not in initial FOV...'
+                        logging.info("     - Organ to crop from not in initial FOV.")
                         continue
 
-                    model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, routine, accelerator, nnunet_log_filename)
+                    segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, nnunet_log_filename)
 
                 segmentation = SimpleITK.GetImageFromArray(segmentation_array)
                 segmentation.SetSpacing(desired_spacing)
@@ -225,52 +243,54 @@ def main():
                 segmentation.SetDirection(image.GetDirection())
                 resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
 
-                segmentation_image_path = os.path.join(segmentations_dir, f"{MODELS[model]['multilabel_prefix']}segmentation_{file_name}.nii.gz")
+                segmentation_image_path = os.path.join(segmentations_dir, f"{model_workflow.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz")
+                logging.info(f'     - Writing segmentation for {model_workflow.target_model}')
                 SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
-                logging.info(f"   - Prediction complete for {model} within {round((time.time() - model_time_start)/ 60, 1)} min.")
+                logging.info(f"     - Prediction complete for {model_workflow.target_model} within {round((time.time() - model_time_start)/ 60, 1)} min.")
+
+                # ----------------------------------
+                # EXTRACT VOLUME STATISTICS
+                # ----------------------------------
+                spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {subject_name} ({model_workflow.target_model})...'
+                logging.info(f'     - Extracting volume statistics for {model_workflow.target_model}')
+                out_csv = os.path.join(stats_dir, model_workflow.target_model.multilabel_prefix + subject_name + '_ct_volume.csv')
+                image_processing.get_shape_statistics(resampled_segmentation, model_workflow.target_model, out_csv)
+                spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {subject_name}! ' \
+                               f'{constants.ANSI_RESET}'
+                time.sleep(3)
+
+                # ----------------------------------
+                # EXTRACT PET ACTIVITY
+                # ----------------------------------
+                if pet_file is not None:
+                    pet_image = SimpleITK.ReadImage(pet_file)
+                    spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {subject_name} ({model_workflow.target_model})...'
+                    logging.info(f'     - Extracting PET statistics for {model_workflow.target_model}')
+                    resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
+                                                                                 moving_image=resampled_segmentation,
+                                                                                 is_label_image=True)
+                    out_csv = os.path.join(stats_dir, model_workflow.target_model.multilabel_prefix + subject_name + '_pet_activity.csv')
+                    image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model_workflow.target_model, out_csv)
+                    spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {subject_name}! ' \
+                                   f'{constants.ANSI_RESET}'
+                    time.sleep(3)
+
+                performance_observer.time_phase()
 
         end_time = time.time()
         elapsed_time = end_time - start_time
-        spinner.text = f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {len(model_names)} models: ' \
+        spinner.text = f' {constants.ANSI_GREEN}[{i + 1}/{num_subjects}] Prediction done for {subject_name} using {len(model_names)} models: ' \
                        f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}'
         time.sleep(3)
-        logging.info(f' [{i + 1}/{num_subjects}] Prediction done for {os.path.basename(subject)} using {len(model_names)} models: {", ".join(model_names)}!' 
+        logging.info(f' Prediction done for {subject_name} using {len(model_names)} models: {", ".join(model_names)}!' 
                      f' | Elapsed time: {round(elapsed_time / 60, 1)} min')
 
-
-        pet_file = file_utilities.find_pet_file(subject)
-        for model_name in model_names:
-            # ----------------------------------
-            # EXTRACT VOLUME STATISTICS
-            # ----------------------------------
-            multilabel_file = glob.glob(os.path.join(segmentations_dir, MODELS[model_name]["multilabel_prefix"] + '*nii*'))
-            if not multilabel_file:
-                spinner.text = f'[{i + 1}/{num_subjects}] Can not extract statistics for {os.path.basename(subject)} ({model_name})...'
-                continue
-
-            spinner.text = f'[{i + 1}/{num_subjects}] Extracting CT volume statistics for {os.path.basename(subject)} ({model_name})...'
-            multilabel_file = multilabel_file[0]
-            multilabel_image = SimpleITK.ReadImage(multilabel_file)
-            out_csv = os.path.join(stats_dir, MODELS[model_name]["multilabel_prefix"] + os.path.basename(subject) + '_ct_volume.csv')
-            image_processing.get_shape_statistics(multilabel_image, model_name, out_csv)
-            spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] CT volume extracted for {os.path.basename(subject)}! ' \
-                           f'{constants.ANSI_RESET}'
-            time.sleep(1)
-
-            # ----------------------------------
-            # EXTRACT PET ACTIVITY
-            # ----------------------------------
-            if pet_file is not None:
-                pet_image = SimpleITK.ReadImage(pet_file)
-                spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {os.path.basename(subject)} ({model_name})...'
-                resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
-                                                                             moving_image=multilabel_image,
-                                                                             is_label_image=True)
-                out_csv = os.path.join(stats_dir, MODELS[model_name]["multilabel_prefix"] + os.path.basename(subject) + '_pet_activity.csv')
-                image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model_name, out_csv)
-                spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {os.path.basename(subject)}! ' \
-                               f'{constants.ANSI_RESET}'
-                time.sleep(3)
+        performance_observer.record_phase("Total Processing Done")
+        if benchmark:
+            performance_observer.off()
+            output_path = os.path.join(stats_dir, '')
+            performance_observer.plot_performance(output_path)
+            subject_performance_parameters.append(performance_observer.get_peak_resources())
 
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
@@ -279,25 +299,34 @@ def main():
     spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
                     f'{len(moose_compliant_subjects)} datasets, {len(model_names)} models: {round(total_elapsed_time, 1)} min'
                     f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
+    logging.info(f' ')
+    logging.info(f' ALL SUBJECTS PROCESSED')
+    logging.info(f'  - Number of Subjects: {len(moose_compliant_subjects)}')
+    logging.info(f'  - Number of Models:   {len(model_names)}')
+    logging.info(f'  - Time (total):       {round(total_elapsed_time, 1)}min')
+    logging.info(f'  - Time (per subject): {round(time_per_dataset, 2)}min')
+    if benchmark:
+        df = pd.DataFrame(subject_performance_parameters, columns=['Image', 'Model', 'Image Size', 'Runtime [s]', 'Peak Memory [GB]'])
+        csv_file_path = os.path.join(parent_folder, 'moosez-v3.0.0_peak_performance_parameters.csv')
+        df.to_csv(csv_file_path, index=False)
+        logging.info(f'  - Resource utilization written to {csv_file_path}')
+    logging.info('----------------------------------------------------------------------------------------------------')
+    logging.info('                                     FINISHED MOOSE-Z V.3.0.0                                       ')
+    logging.info('----------------------------------------------------------------------------------------------------')
 
 
-def moose(file_path: str, model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> None:
+def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | SimpleITK.Image, model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> None:
     """
     Execute the MOOSE 3.0 image segmentation process.
 
-    This function carries out the following steps:
-    1. Sets the path for model results.
-    2. Creates the required directory for the model.
-    3. Downloads the model based on the provided `model_name`.
-    4. Validates and prepares the input directory to be compatible with nnUNet.
-    5. Executes the prediction process.
+    :param input_data: This can be either:
+                       1. A file path to the NIfTI file (as a string),
+                       2. A tuple containing a numpy array and the corresponding spacing (as (array, spacing)),
+                       3. A SimpleITK image.
 
     :param model_names: The name of the model to be used for predictions. This model will be downloaded and used
                        for the image segmentation process.
     :type model_names: str
-
-    :param file_path: Path to the file (in nifti, either .nii or .nii.gz) to be processed.
-    :type file_path: str
 
     :param output_dir: Path to the directory where the segmented output will be saved.
     :type output_dir: str
@@ -310,38 +339,57 @@ def moose(file_path: str, model_names: str | list[str], output_dir: str = None, 
     :rtype: None
 
     :Example:
-
     >>> moose('/path/to/input/file', '[list, of, models]', '/path/to/save/output', 'cuda')
+    >>> moose((numpy_array, (1.5, 1.5, 1.5)), 'model_name', '/path/to/save/output', 'cuda')
+    >>> moose(simple_itk_image, 'model_name', '/path/to/save/output', 'cuda')
 
     """
 
-    image = SimpleITK.ReadImage(file_path)
-    file_name = file_utilities.get_nifti_file_stem(file_path)
+    if isinstance(input_data, str):
+        image = SimpleITK.ReadImage(input_data)
+        file_name = file_utilities.get_nifti_file_stem(input_data)
+    elif isinstance(input_data, SimpleITK.Image):
+        image = input_data
+        file_name = 'image_from_simpleitk'  # Default name or generate from other means if needed
+    elif isinstance(input_data, tuple) and isinstance(input_data[0], numpy.ndarray) and isinstance(input_data[1],
+                                                                                                   tuple):
+        numpy_array, spacing = input_data
+        image = SimpleITK.GetImageFromArray(numpy_array)
+        image.SetSpacing(spacing)
+        file_name = 'image_from_array'  # Default name or generate from other means if needed
+    else:
+        raise ValueError(
+            "Input data must be either a file path (str), a SimpleITK.Image, or a tuple (numpy array, spacing).")
 
     if isinstance(model_names, str):
         model_names = [model_names]
 
-    model_path = constants.NNUNET_RESULTS_FOLDER
+    model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
+    model_routine = models.construct_model_routine(model_names)
 
-    for model_name in model_names:
-        logging.info('- Model name: ' + model_name)
-        download.model(model_name, model_path)
-        if MODELS[model_name]["limit_fov"] is not None:
-            download.model(MODELS[model_name]["limit_fov"]["model_to_crop_from"], model_path)
+    for desired_spacing, model_workflows in model_routine.items():
+        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
+                                                                                              desired_spacing)
 
-    prediction_routine = predict.construct_prediction_routines(model_names)
-    for desired_spacing, routines in prediction_routine.items():
-        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+        for model_workflow in model_workflows:
+            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator,
+                                                                        os.devnull)
 
-        for routine in routines:
-            model = routine[0]
-            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model, accelerator, os.devnull)
+            if len(model_workflow) == 2:
+                inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
+                if isinstance(inference_fov_intensities, int):
+                    inference_fov_intensities = [inference_fov_intensities]
 
-            if len(routine) > 1:
-                model, segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array,
-                                                                                             routine, accelerator,
-                                                                                             os.devnull)
+                existing_intensities = numpy.unique(segmentation_array)
+                if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
+                    continue
+
+                segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image,
+                                                                                                       segmentation_array,
+                                                                                                       model_workflow,
+                                                                                                       accelerator,
+                                                                                                       os.devnull)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
@@ -350,8 +398,8 @@ def moose(file_path: str, model_names: str | list[str], output_dir: str = None, 
             resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
 
             if output_dir is None:
-                output_dir = os.path.dirname(file_path)
-            segmentation_image_path = os.path.join(output_dir, f"{MODELS[model]['multilabel_prefix']}segmentation_{file_name}.nii.gz")
+                output_dir = os.path.dirname(input_data) if isinstance(input_data, str) else '.'
+            segmentation_image_path = os.path.join(output_dir, f"{model_workflow.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz")
             SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
 
 

@@ -57,7 +57,8 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         :param input_path: The path to the directory or filename to convert to nii.gz.
         :type input_path: str
         
-        :param output_directory: Optional. The output directory to write the image to. If not specified, the output image will be written to the same directory as the input image.
+        :param output_directory: Optional. The output directory to write the image to. If not specified, the
+                                 output image will be written to the same directory as the input image.
         :type output_directory: str
         
         :return: None
@@ -66,7 +67,10 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         :raises: FileNotFoundError if the input path does not exist.
         
         Usage:
-        This function can be used to convert any image format known to ITK to NIFTI. If the input path is a directory, the function will convert all images in the directory to NIFTI format. If the input path is a file, the function will convert the file to NIFTI format. The output image will be written to the specified output directory, or to the same directory as the input image if no output directory is specified.
+        This function can be used to convert any image format known to ITK to NIFTI. If the input path is a directory,
+        the function will convert all images in the directory to NIFTI format. If the input path is a file,
+        the function will convert the file to NIFTI format. The output image will be written to the specified
+        output directory, or to the same directory as the input image if no output directory is specified.
     """
 
     if not os.path.exists(input_path):
