@@ -477,11 +477,11 @@ def multi_moose_task(subject: str, model_routine: dict, accelerator: str):
     return f" {subject_name} done!"
 
 
-def multi_moose(moose_compliant_subjects: list[str], model_routine: list[dict], accelerator: str, number_of_workers: int):
+def multi_moose(moose_compliant_subjects: list[str], model_routine: dict, accelerator: str, number_of_workers: int):
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_workers) as executor:
         number_of_subjects = len(moose_compliant_subjects)
         results = list(executor.map(multi_moose_task,
-                                    moose_compliant_subjects
+                                    moose_compliant_subjects,
                                     [model_routine] * number_of_subjects,
                                     [accelerator] * number_of_subjects))
 
