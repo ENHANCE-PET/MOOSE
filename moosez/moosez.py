@@ -188,10 +188,19 @@ def main():
 
     if branch_out is not None:
         concurrent_jobs = branch_out
-        print(f" Concurrent jobs: {concurrent_jobs}")
+        spinner.text = f'Processing {num_subjects} subjects with {concurrent_jobs} concurrent jobs...'
         logging.info(f"- Branching out with {concurrent_jobs} concurrent jobs.")
 
+        performance_observer = PerformanceObserver(f'{num_subjects} subjects | {concurrent_jobs} jobs', ', '.join(model_names))
+        if benchmark:
+            performance_observer.on()
+
         multi_moose(moose_compliant_subjects, model_routine, accelerator, concurrent_jobs)
+
+        performance_observer.record_phase("Total Processing Done")
+        if benchmark:
+            performance_observer.off()
+            subject_performance_parameters.append(performance_observer.get_peak_resources())
 
     else:
         for i, subject in enumerate(moose_compliant_subjects):
@@ -479,17 +488,12 @@ def multi_moose_task(subject: str, model_routine: dict, accelerator: str):
 
 
 def multi_moose(moose_compliant_subjects: list[str], model_routine: dict, accelerator: str, number_of_workers: int):
-    spawn = mp.get_context('spawn')
+    mp_context = mp.get_context('spawn')
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_workers, mp_context=spawn) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_workers, mp_context=mp_context) as executor:
         number_of_subjects = len(moose_compliant_subjects)
-        results = list(executor.map(multi_moose_task,
-                                    moose_compliant_subjects,
-                                    [model_routine] * number_of_subjects,
-                                    [accelerator] * number_of_subjects))
-
-    for result in results:
-        print(result)
+        list(executor.map(multi_moose_task, moose_compliant_subjects, [model_routine] * number_of_subjects,
+                          [accelerator] * number_of_subjects))
 
 
 if __name__ == '__main__':
