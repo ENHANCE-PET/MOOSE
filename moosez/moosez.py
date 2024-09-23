@@ -31,6 +31,7 @@ import emoji
 import numpy
 import pandas as pd
 from halo import Halo
+import multiprocessing as mp
 import concurrent.futures
 from moosez import constants
 from moosez import display
@@ -478,7 +479,9 @@ def multi_moose_task(subject: str, model_routine: dict, accelerator: str):
 
 
 def multi_moose(moose_compliant_subjects: list[str], model_routine: dict, accelerator: str, number_of_workers: int):
-    with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_workers) as executor:
+    spawn = mp.get_context('spawn')
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_workers, mp_context=spawn) as executor:
         number_of_subjects = len(moose_compliant_subjects)
         results = list(executor.map(multi_moose_task,
                                     moose_compliant_subjects,
