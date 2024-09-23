@@ -21,7 +21,6 @@ import dask
 import sys
 import torch
 import numpy as np
-import logging
 from moosez import models
 from moosez import image_processing
 from moosez.resources import check_device
@@ -79,8 +78,6 @@ def preprocessing_iterator_from_dask_array(dask_array: da.Array, image_propertie
 def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: dict, predictor: nnUNetPredictor) -> (iter, list):
     overlap_per_dimension = (0, 20, 20, 20)
     splits = (1, 4, 2, 2)
-    logging.info(f'     - Image with shape {"x".join(map(str, image_array.shape))} will have the following chunk configuration: {"x".join(map(str,splits))}')
-
     chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, overlap_per_dimension)
 
     preprocessor = predictor.configuration_manager.preprocessor_class(verbose=predictor.verbose)
@@ -163,7 +160,6 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model,
         iterator, chunk_locations = preprocessing_iterator_from_array(image_array, image_properties, predictor)
         segmentations = predictor.predict_from_data_iterator(iterator)
         segmentations = [segmentation[None, ...] for segmentation in segmentations]
-        logging.info(f'    - Retrieved {len(segmentations)} segmentations and recombining them.')
         combined_segmentations = image_processing.ImageChunker.chunks_to_array(segmentations, chunk_locations, image_array.shape)
 
         return np.squeeze(combined_segmentations)
