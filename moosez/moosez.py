@@ -86,7 +86,7 @@ def main():
     )
 
     parser.add_argument(
-        '-bo', '--branch_out',
+        '-herd', '--moose_herd',
         nargs='?',
         const=2,
         type=int,
@@ -104,7 +104,7 @@ def main():
     parent_folder = os.path.abspath(args.main_directory)
     model_names = args.model_names
     benchmark = args.benchmark
-    branch_out = args.branch_out
+    moose_instances = args.moose_herd
 
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', level=logging.INFO,
                         filename=os.path.join(parent_folder, datetime.now().strftime('moosez-v.3.0.0_%H-%M-%d-%m-%Y.log')), filemode='w')
@@ -127,10 +127,14 @@ def main():
     print(' ')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
     print(' ')
+
+    print(f" Number of selected models: {len(model_names)} | {', '.join(model_names)}")
     modalities = display.expectations(model_names)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     logging.info('- Custom trainer: ' + custom_trainer_status)
     accelerator = resources.check_device()
+    if moose_instances is not None:
+        print(f" Number of moose instances run in parallel: {moose_instances}")
 
     # ----------------------------------
     # DOWNLOADING THE MODEL
@@ -186,16 +190,14 @@ def main():
 
     subject_performance_parameters = []
 
-    if branch_out is not None:
-        concurrent_jobs = branch_out
-        spinner.text = f'Processing {num_subjects} subjects with {concurrent_jobs} concurrent jobs...'
-        logging.info(f"- Branching out with {concurrent_jobs} concurrent jobs.")
+    if moose_instances is not None:
+        logging.info(f"- Branching out with {moose_instances} concurrent jobs.")
 
-        performance_observer = PerformanceObserver(f'{num_subjects} subjects | {concurrent_jobs} jobs', ', '.join(model_names))
+        performance_observer = PerformanceObserver(f'{num_subjects} subjects | {moose_instances} jobs', ', '.join(model_names))
         if benchmark:
             performance_observer.on()
 
-        multi_moose(moose_compliant_subjects, model_routine, accelerator, concurrent_jobs)
+        multi_moose(moose_compliant_subjects, model_routine, accelerator, moose_instances, spinner)
 
         performance_observer.record_phase("Total Processing Done")
         if benchmark:
@@ -322,16 +324,19 @@ def main():
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
     time_per_dataset = total_elapsed_time / len(moose_compliant_subjects)
+    time_per_model = time_per_dataset / len(model_names)
 
     spinner.succeed(f'{constants.ANSI_GREEN} All predictions done! | Total elapsed time for '
                     f'{len(moose_compliant_subjects)} datasets, {len(model_names)} models: {round(total_elapsed_time, 1)} min'
-                    f' | Time per dataset: {round(time_per_dataset, 2)} min {constants.ANSI_RESET}')
+                    f' | Time per dataset: {round(time_per_dataset, 2)} min'
+                    f' | Time per model: {round(time_per_model, 2)} min {constants.ANSI_RESET}')
     logging.info(f' ')
     logging.info(f' ALL SUBJECTS PROCESSED')
     logging.info(f'  - Number of Subjects: {len(moose_compliant_subjects)}')
     logging.info(f'  - Number of Models:   {len(model_names)}')
     logging.info(f'  - Time (total):       {round(total_elapsed_time, 1)}min')
     logging.info(f'  - Time (per subject): {round(time_per_dataset, 2)}min')
+    logging.info(f'  - Time (per model):   {round(time_per_model, 2)}min')
     if benchmark:
         df = pd.DataFrame(subject_performance_parameters, columns=['Image', 'Model', 'Image Size', 'Runtime [s]', 'Peak Memory [GB]'])
         csv_file_path = os.path.join(parent_folder, 'moosez-v3.0.0_peak_performance_parameters.csv')
@@ -487,14 +492,21 @@ def multi_moose_task(subject: str, model_routine: dict, accelerator: str):
     return f" {subject_name} done!"
 
 
-def multi_moose(moose_compliant_subjects: list[str], model_routine: dict, accelerator: str, number_of_workers: int):
+def multi_moose(moose_compliant_subjects: list[str], model_routine: dict, accelerator: str, number_of_workers: int, spinner):
     mp_context = mp.get_context('spawn')
+    number_of_subjects = len(moose_compliant_subjects)
+    processed_subjects = 0
+    spinner.text = f'[{processed_subjects}/{number_of_subjects}] subjects processed.'
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_workers, mp_context=mp_context) as executor:
-        number_of_subjects = len(moose_compliant_subjects)
-        list(executor.map(multi_moose_task, moose_compliant_subjects, [model_routine] * number_of_subjects,
-                          [accelerator] * number_of_subjects))
+        futures = []
+        for subject in moose_compliant_subjects:
+            futures.append(executor.submit(multi_moose_task, subject, model_routine, accelerator))
 
+        for future in concurrent.futures.as_completed(futures):
+            result = future.result()
+            processed_subjects += 1
+            spinner.text = f'[{processed_subjects}/{number_of_subjects}] subjects processed.'
 
 if __name__ == '__main__':
     main()

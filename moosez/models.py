@@ -76,11 +76,11 @@ class Model:
 
     def __download(self):
         if os.path.exists(self.directory):
-            logging.info(f"    - A local instance of {self.model_identifier} ({self.folder_name}) has been detected.")
-            print(f"{ANSI_GREEN} A local instance of {self.model_identifier} ({self.folder_name}) has been detected. {ANSI_RESET}")
+            logging.info(f"    - A local instance of {self.model_identifier} has been detected.")
+            print(f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}")
             return
 
-        logging.info(f"    - Downloading {self.model_identifier} ({self.folder_name})")
+        logging.info(f"    - Downloading {self.model_identifier}")
         if not os.path.exists(MODELS_DIRECTORY_PATH):
             os.makedirs(MODELS_DIRECTORY_PATH)
 
@@ -99,7 +99,7 @@ class Model:
                             "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
                             TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
         with progress:
-            task = progress.add_task(f"[white] Downloading {self.model_identifier} ({self.folder_name})...", total=total_size)
+            task = progress.add_task(f"[white] Downloading {self.model_identifier}...", total=total_size)
             with open(download_file_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     if chunk:
@@ -113,15 +113,15 @@ class Model:
         with progress:
             with zipfile.ZipFile(download_file_path, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
-                task = progress.add_task(f"[white] Extracting {self.model_identifier} ({self.folder_name})...", total=total_size)
+                task = progress.add_task(f"[white] Extracting {self.model_identifier}...", total=total_size)
                 for file in zip_ref.infolist():
                     zip_ref.extract(file, MODELS_DIRECTORY_PATH)
                     progress.update(task, advance=file.file_size)
-        logging.info(f"    - {self.model_identifier} ({self.folder_name}) extracted.")
+        logging.info(f"    - {self.model_identifier} extracted.")
 
         os.remove(download_file_path)
-        logging.info(f"    - {self.model_identifier} ({self.folder_name}) - setup complete.")
-        print(f"{ANSI_GREEN} {self.model_identifier} ({self.folder_name}) - setup complete. {ANSI_RESET}")
+        logging.info(f"    - {self.model_identifier} - setup complete.")
+        print(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")
 
     def __get_organ_indices(self) -> dict[int, str]:
         labels = self.dataset.get('labels', {})
