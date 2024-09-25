@@ -125,30 +125,10 @@ MODELS = {
         KEY_FOLDER_NAME: "Dataset003_PUMA4",
         KEY_LIMIT_FOV: None
     },
-    "clin_ct_liver_segments": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_liver_segments_10092024.zip",
-        KEY_FOLDER_NAME: "Dataset134_Couinaud",
-        KEY_LIMIT_FOV: {
-            "model_to_crop_from": "clin_ct_fast_organs",
-            "inference_fov_intensities": 8,
-            "label_intensity_to_crop_from": 8,
-            "largest_component_only": False
-        }
-    },
     "clin_ct_fast_organs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_6_02092024.zip",
         KEY_FOLDER_NAME: "Dataset145_Fast_organs",
         KEY_LIMIT_FOV: None
-    },
-    "clin_ct_aorta": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_aorta_02092024.zip",
-        KEY_FOLDER_NAME: "Dataset321_Aorta",
-        KEY_LIMIT_FOV: {
-            "model_to_crop_from": "clin_ct_fast_cardiac",
-            "inference_fov_intensities": 6,
-            "label_intensity_to_crop_from": 6,
-            "largest_component_only": False
-        }
     },
     "clin_pt_fdg_tumor": {
         KEY_URL: None,
