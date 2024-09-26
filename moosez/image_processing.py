@@ -44,6 +44,10 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     :return: None
     """
     intensity_statistics = sitk.LabelIntensityStatisticsImageFilter()
+    min_intensity = sitk.GetArrayViewFromImage(image).min()
+    max_intensity = sitk.GetArrayViewFromImage(image).max()
+    bins = int(max_intensity - min_intensity)
+    intensity_statistics.SetNumberOfBins(bins)
     intensity_statistics.Execute(mask_image, image)
     stats_list = [(intensity_statistics.GetMean(i), intensity_statistics.GetStandardDeviation(i),
                    intensity_statistics.GetMedian(i), intensity_statistics.GetMaximum(i),
