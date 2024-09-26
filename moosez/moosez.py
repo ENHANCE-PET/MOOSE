@@ -121,17 +121,17 @@ def main():
     # INPUT VALIDATION AND PREPARATION
     # ----------------------------------
 
-    logging.info(' ')
-    logging.info('- Main directory: ' + parent_folder)
-    logging.info(' ')
-    print(' ')
+    logging.info(f' ')
+    logging.info(f'- Main directory: {parent_folder}')
+    logging.info(f' ')
+    print(f' ')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
-    print(' ')
+    print(f' ')
 
     print(f" Number of selected models: {len(model_names)} | {', '.join(model_names)}")
     modalities = display.expectations(model_names)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
-    logging.info('- Custom trainer: ' + custom_trainer_status)
+    logging.info(f'- Custom trainer: {custom_trainer_status}')
     accelerator = resources.check_device()
     if moose_instances is not None:
         print(f" Number of moose instances run in parallel: {moose_instances}")
@@ -140,9 +140,9 @@ def main():
     # DOWNLOADING THE MODEL
     # ----------------------------------
 
-    print('')
+    print(f'')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
-    print('')
+    print(f'')
     model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names)
@@ -151,15 +151,15 @@ def main():
     # INPUT STANDARDIZATION
     # ----------------------------------
 
-    print('')
+    print(f'')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":magnifying_glass_tilted_left:")} STANDARDIZING INPUT DATA TO NIFTI:{constants.ANSI_RESET}')
-    print('')
-    logging.info(' ')
-    logging.info(' STANDARDIZING INPUT DATA TO NIFTI:')
-    logging.info(' ')
+    print(f'')
+    logging.info(f' ')
+    logging.info(f' STANDARDIZING INPUT DATA TO NIFTI:')
+    logging.info(f' ')
     image_conversion.standardize_to_nifti(parent_folder)
     print(f"{constants.ANSI_GREEN} Standardization complete.{constants.ANSI_RESET}")
-    logging.info(" Standardization complete.")
+    logging.info(f" Standardization complete.")
 
     # --------------------------------------
     # CHECKING FOR MOOSE COMPLIANT SUBJECTS
@@ -178,9 +178,9 @@ def main():
     # RUN PREDICTION ONLY FOR MOOSE COMPLIANT SUBJECTS
     # -------------------------------------------------
 
-    print('')
+    print(f'')
     print(f'{constants.ANSI_VIOLET} {emoji.emojize(":crystal_ball:")} PREDICT:{constants.ANSI_RESET}')
-    print('')
+    print(f'')
     logging.info(' ')
     logging.info(' PERFORMING PREDICTION:')
 
@@ -295,9 +295,7 @@ def main():
                         pet_image = SimpleITK.ReadImage(pet_file)
                         spinner.text = f'[{i + 1}/{num_subjects}] Extracting PET activity for {subject_name} ({model_workflow.target_model})...'
                         logging.info(f'     - Extracting PET statistics for {model_workflow.target_model}')
-                        resampled_multilabel_image = ImageResampler.reslice_identity(reference_image=pet_image,
-                                                                                     moving_image=resampled_segmentation,
-                                                                                     is_label_image=True)
+                        resampled_multilabel_image = ImageResampler.reslice_identity(pet_image, resampled_segmentation, is_label_image=True)
                         out_csv = os.path.join(stats_dir, model_workflow.target_model.multilabel_prefix + subject_name + '_pet_activity.csv')
                         image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model_workflow.target_model, out_csv)
                         spinner.text = f'{constants.ANSI_GREEN} [{i + 1}/{num_subjects}] PET activity extracted for {subject_name}! ' \
@@ -382,13 +380,13 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
         file_name = file_utilities.get_nifti_file_stem(input_data)
     elif isinstance(input_data, SimpleITK.Image):
         image = input_data
-        file_name = 'image_from_simpleitk'  # Default name or generate from other means if needed
+        file_name = 'image_from_simpleitk'
     elif isinstance(input_data, tuple) and isinstance(input_data[0], numpy.ndarray) and isinstance(input_data[1],
                                                                                                    tuple):
         numpy_array, spacing = input_data
         image = SimpleITK.GetImageFromArray(numpy_array)
         image.SetSpacing(spacing)
-        file_name = 'image_from_array'  # Default name or generate from other means if needed
+        file_name = 'image_from_array'
     else:
         raise ValueError(
             "Input data must be either a file path (str), a SimpleITK.Image, or a tuple (numpy array, spacing).")
@@ -401,12 +399,10 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
     model_routine = models.construct_model_routine(model_names)
 
     for desired_spacing, model_workflows in model_routine.items():
-        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline',
-                                                                                              desired_spacing)
+        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
 
         for model_workflow in model_workflows:
-            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator,
-                                                                        os.devnull)
+            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, os.devnull)
 
             if len(model_workflow) == 2:
                 inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]

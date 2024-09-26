@@ -77,7 +77,7 @@ def preprocessing_iterator_from_dask_array(dask_array: da.Array, image_propertie
 
 def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: dict, predictor: nnUNetPredictor) -> (iter, list):
     overlap_per_dimension = (0, 20, 20, 20)
-    splits = (1, 4, 2, 2)
+    splits = image_processing.ImageChunker.determine_splits(image_array)
     chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, overlap_per_dimension)
 
     preprocessor = predictor.configuration_manager.preprocessor_class(verbose=predictor.verbose)

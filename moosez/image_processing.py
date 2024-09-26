@@ -22,7 +22,7 @@ import dask.array as da
 import numpy as np
 import pandas as pd
 import scipy.ndimage as ndimage
-from moosez.constants import CHUNK_THRESHOLD
+from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
 from moosez import predict
 from moosez import models
 import itertools
@@ -43,6 +43,10 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     :return: None
     """
     intensity_statistics = SimpleITK.LabelIntensityStatisticsImageFilter()
+    min_intensity = SimpleITK.GetArrayViewFromImage(image).min()
+    max_intensity = SimpleITK.GetArrayViewFromImage(image).max()
+    bins = int(max_intensity - min_intensity)
+    intensity_statistics.SetNumberOfBins(bins)
     intensity_statistics.Execute(mask_image, image)
     stats_list = [(intensity_statistics.GetMean(i), intensity_statistics.GetStandardDeviation(i),
                    intensity_statistics.GetMedian(i), intensity_statistics.GetMaximum(i),
@@ -240,9 +244,9 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.
 
 class ImageChunker:
     @staticmethod
-    def __compute_interior_indices(array_length: int, number_of_chunks: int) -> (list[int], list[int]):
-        start = [int(round(k * array_length / number_of_chunks)) for k in range(number_of_chunks)]
-        end = [int(round((k + 1) * array_length / number_of_chunks)) for k in range(number_of_chunks)]
+    def __compute_interior_indices(axis_length: int, number_of_chunks: int) -> (list[int], list[int]):
+        start = [int(round(k * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
+        end = [int(round((k + 1) * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
         return start, end
 
     @staticmethod
@@ -253,9 +257,9 @@ class ImageChunker:
         ends_list = []
 
         for dimension_index in range(num_dims):
-            array_length = dims[dimension_index]
+            axis_length = dims[dimension_index]
             number_of_chunks = splits_per_dimension[dimension_index]
-            start_index, end_index = ImageChunker.__compute_interior_indices(array_length, number_of_chunks)
+            start_index, end_index = ImageChunker.__compute_interior_indices(axis_length, number_of_chunks)
             starts_list.append(start_index)
             ends_list.append(end_index)
 
@@ -267,12 +271,12 @@ class ImageChunker:
             for dimension_index, chunk_index in enumerate(idx):
                 start_index = starts_list[dimension_index]
                 end_index = ends_list[dimension_index]
-                array_length = dims[dimension_index]
+                axis_length = dims[dimension_index]
                 number_of_chunks = splits_per_dimension[dimension_index]
                 overlap = overlap_per_dimension[dimension_index]
 
                 start = max(0, start_index[chunk_index] - overlap if chunk_index > 0 else start_index[chunk_index])
-                end = min(array_length, end_index[chunk_index] + overlap if chunk_index < number_of_chunks - 1 else end_index[chunk_index])
+                end = min(axis_length, end_index[chunk_index] + overlap if chunk_index < number_of_chunks - 1 else end_index[chunk_index])
 
                 start_in_chunk = start_index[chunk_index] - start
                 end_in_chunk = start_in_chunk + (end_index[chunk_index] - start_index[chunk_index])
@@ -317,6 +321,20 @@ class ImageChunker:
 
         return final_arr
 
+    @staticmethod
+    def determine_splits(image_array: np.ndarray) -> tuple:
+        image_shape = image_array.shape
+        splits = []
+        for axis in image_shape:
+            if axis == 1:
+                splits.append(1)
+                continue
+            split = round((axis // CHUNK_THRESHOLD_INFERRING) + 0.5)
+            if split == 0:
+                split = 1
+            splits.append(split)
+        return tuple(splits)
+
 
 class ImageResampler:
     @staticmethod
@@ -335,15 +353,15 @@ class ImageResampler:
         if axis < 0:
             raise ValueError('Axis must be non-negative')
 
-        if CHUNK_THRESHOLD <= 0:
+        if CHUNK_THRESHOLD_RESAMPLING <= 0:
             raise ValueError('CHUNK_THRESHOLD must be greater than 0')
 
         # If the axis is smaller than the threshold, it cannot be split into smaller chunks
-        if axis < CHUNK_THRESHOLD:
+        if axis < CHUNK_THRESHOLD_RESAMPLING:
             return 1
 
         # Determine the maximum number of chunks that the axis can be split into
-        split = axis // CHUNK_THRESHOLD
+        split = axis // CHUNK_THRESHOLD_RESAMPLING
 
         # Reduce the number of chunks until the axis is evenly divisible by split
         while axis % split != 0:
