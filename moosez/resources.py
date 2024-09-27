@@ -6,6 +6,8 @@ import torch
 import os
 import sys
 from moosez.constants import KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV
+from halo import Halo
+from datetime import datetime
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
@@ -240,6 +242,58 @@ def get_virtual_env_root() -> str:
     python_exe = sys.executable
     virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
     return virtual_env_root
+
+
+class OutputManager:
+    def __init__(self, verbose_console: bool, verbose_log: bool):
+        self.verbose_console = verbose_console
+        self.verbose_log = verbose_log
+
+        self.logger = None
+        self.spinner = None
+
+    def configure_logging(self, log_file_directory: str):
+        if self.verbose_log:
+            self.logger = logging.getLogger(__name__)
+            self.logger.setLevel(logging.INFO)
+            log_format = '%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
+            formatter = logging.Formatter(log_format)
+
+            log_filename = os.path.join(log_file_directory, datetime.now().strftime('moosez-v.3.0.0_%H-%M-%d-%m-%Y.log'))
+            file_handler = logging.FileHandler(log_filename, mode='w')
+
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(formatter)
+
+            self.logger.addHandler(file_handler)
+
+    def log_update(self, text: str):
+        if self.verbose_log and self.log_file is not None:
+            self.logger.info(text)
+
+    def console_update(self, text: str):
+        if self.verbose_console:
+            print(text)
+
+    def configure_spinner(self):
+        if self.verbose_console:
+            self.spinner = Halo(text=' Initiating', spinner='dots')
+
+    def spinner_update(self, text: str):
+        if self.spinner and self.verbose_console:
+            self.spinner.text = text
+
+    def spinner_stop(self):
+        if self.spinner:
+            self.spinner.stop()
+
+    def spinner_start(self):
+        if self.spinner:
+            self.spinner.start()
+
+    def spinner_succeed(self):
+        if self.spinner and self.verbose_console:
+            self.spinner.succeed()
 
 
 ENVIRONMENT_ROOT_PATH: str = get_virtual_env_root()
