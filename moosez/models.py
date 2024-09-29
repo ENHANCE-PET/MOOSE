@@ -39,7 +39,10 @@ class Model:
             imaging = "Clinical"
         elif self.study_type == "preclin":
             imaging = "Pre-clinical"
+        else:
+            imaging = "unknown"
         description[KEY_DESCRIPTION_IMAGING] = imaging
+        return description
 
     def get_expectation(self):
         if self.modality == 'FDG-PET-CT':
@@ -48,7 +51,7 @@ class Model:
             expected_modalities = [self.modality]
         expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
 
-        print(f" Tissue of interest: {self.description[KEY_DESCRIPTION_TEXT]} | Imaging: {self.description[KEY_DESCRIPTION_IMAGING]} | Modality: {self.modality}")
+        print(f" Tissue of interest: {self.description[KEY_DESCRIPTION_TEXT]:<42} | Imaging: {self.description[KEY_DESCRIPTION_IMAGING]:<12} | Modality: {self.modality:<6}")
         return expected_modalities, expected_prefixes
 
     def __get_configuration_folders(self) -> list[str]:
