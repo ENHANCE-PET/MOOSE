@@ -5,7 +5,7 @@ import logging
 import torch
 import os
 import sys
-from moosez.constants import KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV
+from moosez.constants import KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, KEY_DESCRIPTION, KEY_DESCRIPTION_TEXT, VERSION
 from halo import Halo
 from datetime import datetime
 
@@ -45,97 +45,116 @@ MODELS = {
     "clin_ct_lungs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_lungs_24062023.zip",
         KEY_FOLDER_NAME: "Dataset333_HMS3dlungs",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Lungs"}
     },
     "clin_ct_organs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_05082024.zip",
         KEY_FOLDER_NAME: "Dataset123_Organs",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Organs"}
     },
     "preclin_mr_all": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_mr_all_05122023.zip",
         KEY_FOLDER_NAME: "Dataset234_minimoose",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "All regions"}
     },
     "clin_ct_body": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_27112023.zip",
         KEY_FOLDER_NAME: "Dataset001_body",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Body, Arms, legs, head"}
     },
     "clin_ct_ribs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ribs_11082024.zip",
         KEY_FOLDER_NAME: "Dataset444_Ribs",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Ribs"}
     },
     "clin_ct_muscles": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_muscles_09082024.zip",
         KEY_FOLDER_NAME: "Dataset555_Muscles",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Muscles"}
     },
     "clin_ct_peripheral_bones": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_05082024.zip",
         KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Peripheral Bones"}
     },
     "clin_ct_fat": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
         KEY_FOLDER_NAME: "Dataset777_Fat",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Fat"}
     },
     "clin_ct_vertebrae": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_11082024.zip",
         KEY_FOLDER_NAME: "Dataset111_Vertebrae",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Vertebrae"}
     },
     "clin_ct_cardiac": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac_09082024.zip",
         KEY_FOLDER_NAME: "Dataset888_Cardiac",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Cardiac"}
     },
     "clin_ct_digestive": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
         KEY_FOLDER_NAME: "Dataset999_Digestive",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Digestive"}
     },
     "preclin_ct_legs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
         KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Legs"}
     },
     "clin_ct_all_bones_v1": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
         KEY_FOLDER_NAME: "Dataset600_Original_bones",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "All bones"}
     },
     "clin_ct_PUMA": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA_1k_23052024.zip",
         KEY_FOLDER_NAME: "Dataset002_PUMA",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "PUMA tissues"}
     },
     "clin_pt_fdg_brain_v1": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_fdg_pt_brain_v1_17112023.zip",
         KEY_FOLDER_NAME: "Dataset100_Brain_v1",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Brain regions"}
     },
     "clin_ct_ALPACA": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ALPACA.zip",
         KEY_FOLDER_NAME: "Dataset080_Alpaca",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "ALPACA tissues"}
     },
     "clin_ct_PUMA4": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
         KEY_FOLDER_NAME: "Dataset003_PUMA4",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "PUMA tissues"}
     },
     "clin_ct_fast_organs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_6_02092024.zip",
         KEY_FOLDER_NAME: "Dataset145_Fast_organs",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Organs"}
     },
     "clin_pt_fdg_tumor": {
         KEY_URL: None,
         KEY_FOLDER_NAME: None,
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: None
     },
     "clin_ct_body_composition": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_composition_05092024.zip",
@@ -145,67 +164,24 @@ MODELS = {
             "inference_fov_intensities": [20, 24],
             "label_intensity_to_crop_from": 22,
             "largest_component_only": True
-        }
+        },
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Body composition on the L3 vertebra region"}
     },
     "clin_ct_fast_vertebrae": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae3_10092024.zip",
         KEY_FOLDER_NAME: "Dataset112_FastVertebrae",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Vertebrae"}
         },
     "clin_ct_fast_cardiac": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac3_10092024.zip",
         KEY_FOLDER_NAME: "Dataset890_FastCardiac",
-        KEY_LIMIT_FOV: None
+        KEY_LIMIT_FOV: None,
+        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Cardiac"}
     }
 }
 
 AVAILABLE_MODELS = MODELS.keys()
-
-
-# This function returns a dictionary indicating the expected modality for a given model_name, the imaging technique,
-# the type of tissue to be segmented. The model_name should be the same as the unique identifier mentioned in the
-# MODELS dictionary above and the AVAILABLE_MODELS list.
-# If the model_name is not found, it logs an error message and returns an error message.
-#
-# If you add your own model, update this function to return the expected modality dictionary for your model.
-
-def expected_modality(model_name: str) -> dict:
-    """
-    Display expected modality for the model.
-    :param model_name: The name of the model.
-    :return: The expected modality for the model.
-    """
-    models = {
-        "clin_ct_lungs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Lungs"},
-        "clin_ct_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
-        "clin_ct_body": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body, Arms, legs, head"},
-        "preclin_mr_all": {"Imaging": "Pre-clinical", "Modality": "MR", "Tissue of interest": "All regions"},
-        "clin_ct_ribs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Ribs"},
-        "clin_ct_muscles": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Muscles"},
-        "clin_ct_peripheral_bones": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Peripheral Bones"},
-        "clin_ct_fat": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Fat"},
-        "clin_ct_vertebrae": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Vertebrae"},
-        "clin_ct_cardiac": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Cardiac"},
-        "clin_ct_digestive": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Digestive"},
-        "preclin_ct_legs": {"Imaging": "Pre-clinical", "Modality": "CT", "Tissue of interest": "Legs"},
-        "clin_ct_all_bones_v1": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "All bones"},
-        "clin_ct_PUMA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"},
-        "clin_pt_fdg_brain_v1": {"Imaging": "Clinical", "Modality": "PT", "Tissue of interest": "Brain regions"},
-        "clin_ct_ALPACA": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "ALPACA tissues"},
-        "clin_ct_PUMA4": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "PUMA tissues"},
-        "clin_ct_liver_segments": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Liver segments"},
-        "clin_ct_fast_organs": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Organs"},
-        "clin_ct_aorta": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Aorta segments"},
-        "clin_ct_body_composition": {"Imaging": "Clinical", "Modality": "CT", "Tissue of interest": "Body composition on the L3 vertebra region"}
-    }
-
-    if model_name in models:
-        model = models[model_name]
-        model["Model name"] = model_name
-        return model
-
-    logging.error(" Requested model is not available. Please check the model name.")
-    return {"Error": "Requested model is not available. Please check the model name."}
 
 
 def check_device() -> str:
@@ -252,23 +228,28 @@ class OutputManager:
         self.logger = None
         self.spinner = None
 
-    def configure_logging(self, log_file_directory: str):
-        if self.verbose_log:
-            self.logger = logging.getLogger(__name__)
+    def configure_logging(self, log_file_directory: str | None):
+        if self.verbose_log and self.logger is None:
+            self.logger = logging.getLogger(f'moosez-v{VERSION}')
             self.logger.setLevel(logging.INFO)
-            log_format = '%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
-            formatter = logging.Formatter(log_format)
+            self.logger.propagate = False
 
-            log_filename = os.path.join(log_file_directory, datetime.now().strftime('moosez-v.3.0.0_%H-%M-%d-%m-%Y.log'))
-            file_handler = logging.FileHandler(log_filename, mode='w')
+            if not any(isinstance(handler, logging.FileHandler) for handler in self.logger.handlers):
+                log_format = '%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
+                formatter = logging.Formatter(log_format)
 
-            file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(formatter)
+                if log_file_directory is None:
+                    log_file_directory = os.getcwd()
+                log_filename = os.path.join(log_file_directory, datetime.now().strftime(f'moosez-v{VERSION}_%H-%M-%d-%m-%Y.log'))
+                file_handler = logging.FileHandler(log_filename, mode='w')
 
-            self.logger.addHandler(file_handler)
+                file_handler.setLevel(logging.INFO)
+                file_handler.setFormatter(formatter)
+
+                self.logger.addHandler(file_handler)
 
     def log_update(self, text: str):
-        if self.verbose_log and self.log_file is not None:
+        if self.verbose_log and self.logger is not None:
             self.logger.info(text)
 
     def console_update(self, text: str):

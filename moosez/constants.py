@@ -8,6 +8,8 @@ This module contains the constants that are used in the moosez.
 .. versionadded:: 3.0.0
 """
 
+VERSION = "3.0.0"
+
 ALLOWED_MODALITIES = ['CT', 'PT', 'MR']
 
 # COLOR CODES
@@ -41,6 +43,10 @@ FRAME_DURATION = 0.4
 KEY_FOLDER_NAME = "folder_name"
 KEY_URL = "url"
 KEY_LIMIT_FOV = "limit_fov"
+KEY_DESCRIPTION = "description"
+KEY_DESCRIPTION_TEXT = "Imaging"
+KEY_DESCRIPTION_MODALITY = "Modality"
+KEY_DESCRIPTION_IMAGING = "Imaging"
 DEFAULT_SPACING = (1.5, 1.5, 1.5)
 FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"

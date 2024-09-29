@@ -21,7 +21,7 @@ import logging
 import emoji
 import pyfiglet
 from moosez import constants
-from moosez import resources
+from moosez import models
 
 
 def get_usage_message():
@@ -73,48 +73,37 @@ def citation():
     print(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def expectations(model_names: list[str]) -> list:
+def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]]) -> list:
     """
     Display expected modality for the model.
 
     This function displays the expected modality for the given model name. It also checks for a special case where
     'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
 
-    :param model_names: A list of model names.
-    :type model_names: list of str
+    :param model_routine: A model routine dictionary
+    :type model_routine: dict
     :return: A list of modalities.
     :rtype: list
     """
     required_modalities = []
     required_prefixes = []
 
-    for model_name in model_names:
-        model_info = resources.expected_modality(model_name)
-        modality = model_info['Modality']
-
-        # check for special case where 'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'
-        if modality == 'FDG-PET-CT':
-            modalities = ['FDG-PET', 'CT']
-        else:
-            modalities = [modality]
-        expected_prefix = [m.replace('-', '_') + "_" for m in modalities]
-
-        print(f" Tissue of interest: {model_info['Tissue of interest']} | Imaging: {model_info['Imaging']} | Modality: {modality}")
-        required_modalities = required_modalities + modalities
-        required_prefixes = required_prefixes + expected_prefix
+    for workflows in model_routine.values():
+        for workflow in workflows:
+            modalities, prefixes = workflow.get_expectations()
+            required_modalities = required_modalities + modalities
+            required_prefixes = required_prefixes + prefixes
 
     required_modalities = list(set(required_modalities))
     required_prefixes = list(set(required_prefixes))
 
-    print(f" Required modalities: {required_modalities} | "
-          f" No. of modalities: {len(required_modalities)}"
+    print(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)}"
           f" | Required prefix for non-DICOM files: {required_prefixes}")
-    logging.info(f" Required modalities: {required_modalities} |  No. of modalities: {len(required_modalities)} "
+    logging.info(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)} "
                  f"| Required prefix for non-DICOM files: {required_prefixes} ")
     print(f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
           f"will be skipped. {constants.ANSI_RESET}")
-    warning_message = " Skipping subjects without the required modalities (check file prefix).\n" \
-                      " These subjects will be excluded from analysis and their data will not be used."
-    logging.warning(warning_message)
+    logging.warning(" Skipping subjects without the required modalities (check file prefix).\n"
+                    " These subjects will be excluded from analysis and their data will not be used.")
 
     return required_modalities

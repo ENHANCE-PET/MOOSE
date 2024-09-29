@@ -6,8 +6,9 @@ import logging
 from rich.console import Console
 from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
 
-from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING,
-                              FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
+from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV,
+                              KEY_DESCRIPTION, KEY_DESCRIPTION_IMAGING, KEY_DESCRIPTION_MODALITY, KEY_DESCRIPTION_TEXT,
+                              DEFAULT_SPACING, FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
 from moosez.resources import MODELS, MODELS_DIRECTORY_PATH
 
 
@@ -28,7 +29,27 @@ class Model:
         self.voxel_spacing = tuple(self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING))
         self.study_type, self.modality, self.region = self.__get_model_identifier_segments()
         self.multilabel_prefix = f"{self.study_type}_{self.modality}_{self.region}_"
+        self.description = self.__create_description()
         self.organ_indices = self.__get_organ_indices()
+
+    def __create_description(self) -> dict:
+        description = MODELS[self.model_identifier][KEY_DESCRIPTION]
+        description[KEY_DESCRIPTION_MODALITY] = self.modality
+        if self.study_type == "clin":
+            imaging = "Clinical"
+        elif self.study_type == "preclin":
+            imaging = "Pre-clinical"
+        description[KEY_DESCRIPTION_IMAGING] = imaging
+
+    def get_expectation(self):
+        if self.modality == 'FDG-PET-CT':
+            expected_modalities = ['FDG-PET', 'CT']
+        else:
+            expected_modalities = [self.modality]
+        expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
+
+        print(f" Tissue of interest: {self.description[KEY_DESCRIPTION_TEXT]} | Imaging: {self.description[KEY_DESCRIPTION_IMAGING]} | Modality: {self.modality}")
+        return expected_modalities, expected_prefixes
 
     def __get_configuration_folders(self) -> list[str]:
         items = os.listdir(self.directory)
@@ -190,6 +211,20 @@ class ModelWorkflow:
         if model.limit_fov and 'model_to_crop_from' in model.limit_fov:
             self.__construct_workflow(model.limit_fov["model_to_crop_from"])
         self.workflow.append(model)
+
+    def get_expectations(self):
+        required_modalities = []
+        required_prefixes = []
+
+        for model in self.workflow:
+            modalities, prefixes = model.get_expectation()
+            required_modalities = required_modalities + modalities
+            required_prefixes = required_prefixes + prefixes
+
+        required_modalities = list(set(required_modalities))
+        required_prefixes = list(set(required_prefixes))
+
+        return required_modalities, required_prefixes
 
     def __len__(self) -> len:
         return len(self.workflow)

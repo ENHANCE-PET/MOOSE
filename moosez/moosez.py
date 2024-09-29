@@ -129,7 +129,6 @@ def main():
     print(f' ')
 
     print(f" Number of selected models: {len(model_names)} | {', '.join(model_names)}")
-    modalities = display.expectations(model_names)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     logging.info(f'- Custom trainer: {custom_trainer_status}')
     accelerator = resources.check_device()
@@ -146,6 +145,7 @@ def main():
     model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names)
+    modalities = display.expectations(model_routine)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
