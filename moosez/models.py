@@ -15,10 +15,9 @@ class Model:
         self.url = resources.MODELS[self.model_identifier][KEY_URL]
         self.limit_fov = resources.MODELS[self.model_identifier][KEY_LIMIT_FOV]
         self.directory = os.path.join(resources.MODELS_DIRECTORY_PATH, self.folder_name)
-        self.output_manager = output_manager
 
-        self.__download()
-        self.configuration_folders = self.__get_configuration_folders()
+        self.__download(output_manager)
+        self.configuration_folders = self.__get_configuration_folders(output_manager)
         self.configuration_directory = os.path.join(self.directory, self.configuration_folders[0])
         self.trainer, self.planner, self.resolution_configuration = self.__get_model_configuration()
 
@@ -48,15 +47,14 @@ class Model:
             expected_modalities = [self.modality]
         expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
 
-        self.output_manager.console_update(f" Tissue of interest: {self.description[KEY_DESCRIPTION_TEXT]:<42} | Imaging: {self.description[KEY_DESCRIPTION_IMAGING]:<12} | Modality: {self.modality:<6}")
         return expected_modalities, expected_prefixes
 
-    def __get_configuration_folders(self) -> list[str]:
+    def __get_configuration_folders(self, output_manager: resources.OutputManager) -> list[str]:
         items = os.listdir(self.directory)
         folders = [item for item in items if not item.startswith(".") and item.count("__") == 2 and os.path.isdir(os.path.join(self.directory, item))]
 
         if len(folders) > 1:
-            self.output_manager.console_update("Information: more than one configuration folder found. Utilizing information of the first one encountered.")
+            output_manager.console_update("Information: more than one configuration folder found. Utilizing information of the first one encountered.")
 
         if not folders:
             raise ValueError(f"No valid configuration folders found in {self.directory}")
@@ -95,13 +93,13 @@ class Model:
 
         return dataset, plans
 
-    def __download(self):
+    def __download(self, output_manager: resources.OutputManager):
         if os.path.exists(self.directory):
-            self.output_manager.log_update(f"    - A local instance of {self.model_identifier} has been detected.")
-            self.output_manager.console_update(f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}")
+            output_manager.log_update(f"    - A local instance of {self.model_identifier} has been detected.")
+            output_manager.console_update(f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}")
             return
 
-        self.output_manager.log_update(f"    - Downloading {self.model_identifier}")
+        output_manager.log_update(f"    - Downloading {self.model_identifier}")
         if not os.path.exists(resources.MODELS_DIRECTORY_PATH):
             os.makedirs(resources.MODELS_DIRECTORY_PATH)
 
@@ -110,12 +108,12 @@ class Model:
 
         response = requests.get(self.url, stream=True)
         if response.status_code != 200:
-            self.output_manager.log_update(f"    X Failed to download model from {self.url}")
+            output_manager.log_update(f"    X Failed to download model from {self.url}")
             raise Exception(f"Failed to download model from {self.url}")
         total_size = int(response.headers.get("Content-Length", 0))
         chunk_size = 1024 * 10
 
-        progress = self.output_manager.create_file_progress_bar()
+        progress = output_manager.create_file_progress_bar()
         with progress:
             task = progress.add_task(f"[white] Downloading {self.model_identifier}...", total=total_size)
             with open(download_file_path, "wb") as f:
@@ -123,9 +121,9 @@ class Model:
                     if chunk:
                         f.write(chunk)
                         progress.update(task, advance=chunk_size)
-        self.output_manager.log_update(f"    - {self.model_identifier} ({self.folder_name} downloaded.")
+        output_manager.log_update(f"    - {self.model_identifier} ({self.folder_name} downloaded.")
 
-        progress = self.output_manager.create_file_progress_bar()
+        progress = output_manager.create_file_progress_bar()
         with progress:
             with zipfile.ZipFile(download_file_path, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
@@ -133,11 +131,11 @@ class Model:
                 for file in zip_ref.infolist():
                     zip_ref.extract(file, resources.MODELS_DIRECTORY_PATH)
                     progress.update(task, advance=file.file_size)
-        self.output_manager.log_update(f"    - {self.model_identifier} extracted.")
+        output_manager.log_update(f"    - {self.model_identifier} extracted.")
 
         os.remove(download_file_path)
-        self.output_manager.log_update(f"    - {self.model_identifier} - setup complete.")
-        self.output_manager.console_update(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")
+        output_manager.log_update(f"    - {self.model_identifier} - setup complete.")
+        output_manager.console_update(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")
 
     def __get_organ_indices(self) -> dict[int, str]:
         labels = self.dataset.get('labels', {})
@@ -207,12 +205,13 @@ class ModelWorkflow:
             self.__construct_workflow(model.limit_fov["model_to_crop_from"], output_manager)
         self.workflow.append(model)
 
-    def get_expectations(self):
+    def get_expectations(self, output_manager: resources.OutputManager):
         required_modalities = []
         required_prefixes = []
 
         for model in self.workflow:
             modalities, prefixes = model.get_expectation()
+            output_manager.console_update(f" Tissue of interest: {model.description[KEY_DESCRIPTION_TEXT]:<42} | Imaging: {model.description[KEY_DESCRIPTION_IMAGING]:<12} | Modality: {model.modality:<6}")
             required_modalities = required_modalities + modalities
             required_prefixes = required_prefixes + prefixes
 

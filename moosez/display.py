@@ -76,7 +76,7 @@ def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_
 
     for workflows in model_routine.values():
         for workflow in workflows:
-            modalities, prefixes = workflow.get_expectations()
+            modalities, prefixes = workflow.get_expectations(output_manager)
             required_modalities = required_modalities + modalities
             required_prefixes = required_prefixes + prefixes
 

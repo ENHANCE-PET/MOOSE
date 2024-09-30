@@ -194,29 +194,40 @@ class OutputManager:
 
         self.logger = None
         self.spinner = None
+        self.nnunet_log_filename = os.devnull
 
     def create_file_progress_bar(self):
         if self.verbose_console:
             console = Console()
+            disable_progress = False
         else:
-            console = os.devnull
+            console = Console(file=None)
+            disable_progress = True
 
         progress_bar = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
                                 "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
-                                TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
+                                TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True,
+                                disable=disable_progress)
         return progress_bar
 
     def create_progress_bar(self):
         if self.verbose_console:
             console = Console()
+            disable_progress = False
         else:
-            console = os.devnull
+            console = Console(file=None)
+            disable_progress = True
 
-        progress_bar = Progress(console=console)
+        progress_bar = Progress(console=console, disable=disable_progress)
         return progress_bar
 
     def configure_logging(self, log_file_directory: str | None):
         if self.verbose_log and not self.logger:
+            if log_file_directory is None:
+                log_file_directory = os.getcwd()
+
+            self.nnunet_log_filename = os.path.join(log_file_directory, datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
+
             self.logger = logging.getLogger(f'moosez-v{VERSION}')
             self.logger.setLevel(logging.INFO)
             self.logger.propagate = False
@@ -225,8 +236,6 @@ class OutputManager:
                 log_format = '%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
                 formatter = logging.Formatter(log_format)
 
-                if log_file_directory is None:
-                    log_file_directory = os.getcwd()
                 log_filename = os.path.join(log_file_directory, datetime.now().strftime(f'moosez-v{VERSION}_%H-%M-%d-%m-%Y.log'))
                 file_handler = logging.FileHandler(log_filename, mode='w')
 

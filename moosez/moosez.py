@@ -23,7 +23,6 @@ os.environ["nnUNet_results"] = ""
 
 import argparse
 import time
-from datetime import datetime
 import SimpleITK
 import colorama
 import emoji
@@ -119,7 +118,6 @@ def main():
     output_manager = resources.OutputManager(verbose_console, verbose_log)
     output_manager.configure_logging(parent_folder)
     output_manager.configure_spinner()
-    nnunet_log_filename = os.path.join(parent_folder, datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
 
     display.logo(output_manager)
     display.citation(output_manager)
@@ -203,42 +201,37 @@ def main():
     if moose_instances is not None:
         output_manager.log_update(f"- Branching out with {moose_instances} concurrent jobs.")
 
-        performance_observer = PerformanceObserver(f'{num_subjects} subjects | {moose_instances} jobs', ', '.join(model_names))
+        performance_observer = PerformanceObserver(f'All {num_subjects} subjects | {moose_instances} jobs', ', '.join(model_names))
         if benchmark:
             performance_observer.on()
 
         mp_context = mp.get_context('spawn')
         processed_subjects = 0
         output_manager.spinner_update(f'[{processed_subjects}/{num_subjects}] subjects processed.')
-        output_manager.verbose_log = False
-        output_manager.verbose_console = False
 
         with concurrent.futures.ProcessPoolExecutor(max_workers=moose_instances, mp_context=mp_context) as executor:
             futures = []
             for i, subject in enumerate(moose_compliant_subjects):
                 futures.append(executor.submit(moose_subject, subject, i, num_subjects,
                                                model_routine, accelerator,
-                                               nnunet_log_filename, output_manager, benchmark))
+                                               None, benchmark))
 
             for future in concurrent.futures.as_completed(futures):
                 if benchmark:
                     subject_performance_parameters.append(future.result())
                 processed_subjects += 1
-                output_manager.spinner_update(f'[{processed_subjects}/{num_subjects}] subjects processed.', True)
+                output_manager.spinner_update(f'[{processed_subjects}/{num_subjects}] subjects processed.')
 
         performance_observer.record_phase("Total Processing Done")
         if benchmark:
             performance_observer.off()
             subject_performance_parameters.append(performance_observer.get_peak_resources())
 
-        output_manager.verbose_log = True
-        output_manager.verbose_console = True
-
     else:
         for i, subject in enumerate(moose_compliant_subjects):
             subject_performance = moose_subject(subject, i, num_subjects,
                                                 model_routine, accelerator,
-                                                nnunet_log_filename, output_manager, benchmark)
+                                                output_manager, benchmark)
             if benchmark:
                 subject_performance_parameters.append(subject_performance)
 
@@ -357,11 +350,15 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
 
 
 def moose_subject(subject: str, subject_index: int, number_of_subjects: int,
-                  model_routine: dict, accelerator: str, nnunet_log_filename: str,
-                  output_manager: resources.OutputManager,
+                  model_routine: dict, accelerator: str,
+                  output_manager: resources.OutputManager | None,
                   benchmark: bool = False):
     # SETTING UP DIRECTORY STRUCTURE
     subject_name = os.path.basename(subject)
+
+    if output_manager is None:
+        output_manager = resources.OutputManager(False, False)
+
     output_manager.log_update(' ')
     output_manager.log_update(f' SUBJECT: {subject_name}')
 
@@ -411,7 +408,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int,
             model_time_start = time.time()
             output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {model_workflow[0]}...')
             output_manager.log_update(f'   - Model {model_workflow.target_model}')
-            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, nnunet_log_filename)
+            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, output_manager.nnunet_log_filename)
 
             if len(model_workflow) == 2:
                 inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
@@ -424,7 +421,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int,
                     output_manager.log_update("     - Organ to crop from not in initial FOV.")
                     continue
 
-                segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, nnunet_log_filename)
+                segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager.nnunet_log_filename)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
@@ -473,8 +470,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int,
     performance_observer.record_phase("Total Processing Done")
     if benchmark:
         performance_observer.off()
-        output_path = os.path.join(stats_dir, '')
-        performance_observer.plot_performance(output_path)
+        performance_observer.plot_performance(stats_dir)
         subject_peak_performance = performance_observer.get_peak_resources()
 
     return subject_peak_performance
