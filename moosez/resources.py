@@ -5,6 +5,11 @@ import logging
 import torch
 import os
 import sys
+
+from rich import Console
+from rich.console import Console
+from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
+
 from moosez.constants import KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, KEY_DESCRIPTION, KEY_DESCRIPTION_TEXT, VERSION
 from halo import Halo
 from datetime import datetime
@@ -227,6 +232,17 @@ class OutputManager:
 
         self.logger = None
         self.spinner = None
+
+    def create_progress_bar(self):
+        if self.verbose_console:
+            console = Console()
+        else:
+            console = os.devnull
+
+        progress_bar = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
+                                "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
+                                TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
+        return progress_bar
 
     def configure_logging(self, log_file_directory: str | None):
         if self.verbose_log and not self.logger:

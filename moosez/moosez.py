@@ -49,7 +49,7 @@ def main():
 
     # Argument parser
     parser = argparse.ArgumentParser(
-        description=display.get_usage_message(),
+        description=constants.USAGE_MESSAGE,
         formatter_class=argparse.RawTextHelpFormatter,
         add_help=False
     )
@@ -82,6 +82,20 @@ def main():
     )
 
     parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        default=True,
+        help="Activate verbose mode."
+    )
+
+    parser.add_argument(
+        "-log", "--logging",
+        action="store_true",
+        default=True,
+        help="Activate logging."
+    )
+
+    parser.add_argument(
         '-herd', '--moose_herd',
         nargs='?',
         const=2,
@@ -101,16 +115,16 @@ def main():
     model_names = args.model_names
     benchmark = args.benchmark
     moose_instances = args.moose_herd
+    verbose_console = args.verbose
+    verbose_log = args.logging
 
-    verbose_console = True
-    verbose_log = True
     output_manager = resources.OutputManager(verbose_console, verbose_log)
     output_manager.configure_logging(parent_folder)
     output_manager.configure_spinner()
     nnunet_log_filename = os.path.join(parent_folder, datetime.now().strftime('nnunet_%H-%M-%d-%m-%Y.log'))
 
-    display.logo()
-    display.citation()
+    display.logo(output_manager)
+    display.citation(output_manager)
 
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
     output_manager.log_update('                                     STARTING MOOSE-Z V.3.0.0                                       ')
@@ -144,7 +158,7 @@ def main():
     model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names)
-    modalities = display.expectations(model_routine)
+    modalities = display.expectations(model_routine, output_manager)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
@@ -354,7 +368,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int,
     model_names = []
     for workflows in model_routine.values():
         for workflow in workflows:
-            model_names.append(workflow.target_model)
+            model_names.append(workflow.target_model.model_identifier)
 
     performance_observer = PerformanceObserver(subject_name, ', '.join(model_names))
     subject_peak_performance = None

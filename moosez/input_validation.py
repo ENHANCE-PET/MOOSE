@@ -17,13 +17,12 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import logging
 import os
-from typing import List
 from moosez import constants
+from moosez import resources
 
 
-def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: List[str]) -> List[str]:
+def select_moose_compliant_subjects(subject_paths: list[str], modality_tags: list[str], output_manager: resources.OutputManager) -> list[str]:
     """
     Selects the subjects that have the files that have names that are compliant with the moosez.
 
@@ -44,9 +43,7 @@ def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: Lis
         prefixes = [file.startswith(tag) for tag in modality_tags for file in files]
         if sum(prefixes) == len(modality_tags):
             moose_compliant_subjects.append(subject_path)
-    print(f"{constants.ANSI_ORANGE} Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
-          f"{len(subject_paths)} {constants.ANSI_RESET}")
-    logging.info(f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of "
-                 f"{len(subject_paths)}")
+    print(f"{constants.ANSI_ORANGE} Number of moose compliant subjects: {len(moose_compliant_subjects)} out of {len(subject_paths)} {constants.ANSI_RESET}")
+    output_manager.log_update(f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of {len(subject_paths)}")
 
     return moose_compliant_subjects

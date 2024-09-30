@@ -2,23 +2,19 @@ import os
 import json
 import zipfile
 import requests
-import logging
-from rich.console import Console
-from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
-
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV,
                               KEY_DESCRIPTION, KEY_DESCRIPTION_IMAGING, KEY_DESCRIPTION_MODALITY, KEY_DESCRIPTION_TEXT,
                               DEFAULT_SPACING, FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
-from moosez.resources import MODELS, MODELS_DIRECTORY_PATH
+from moosez import resources
 
 
 class Model:
-    def __init__(self, model_identifier: str):
+    def __init__(self, model_identifier: str, output_manager: resources.OutputManager):
         self.model_identifier = model_identifier
-        self.folder_name = MODELS[self.model_identifier][KEY_FOLDER_NAME]
-        self.url = MODELS[self.model_identifier][KEY_URL]
-        self.limit_fov = MODELS[self.model_identifier][KEY_LIMIT_FOV]
-        self.directory = os.path.join(MODELS_DIRECTORY_PATH, self.folder_name)
+        self.folder_name = resources.MODELS[self.model_identifier][KEY_FOLDER_NAME]
+        self.url = resources.MODELS[self.model_identifier][KEY_URL]
+        self.limit_fov = resources.MODELS[self.model_identifier][KEY_LIMIT_FOV]
+        self.directory = os.path.join(resources.MODELS_DIRECTORY_PATH, self.folder_name)
 
         self.__download()
         self.configuration_folders = self.__get_configuration_folders()
@@ -32,8 +28,10 @@ class Model:
         self.description = self.__create_description()
         self.organ_indices = self.__get_organ_indices()
 
+        self.output_manager = output_manager
+
     def __create_description(self) -> dict:
-        description = MODELS[self.model_identifier][KEY_DESCRIPTION]
+        description = resources.MODELS[self.model_identifier][KEY_DESCRIPTION]
         description[KEY_DESCRIPTION_MODALITY] = self.modality
         if self.study_type == "clin":
             imaging = "Clinical"
@@ -51,7 +49,7 @@ class Model:
             expected_modalities = [self.modality]
         expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
 
-        print(f" Tissue of interest: {self.description[KEY_DESCRIPTION_TEXT]:<42} | Imaging: {self.description[KEY_DESCRIPTION_IMAGING]:<12} | Modality: {self.modality:<6}")
+        self.output_manager.console_update(f" Tissue of interest: {self.description[KEY_DESCRIPTION_TEXT]:<42} | Imaging: {self.description[KEY_DESCRIPTION_IMAGING]:<12} | Modality: {self.modality:<6}")
         return expected_modalities, expected_prefixes
 
     def __get_configuration_folders(self) -> list[str]:
@@ -59,7 +57,7 @@ class Model:
         folders = [item for item in items if not item.startswith(".") and item.count("__") == 2 and os.path.isdir(os.path.join(self.directory, item))]
 
         if len(folders) > 1:
-            print("Information: more than one configuration folder found. Utilizing information of the first one encountered.")
+            self.output_manager.console_update("Information: more than one configuration folder found. Utilizing information of the first one encountered.")
 
         if not folders:
             raise ValueError(f"No valid configuration folders found in {self.directory}")
@@ -100,28 +98,25 @@ class Model:
 
     def __download(self):
         if os.path.exists(self.directory):
-            logging.info(f"    - A local instance of {self.model_identifier} has been detected.")
-            print(f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}")
+            self.output_manager.log_update(f"    - A local instance of {self.model_identifier} has been detected.")
+            self.output_manager.console_update(f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}")
             return
 
-        logging.info(f"    - Downloading {self.model_identifier}")
-        if not os.path.exists(MODELS_DIRECTORY_PATH):
-            os.makedirs(MODELS_DIRECTORY_PATH)
+        self.output_manager.log_update(f"    - Downloading {self.model_identifier}")
+        if not os.path.exists(resources.MODELS_DIRECTORY_PATH):
+            os.makedirs(resources.MODELS_DIRECTORY_PATH)
 
         download_file_name = os.path.basename(self.url)
-        download_file_path = os.path.join(MODELS_DIRECTORY_PATH, download_file_name)
-        console = Console()
+        download_file_path = os.path.join(resources.MODELS_DIRECTORY_PATH, download_file_name)
 
         response = requests.get(self.url, stream=True)
         if response.status_code != 200:
-            logging.info(f"    X Failed to download model from {self.url}")
+            self.output_manager.log_update(f"    X Failed to download model from {self.url}")
             raise Exception(f"Failed to download model from {self.url}")
         total_size = int(response.headers.get("Content-Length", 0))
         chunk_size = 1024 * 10
 
-        progress = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
-                            "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
-                            TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
+        progress = self.output_manager.create_progress_bar()
         with progress:
             task = progress.add_task(f"[white] Downloading {self.model_identifier}...", total=total_size)
             with open(download_file_path, "wb") as f:
@@ -129,23 +124,21 @@ class Model:
                     if chunk:
                         f.write(chunk)
                         progress.update(task, advance=chunk_size)
-        logging.info(f"    - {self.model_identifier} ({self.folder_name} downloaded.")
+        self.output_manager.log_update(f"    - {self.model_identifier} ({self.folder_name} downloaded.")
 
-        progress = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
-                            "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
-                            TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
+        progress = self.output_manager.create_progress_bar()
         with progress:
             with zipfile.ZipFile(download_file_path, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
                 task = progress.add_task(f"[white] Extracting {self.model_identifier}...", total=total_size)
                 for file in zip_ref.infolist():
-                    zip_ref.extract(file, MODELS_DIRECTORY_PATH)
+                    zip_ref.extract(file, resources.MODELS_DIRECTORY_PATH)
                     progress.update(task, advance=file.file_size)
-        logging.info(f"    - {self.model_identifier} extracted.")
+        self.output_manager.log_update(f"    - {self.model_identifier} extracted.")
 
         os.remove(download_file_path)
-        logging.info(f"    - {self.model_identifier} - setup complete.")
-        print(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")
+        self.output_manager.log_update(f"    - {self.model_identifier} - setup complete.")
+        self.output_manager.console_update(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")
 
     def __get_organ_indices(self) -> dict[int, str]:
         labels = self.dataset.get('labels', {})
@@ -185,11 +178,11 @@ class Model:
 
 
 def model_entry_valid(model_identifier: str) -> bool:
-    if model_identifier not in MODELS:
+    if model_identifier not in resources.MODELS:
         print("No valid model selected.")
         return False
 
-    model_information = MODELS[model_identifier]
+    model_information = resources.MODELS[model_identifier]
     if KEY_URL not in model_information or KEY_FOLDER_NAME not in model_information or KEY_LIMIT_FOV not in model_information:
         print("One or more of the required keys url, folder_name, limit_fov are missing.")
         return False
@@ -202,17 +195,17 @@ def model_entry_valid(model_identifier: str) -> bool:
 
 
 class ModelWorkflow:
-    def __init__(self, model_identifier: str):
+    def __init__(self, model_identifier: str, output_manager: resources.OutputManager):
         self.workflow: list[Model] = []
-        self.__construct_workflow(model_identifier)
+        self.__construct_workflow(model_identifier, output_manager)
         if self.workflow:
             self.initial_desired_spacing = self.workflow[0].voxel_spacing
             self.target_model = self.workflow[-1]
 
-    def __construct_workflow(self, model_identifier: str):
-        model = Model(model_identifier)
+    def __construct_workflow(self, model_identifier: str, output_manager: resources.OutputManager):
+        model = Model(model_identifier, output_manager)
         if model.limit_fov and 'model_to_crop_from' in model.limit_fov:
-            self.__construct_workflow(model.limit_fov["model_to_crop_from"])
+            self.__construct_workflow(model.limit_fov["model_to_crop_from"], output_manager)
         self.workflow.append(model)
 
     def get_expectations(self):
@@ -242,15 +235,15 @@ class ModelWorkflow:
         return " -> ".join([model.model_identifier for model in self.workflow])
 
 
-def construct_model_routine(model_identifiers: str | list[str]) -> dict[tuple, list[ModelWorkflow]]:
+def construct_model_routine(model_identifiers: str | list[str], output_manager: resources.OutputManager) -> dict[tuple, list[ModelWorkflow]]:
     if isinstance(model_identifiers, str):
         model_identifiers = [model_identifiers]
 
     model_routine: dict = {}
-    logging.info(' SETTING UP MODEL WORKFLOWS:')
+    output_manager.log_update(' SETTING UP MODEL WORKFLOWS:')
     for model_identifier in model_identifiers:
-        logging.info(' - Model name: ' + model_identifier)
-        model_workflow = ModelWorkflow(model_identifier)
+        output_manager.log_update(' - Model name: ' + model_identifier)
+        model_workflow = ModelWorkflow(model_identifier, output_manager)
 
         if model_workflow.initial_desired_spacing in model_routine:
             model_routine[model_workflow.initial_desired_spacing].append(model_workflow)

@@ -51,6 +51,16 @@ DEFAULT_SPACING = (1.5, 1.5, 1.5)
 FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
 
+USAGE_MESSAGE = """
+Usage:
+  moosez -d <MAIN_DIRECTORY> -m <MODEL_NAMES> -b
+Example:  
+  moosez -d /Documents/Data_to_moose/ -m clin_ct_organs
+
+Description:
+  MOOSE (Multi-organ objective segmentation) - A data-centric AI solution that
+  generates multilabel organ segmentations for systemic TB whole-person research."""
+
 """
 
 This module contains the constants that are used in the moosez.
