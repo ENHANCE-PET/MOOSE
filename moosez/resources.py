@@ -5,14 +5,12 @@ import logging
 import torch
 import os
 import sys
-
-from rich import Console
-from rich.console import Console
-from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
-
-from moosez.constants import KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, KEY_DESCRIPTION, KEY_DESCRIPTION_TEXT, VERSION
 from halo import Halo
 from datetime import datetime
+from rich.console import Console
+from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
+from moosez.constants import KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, KEY_DESCRIPTION, KEY_DESCRIPTION_TEXT, VERSION
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Author: Lalith Kumar Shiyam Sundar
