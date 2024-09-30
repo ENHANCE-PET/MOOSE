@@ -82,17 +82,15 @@ def main():
     )
 
     parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        default=True,
-        help="Activate verbose mode."
+        "-v-off", "--verbose_off",
+        action="store_false",
+        help="Deactivate verbose console."
     )
 
     parser.add_argument(
-        "-log", "--logging",
-        action="store_true",
-        default=True,
-        help="Activate logging."
+        "-log-off", "--logging_off",
+        action="store_false",
+        help="Deactivate logging."
     )
 
     parser.add_argument(
@@ -115,8 +113,8 @@ def main():
     model_names = args.model_names
     benchmark = args.benchmark
     moose_instances = args.moose_herd
-    verbose_console = args.verbose
-    verbose_log = args.logging
+    verbose_console = args.verbose_off
+    verbose_log = args.logging_off
 
     output_manager = resources.OutputManager(verbose_console, verbose_log)
     output_manager.configure_logging(parent_folder)
@@ -144,7 +142,7 @@ def main():
     output_manager.console_update(f" Number of selected models: {len(model_names)} | {', '.join(model_names)}")
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
-    accelerator = resources.check_device()
+    accelerator = resources.check_device(output_manager)
     if moose_instances is not None:
         output_manager.console_update(f" Number of moose instances run in parallel: {moose_instances}")
 
@@ -170,7 +168,7 @@ def main():
     output_manager.log_update(f' ')
     output_manager.log_update(f' STANDARDIZING INPUT DATA TO NIFTI:')
     output_manager.log_update(f' ')
-    image_conversion.standardize_to_nifti(parent_folder)
+    image_conversion.standardize_to_nifti(parent_folder, output_manager)
     output_manager.console_update(f"{constants.ANSI_GREEN} Standardization complete.{constants.ANSI_RESET}")
     output_manager.log_update(f" Standardization complete.")
 

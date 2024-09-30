@@ -43,7 +43,7 @@ def select_moose_compliant_subjects(subject_paths: list[str], modality_tags: lis
         prefixes = [file.startswith(tag) for tag in modality_tags for file in files]
         if sum(prefixes) == len(modality_tags):
             moose_compliant_subjects.append(subject_path)
-    print(f"{constants.ANSI_ORANGE} Number of moose compliant subjects: {len(moose_compliant_subjects)} out of {len(subject_paths)} {constants.ANSI_RESET}")
+    output_manager.console_update(f"{constants.ANSI_ORANGE} Number of moose compliant subjects: {len(moose_compliant_subjects)} out of {len(subject_paths)} {constants.ANSI_RESET}")
     output_manager.log_update(f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of {len(subject_paths)}")
 
     return moose_compliant_subjects

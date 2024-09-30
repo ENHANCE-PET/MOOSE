@@ -187,42 +187,6 @@ MODELS = {
 AVAILABLE_MODELS = MODELS.keys()
 
 
-def check_device() -> str:
-    """
-    This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
-
-    Returns:
-        str: The device to run predictions on, either "cpu", "cuda", or "mps".
-    """
-    # Check for CUDA
-    if torch.cuda.is_available():
-        device_count = torch.cuda.device_count()
-        print(f" CUDA is available with {device_count} GPU(s). Predictions will be run on GPU.")
-        return "cuda"
-    # Check for MPS (Apple Silicon) Here for the future but not compatible right now
-    elif torch.backends.mps.is_available():
-        print(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
-        return "mps"
-    elif not torch.backends.mps.is_built():
-        print(" MPS not available because the current PyTorch install was not built with MPS enabled.")
-        return "cpu"
-    else:
-        print(" CUDA/MPS not available. Predictions will be run on CPU.")
-        return "cpu"
-
-
-def get_virtual_env_root() -> str:
-    """
-    Returns the root directory of the virtual environment.
-
-    :return: The root directory of the virtual environment.
-    :rtype: str
-    """
-    python_exe = sys.executable
-    virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
-    return virtual_env_root
-
-
 class OutputManager:
     def __init__(self, verbose_console: bool, verbose_log: bool):
         self.verbose_console = verbose_console
@@ -231,7 +195,7 @@ class OutputManager:
         self.logger = None
         self.spinner = None
 
-    def create_progress_bar(self):
+    def create_file_progress_bar(self):
         if self.verbose_console:
             console = Console()
         else:
@@ -240,6 +204,15 @@ class OutputManager:
         progress_bar = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
                                 "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
                                 TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True)
+        return progress_bar
+
+    def create_progress_bar(self):
+        if self.verbose_console:
+            console = Console()
+        else:
+            console = os.devnull
+
+        progress_bar = Progress(console=console)
         return progress_bar
 
     def configure_logging(self, log_file_directory: str | None):
@@ -289,6 +262,42 @@ class OutputManager:
     def spinner_succeed(self, text: str):
         if self.spinner and self.verbose_console:
             self.spinner.succeed(text)
+
+
+def check_device(output_manager: OutputManager) -> str:
+    """
+    This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
+
+    Returns:
+        str: The device to run predictions on, either "cpu", "cuda", or "mps".
+    """
+    # Check for CUDA
+    if torch.cuda.is_available():
+        device_count = torch.cuda.device_count()
+        output_manager.console_update(f" CUDA is available with {device_count} GPU(s). Predictions will be run on GPU.")
+        return "cuda"
+    # Check for MPS (Apple Silicon) Here for the future but not compatible right now
+    elif torch.backends.mps.is_available():
+        output_manager.console_update(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
+        return "mps"
+    elif not torch.backends.mps.is_built():
+        output_manager.console_update(" MPS not available because the current PyTorch install was not built with MPS enabled.")
+        return "cpu"
+    else:
+        output_manager.console_update(" CUDA/MPS not available. Predictions will be run on CPU.")
+        return "cpu"
+
+
+def get_virtual_env_root() -> str:
+    """
+    Returns the root directory of the virtual environment.
+
+    :return: The root directory of the virtual environment.
+    :rtype: str
+    """
+    python_exe = sys.executable
+    virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
+    return virtual_env_root
 
 
 ENVIRONMENT_ROOT_PATH: str = get_virtual_env_root()

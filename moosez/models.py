@@ -15,6 +15,7 @@ class Model:
         self.url = resources.MODELS[self.model_identifier][KEY_URL]
         self.limit_fov = resources.MODELS[self.model_identifier][KEY_LIMIT_FOV]
         self.directory = os.path.join(resources.MODELS_DIRECTORY_PATH, self.folder_name)
+        self.output_manager = output_manager
 
         self.__download()
         self.configuration_folders = self.__get_configuration_folders()
@@ -27,8 +28,6 @@ class Model:
         self.multilabel_prefix = f"{self.study_type}_{self.modality}_{self.region}_"
         self.description = self.__create_description()
         self.organ_indices = self.__get_organ_indices()
-
-        self.output_manager = output_manager
 
     def __create_description(self) -> dict:
         description = resources.MODELS[self.model_identifier][KEY_DESCRIPTION]
@@ -116,7 +115,7 @@ class Model:
         total_size = int(response.headers.get("Content-Length", 0))
         chunk_size = 1024 * 10
 
-        progress = self.output_manager.create_progress_bar()
+        progress = self.output_manager.create_file_progress_bar()
         with progress:
             task = progress.add_task(f"[white] Downloading {self.model_identifier}...", total=total_size)
             with open(download_file_path, "wb") as f:
@@ -126,7 +125,7 @@ class Model:
                         progress.update(task, advance=chunk_size)
         self.output_manager.log_update(f"    - {self.model_identifier} ({self.folder_name} downloaded.")
 
-        progress = self.output_manager.create_progress_bar()
+        progress = self.output_manager.create_file_progress_bar()
         with progress:
             with zipfile.ZipFile(download_file_path, 'r') as zip_ref:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))

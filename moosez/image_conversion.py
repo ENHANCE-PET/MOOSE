@@ -27,27 +27,7 @@ import unicodedata
 import SimpleITK
 import dicom2nifti
 import pydicom
-from rich.progress import Progress
-
-
-def read_dicom_folder(folder_path: str) -> SimpleITK.Image:
-    """
-    Reads a folder of DICOM files and returns the image.
-
-    :param folder_path: str
-        The path to the folder containing the DICOM files.
-    :type folder_path: str
-
-    :return: SimpleITK.Image
-        The image obtained from the DICOM files.
-    :rtype: SimpleITK.Image
-    """
-    reader = SimpleITK.ImageSeriesReader()
-    dicom_names = reader.GetGDCMSeriesFileNames(folder_path)
-    reader.SetFileNames(dicom_names)
-
-    dicom_image = reader.Execute()
-    return dicom_image
+from moosez import resources
 
 
 def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
@@ -101,7 +81,7 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     SimpleITK.WriteImage(output_image, output_image_path)
 
 
-def standardize_to_nifti(parent_dir: str) -> None:
+def standardize_to_nifti(parent_dir: str, output_manager: resources.OutputManager) -> None:
     """
     Converts all non-NIfTI images in a parent directory and its subdirectories to NIfTI format.
 
@@ -114,7 +94,8 @@ def standardize_to_nifti(parent_dir: str) -> None:
     subjects = [subject for subject in subjects if os.path.isdir(os.path.join(parent_dir, subject))]
 
     # Convert all non-NIfTI images in each subdirectory to NIfTI format
-    with Progress() as progress:
+    progress = output_manager.create_progress_bar()
+    with progress:
         task = progress.add_task("[white] Processing subjects...", total=len(subjects))
         for subject in subjects:
             subject_path = os.path.join(parent_dir, subject)
