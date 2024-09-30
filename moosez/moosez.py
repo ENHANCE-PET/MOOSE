@@ -157,7 +157,7 @@ def main():
     output_manager.console_update(f'')
     model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
-    model_routine = models.construct_model_routine(model_names)
+    model_routine = models.construct_model_routine(model_names, output_manager)
     modalities = display.expectations(model_routine, output_manager)
 
     # ----------------------------------
@@ -179,7 +179,7 @@ def main():
     # --------------------------------------
 
     subjects = [os.path.join(parent_folder, d) for d in os.listdir(parent_folder) if os.path.isdir(os.path.join(parent_folder, d))]
-    moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities)
+    moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities, output_manager)
 
     num_subjects = len(moose_compliant_subjects)
 
@@ -319,9 +319,11 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
     if isinstance(model_names, str):
         model_names = [model_names]
 
+    output_manager = resources.OutputManager(False, False)
+
     model_path = resources.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
-    model_routine = models.construct_model_routine(model_names)
+    model_routine = models.construct_model_routine(model_names, output_manager)
 
     for desired_spacing, model_workflows in model_routine.items():
         resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
