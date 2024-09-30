@@ -229,7 +229,7 @@ class OutputManager:
         self.spinner = None
 
     def configure_logging(self, log_file_directory: str | None):
-        if self.verbose_log and self.logger is None:
+        if self.verbose_log and not self.logger:
             self.logger = logging.getLogger(f'moosez-v{VERSION}')
             self.logger.setLevel(logging.INFO)
             self.logger.propagate = False
@@ -248,20 +248,20 @@ class OutputManager:
 
                 self.logger.addHandler(file_handler)
 
-    def log_update(self, text: str):
-        if self.verbose_log and self.logger is not None:
+    def log_update(self, text: str, force=False):
+        if (self.verbose_log and self.logger) or force:
             self.logger.info(text)
 
-    def console_update(self, text: str):
-        if self.verbose_console:
+    def console_update(self, text: str, force=False):
+        if self.verbose_console or force:
             print(text)
 
     def configure_spinner(self):
-        if self.verbose_console:
+        if self.verbose_console and not self.spinner:
             self.spinner = Halo(text=' Initiating', spinner='dots')
 
-    def spinner_update(self, text: str):
-        if self.spinner and self.verbose_console:
+    def spinner_update(self, text: str, force=False):
+        if (self.spinner and self.verbose_console) or force:
             self.spinner.text = text
 
     def spinner_stop(self):
@@ -272,9 +272,9 @@ class OutputManager:
         if self.spinner:
             self.spinner.start()
 
-    def spinner_succeed(self):
+    def spinner_succeed(self, text: str):
         if self.spinner and self.verbose_console:
-            self.spinner.succeed()
+            self.spinner.succeed(text)
 
 
 ENVIRONMENT_ROOT_PATH: str = get_virtual_env_root()
