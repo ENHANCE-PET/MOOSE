@@ -47,7 +47,8 @@ setup(
         'dicom2nifti~=2.4.8',
         'emoji',
         'matplotlib',
-        'psutil'
+        'psutil',
+        'nibabel'
     ],
     entry_points={
         'console_scripts': [
