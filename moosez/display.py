@@ -59,26 +59,27 @@ def citation(output_manager: resources.OutputManager):
     output_manager.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_manager: resources.OutputManager) -> list:
+def expectations(model_identifiers: list[str], output_manager: resources.OutputManager) -> list:
     """
     Display expected modality for the model.
 
     This function displays the expected modality for the given model name. It also checks for a special case where
     'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
 
-    :param model_routine: A model routine dictionary
-    :type model_routine: dict
+    :param model_identifiers: The desired models
+    :type model_identifiers: list[str]
+    :param output_manager: The output manager
+    :type output_manager: resources.OutputManager
     :return: A list of modalities.
     :rtype: list
     """
     required_modalities = []
     required_prefixes = []
 
-    for workflows in model_routine.values():
-        for workflow in workflows:
-            modalities, prefixes = workflow.get_expectations(output_manager)
-            required_modalities = required_modalities + modalities
-            required_prefixes = required_prefixes + prefixes
+    for model_identifier in model_identifiers:
+        modalities, prefixes = models.Model.get_expectation_from_identifier(model_identifier, output_manager)
+        required_modalities = required_modalities + modalities
+        required_prefixes = required_prefixes + prefixes
 
     required_modalities = list(set(required_modalities))
     required_prefixes = list(set(required_prefixes))

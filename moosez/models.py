@@ -15,6 +15,7 @@ class Model:
         self.url = resources.MODELS[self.model_identifier][KEY_URL]
         self.limit_fov = resources.MODELS[self.model_identifier][KEY_LIMIT_FOV]
         self.directory = os.path.join(resources.MODELS_DIRECTORY_PATH, self.folder_name)
+        self.description = resources.MODELS[self.model_identifier][KEY_DESCRIPTION]
 
         self.__download(output_manager)
         self.configuration_folders = self.__get_configuration_folders(output_manager)
@@ -25,20 +26,8 @@ class Model:
         self.voxel_spacing = tuple(self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING))
         self.study_type, self.modality, self.region = self.__get_model_identifier_segments()
         self.multilabel_prefix = f"{self.study_type}_{self.modality}_{self.region}_"
-        self.description = self.__create_description()
-        self.organ_indices = self.__get_organ_indices()
 
-    def __create_description(self) -> dict:
-        description = resources.MODELS[self.model_identifier][KEY_DESCRIPTION]
-        description[KEY_DESCRIPTION_MODALITY] = self.modality
-        if self.study_type == "clin":
-            imaging = "Clinical"
-        elif self.study_type == "preclin":
-            imaging = "Pre-clinical"
-        else:
-            imaging = "unknown"
-        description[KEY_DESCRIPTION_IMAGING] = imaging
-        return description
+        self.organ_indices = self.__get_organ_indices()
 
     def get_expectation(self):
         if self.modality == 'FDG-PET-CT':
@@ -173,22 +162,37 @@ class Model:
 
         return "\n".join(result)
 
+    @staticmethod
+    def get_expectation_from_identifier(model_identifier: str, output_manager: resources.OutputManager) -> (list[str], list[str]):
+        modality = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_MODALITY]
+        if modality == 'FDG-PET-CT':
+            expected_modalities = ['FDG-PET', 'CT']
+        else:
+            expected_modalities = [modality]
+        expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
 
-def model_entry_valid(model_identifier: str) -> bool:
-    if model_identifier not in resources.MODELS:
-        print("No valid model selected.")
-        return False
+        description = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_TEXT]
+        imaging = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_IMAGING]
+        output_manager.console_update(f" Tissue of interest: {description:<42} | Imaging: {imaging:<12} | Modality: {modality:<6}")
 
-    model_information = resources.MODELS[model_identifier]
-    if KEY_URL not in model_information or KEY_FOLDER_NAME not in model_information or KEY_LIMIT_FOV not in model_information:
-        print("One or more of the required keys url, folder_name, limit_fov are missing.")
-        return False
+        return list(set(expected_modalities)), list(set(expected_prefixes))
 
-    if model_information[KEY_URL] == "" or model_information[KEY_FOLDER_NAME] == "" or (model_information[KEY_LIMIT_FOV] is not None and not isinstance(model_information[KEY_LIMIT_FOV], dict)):
-        print("One or more of the required keys url, folder_name, limit_fov are not defined correctly.")
-        return False
+    @staticmethod
+    def model_identifier_valid(model_identifier: str) -> bool:
+        if model_identifier not in resources.MODELS:
+            print("No valid model selected.")
+            return False
 
-    return True
+        model_information = resources.MODELS[model_identifier]
+        if KEY_URL not in model_information or KEY_FOLDER_NAME not in model_information or KEY_LIMIT_FOV not in model_information:
+            print("One or more of the required keys url, folder_name, limit_fov are missing.")
+            return False
+
+        if model_information[KEY_URL] == "" or model_information[KEY_FOLDER_NAME] == "" or (model_information[KEY_LIMIT_FOV] is not None and not isinstance(model_information[KEY_LIMIT_FOV], dict)):
+            print("One or more of the required keys url, folder_name, limit_fov are not defined correctly.")
+            return False
+
+        return True
 
 
 class ModelWorkflow:
@@ -204,21 +208,6 @@ class ModelWorkflow:
         if model.limit_fov and 'model_to_crop_from' in model.limit_fov:
             self.__construct_workflow(model.limit_fov["model_to_crop_from"], output_manager)
         self.workflow.append(model)
-
-    def get_expectations(self, output_manager: resources.OutputManager):
-        required_modalities = []
-        required_prefixes = []
-
-        for model in self.workflow:
-            modalities, prefixes = model.get_expectation()
-            output_manager.console_update(f" Tissue of interest: {model.description[KEY_DESCRIPTION_TEXT]:<42} | Imaging: {model.description[KEY_DESCRIPTION_IMAGING]:<12} | Modality: {model.modality:<6}")
-            required_modalities = required_modalities + modalities
-            required_prefixes = required_prefixes + prefixes
-
-        required_modalities = list(set(required_modalities))
-        required_prefixes = list(set(required_prefixes))
-
-        return required_modalities, required_prefixes
 
     def __len__(self) -> len:
         return len(self.workflow)
