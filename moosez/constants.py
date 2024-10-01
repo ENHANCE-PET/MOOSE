@@ -8,6 +8,8 @@ This module contains the constants that are used in the moosez.
 .. versionadded:: 3.0.0
 """
 
+VERSION = "3.0.0"
+
 ALLOWED_MODALITIES = ['CT', 'PT', 'MR']
 
 # COLOR CODES
@@ -26,7 +28,8 @@ STATS_FOLDER = 'stats'
 
 # PREPROCESSING PARAMETERS
 INTERPOLATION = 'bspline'
-CHUNK_THRESHOLD = 150
+CHUNK_THRESHOLD_RESAMPLING = 150
+CHUNK_THRESHOLD_INFERRING = 350
 
 # POSTPROCESSING PARAMETERS
 TUMOR_LABEL = 12
@@ -40,9 +43,23 @@ FRAME_DURATION = 0.4
 KEY_FOLDER_NAME = "folder_name"
 KEY_URL = "url"
 KEY_LIMIT_FOV = "limit_fov"
+KEY_DESCRIPTION = "description"
+KEY_DESCRIPTION_TEXT = "Tissue of Interest"
+KEY_DESCRIPTION_MODALITY = "Modality"
+KEY_DESCRIPTION_IMAGING = "Imaging"
 DEFAULT_SPACING = (1.5, 1.5, 1.5)
 FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
+
+USAGE_MESSAGE = """
+Usage:
+  moosez -d <MAIN_DIRECTORY> -m <MODEL_NAMES> -b
+Example:  
+  moosez -d /Documents/Data_to_moose/ -m clin_ct_organs
+
+Description:
+  MOOSE (Multi-organ objective segmentation) - A data-centric AI solution that
+  generates multilabel organ segmentations for systemic TB whole-person research."""
 
 """
 

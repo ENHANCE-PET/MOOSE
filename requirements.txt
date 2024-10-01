@@ -16,3 +16,4 @@ emoji
 requests
 psutil
 scipy
+nibabel

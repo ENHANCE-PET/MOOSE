@@ -1,8 +1,9 @@
 from setuptools import setup, find_packages
+from moosez.constants import VERSION
 
 setup(
     name='moosez',
-    version='3.0.0',
+    version=VERSION,
     author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer',
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
@@ -46,7 +47,8 @@ setup(
         'dicom2nifti~=2.4.8',
         'emoji',
         'matplotlib',
-        'psutil'
+        'psutil',
+        'nibabel'
     ],
     entry_points={
         'console_scripts': [

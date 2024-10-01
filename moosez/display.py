@@ -17,28 +17,14 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import logging
 import emoji
 import pyfiglet
 from moosez import constants
+from moosez import models
 from moosez import resources
 
 
-def get_usage_message():
-    usage_message = """
-    Usage:
-      moosez -d <MAIN_DIRECTORY> -m <MODEL_NAME>
-    Example:  
-      moosez -d /Documents/Data_to_moose/ -m clin_ct_organs
-
-    Description:
-      MOOSE (Multi-organ objective segmentation) - A data-centric AI solution that
-      generates multilabel organ segmentations for systemic TB whole-person research.
-    """
-    return usage_message
-
-
-def logo():
+def logo(output_manager: resources.OutputManager):
     """
     Display MOOSE logo
 
@@ -46,18 +32,18 @@ def logo():
 
     :return: None
     """
-    print(' ')
+    output_manager.console_update(' ')
     logo_color_code = constants.ANSI_VIOLET
     slogan_color_code = constants.ANSI_VIOLET
     result = logo_color_code + pyfiglet.figlet_format(" MOOSE 3.0", font="smslant").rstrip() + "\033[0m"
     text = slogan_color_code + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of " \
                                "PET imaging together." + "\033[0m"
-    print(result)
-    print(text)
-    print(' ')
+    output_manager.console_update(result)
+    output_manager.console_update(text)
+    output_manager.console_update(' ')
 
 
-def citation():
+def citation(output_manager: resources.OutputManager):
     """
     Display manuscript citation
 
@@ -65,56 +51,45 @@ def citation():
 
     :return: None
     """
-    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{constants.ANSI_RESET}')
-    print(" ")
-    print(
+    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{constants.ANSI_RESET}')
+    output_manager.console_update(" ")
+    output_manager.console_update(
         " Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT "
         "images based on data-centric artificial intelligence. J Nucl Med. June 2022.")
-    print(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
+    output_manager.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def expectations(model_names: list[str]) -> list:
+def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_manager: resources.OutputManager) -> list:
     """
     Display expected modality for the model.
 
     This function displays the expected modality for the given model name. It also checks for a special case where
     'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
 
-    :param model_names: A list of model names.
-    :type model_names: list of str
+    :param model_routine: A model routine dictionary
+    :type model_routine: dict
     :return: A list of modalities.
     :rtype: list
     """
     required_modalities = []
     required_prefixes = []
 
-    for model_name in model_names:
-        model_info = resources.expected_modality(model_name)
-        modality = model_info['Modality']
-
-        # check for special case where 'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'
-        if modality == 'FDG-PET-CT':
-            modalities = ['FDG-PET', 'CT']
-        else:
-            modalities = [modality]
-        expected_prefix = [m.replace('-', '_') + "_" for m in modalities]
-
-        print(f" Tissue of interest: {model_info['Tissue of interest']} | Imaging: {model_info['Imaging']} | Modality: {modality}")
-        required_modalities = required_modalities + modalities
-        required_prefixes = required_prefixes + expected_prefix
+    for workflows in model_routine.values():
+        for workflow in workflows:
+            modalities, prefixes = workflow.get_expectations(output_manager)
+            required_modalities = required_modalities + modalities
+            required_prefixes = required_prefixes + prefixes
 
     required_modalities = list(set(required_modalities))
     required_prefixes = list(set(required_prefixes))
 
-    print(f" Required modalities: {required_modalities} | "
-          f" No. of modalities: {len(required_modalities)}"
-          f" | Required prefix for non-DICOM files: {required_prefixes}")
-    logging.info(f" Required modalities: {required_modalities} |  No. of modalities: {len(required_modalities)} "
-                 f"| Required prefix for non-DICOM files: {required_prefixes} ")
-    print(f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
-          f"will be skipped. {constants.ANSI_RESET}")
-    warning_message = " Skipping subjects without the required modalities (check file prefix).\n" \
-                      " These subjects will be excluded from analysis and their data will not be used."
-    logging.warning(warning_message)
+    output_manager.console_update(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)}"
+                                  f" | Required prefix for non-DICOM files: {required_prefixes}")
+    output_manager.log_update(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)} "
+                              f"| Required prefix for non-DICOM files: {required_prefixes} ")
+    output_manager.console_update(f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
+                                  f"will be skipped. {constants.ANSI_RESET}")
+    output_manager.log_update(" Skipping subjects without the required modalities (check file prefix).\n"
+                              " These subjects will be excluded from analysis and their data will not be used.")
 
     return required_modalities
