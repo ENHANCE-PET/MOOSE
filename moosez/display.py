@@ -59,7 +59,7 @@ def citation(output_manager: resources.OutputManager):
     output_manager.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def expectations(model_identifiers: list[str], output_manager: resources.OutputManager) -> list:
+def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_manager: resources.OutputManager) -> list:
     """
     Display expected modality for the model.
 
@@ -76,15 +76,23 @@ def expectations(model_identifiers: list[str], output_manager: resources.OutputM
     required_modalities = []
     required_prefixes = []
 
-    header = ["Nr", "Model Name", "Tissue of Interest", "Imaging", "Required Modality", "Required Prefix (non-DICOM)"]
-    table = output_manager.create_table(header)
+    header = ["Nr", "Model Name", "Indices & Regions", "Imaging", "Required Modality", "Required Prefix (non-DICOM)"]
+    styles = [None, "cyan", None, None, None, None]
+    table = output_manager.create_table(header, styles)
 
-    for model_nr, model_identifier in enumerate(model_identifiers):
-        modalities, prefixes, information = models.Model.get_expectation_from_identifier(model_identifier)
-        required_modalities = required_modalities + modalities
-        required_prefixes = required_prefixes + prefixes
-        information = [str(model_nr + 1), model_identifier] + information + [', '.join(prefixes)]
-        table.add_row(*information)
+    model_nr = 0
+    for model_workflows in model_routine.values():
+        for model_workflow in model_workflows:
+            model_nr += 1
+            modalities, prefixes = model_workflow.target_model.get_expectation()
+            required_modalities = required_modalities + modalities
+            required_prefixes = required_prefixes + prefixes
+
+            model_identifier = model_workflow.target_model.model_identifier
+            modality = model_workflow.target_model.modality
+            imaging = f"{model_workflow.target_model.imaging_type}ical".capitalize()
+            regions = str(model_workflow.target_model.organ_indices)
+            table.add_row(str(model_nr), model_identifier, regions, imaging, modality, ', '.join(prefixes))
 
     output_manager.console_update(table)
 

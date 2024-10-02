@@ -3,7 +3,6 @@ import json
 import zipfile
 import requests
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV,
-                              KEY_DESCRIPTION, KEY_DESCRIPTION_IMAGING, KEY_DESCRIPTION_MODALITY, KEY_DESCRIPTION_TEXT,
                               DEFAULT_SPACING, FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
 from moosez import resources
 
@@ -15,7 +14,6 @@ class Model:
         self.url = resources.MODELS[self.model_identifier][KEY_URL]
         self.limit_fov = resources.MODELS[self.model_identifier][KEY_LIMIT_FOV]
         self.directory = os.path.join(resources.MODELS_DIRECTORY_PATH, self.folder_name)
-        self.description = resources.MODELS[self.model_identifier][KEY_DESCRIPTION]
 
         self.__download(output_manager)
         self.configuration_folders = self.__get_configuration_folders(output_manager)
@@ -24,8 +22,8 @@ class Model:
 
         self.dataset, self.plans = self.__get_model_data()
         self.voxel_spacing = tuple(self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING))
-        self.study_type, self.modality, self.region = self.__get_model_identifier_segments()
-        self.multilabel_prefix = f"{self.study_type}_{self.modality}_{self.region}_"
+        self.imaging_type, self.modality, self.region = self.__get_model_identifier_segments()
+        self.multilabel_prefix = f"{self.imaging_type}_{self.modality}_{self.region}_"
 
         self.organ_indices = self.__get_organ_indices()
 
@@ -58,7 +56,7 @@ class Model:
     def __get_model_identifier_segments(self) -> tuple[str, str, str]:
         segments = self.model_identifier.split('_')
 
-        study_type = segments[0]
+        imaging_type = segments[0]
         if segments[1] == 'pt':
             modality = f'{segments[1]}_{segments[2]}'.upper()
             region = '_'.join(segments[3:])
@@ -66,7 +64,7 @@ class Model:
             modality = segments[1].upper()
             region = '_'.join(segments[2:])
 
-        return study_type, modality, region
+        return imaging_type, modality, region
 
     def __get_model_data(self) -> tuple[dict, dict]:
         dataset_json_path = os.path.join(self.configuration_directory, FILE_NAME_DATASET_JSON)
@@ -144,7 +142,7 @@ class Model:
             f" Planner: {self.planner}",
             f" Resolution Configuration: {self.resolution_configuration}",
             f" Voxel Spacing: {self.voxel_spacing}",
-            f" Study Type: {self.study_type}",
+            f" Imaging Type: {self.imaging_type}",
             f" Modality: {self.modality}",
             f" Region: {self.region}",
             f" Multilabel Prefix: {self.multilabel_prefix}",
@@ -161,20 +159,6 @@ class Model:
             result.append(f" Limit FOV: {self.limit_fov}")
 
         return "\n".join(result)
-
-    @staticmethod
-    def get_expectation_from_identifier(model_identifier: str) -> (list[str], list[str], list[str]):
-        modality = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_MODALITY]
-        if modality == 'FDG-PET-CT':
-            expected_modalities = ['FDG-PET', 'CT']
-        else:
-            expected_modalities = [modality]
-        expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
-
-        description = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_TEXT]
-        imaging = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_IMAGING]
-        model_information = [description, imaging, modality]
-        return list(set(expected_modalities)), list(set(expected_prefixes)), model_information
 
     @staticmethod
     def model_identifier_valid(model_identifier: str) -> bool:
