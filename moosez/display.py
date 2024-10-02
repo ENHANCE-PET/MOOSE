@@ -76,16 +76,21 @@ def expectations(model_identifiers: list[str], output_manager: resources.OutputM
     required_modalities = []
     required_prefixes = []
 
-    for model_identifier in model_identifiers:
-        modalities, prefixes = models.Model.get_expectation_from_identifier(model_identifier, output_manager)
+    header = ["Nr", "Model Name", "Tissue of Interest", "Imaging", "Required Modality", "Required Prefix (non-DICOM)"]
+    table = output_manager.create_table(header)
+
+    for model_nr, model_identifier in enumerate(model_identifiers):
+        modalities, prefixes, information = models.Model.get_expectation_from_identifier(model_identifier)
         required_modalities = required_modalities + modalities
         required_prefixes = required_prefixes + prefixes
+        information = [str(model_nr + 1), model_identifier] + information + [', '.join(prefixes)]
+        table.add_row(*information)
+
+    output_manager.console_update(table)
 
     required_modalities = list(set(required_modalities))
     required_prefixes = list(set(required_prefixes))
 
-    output_manager.console_update(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)}"
-                                  f" | Required prefix for non-DICOM files: {required_prefixes}")
     output_manager.log_update(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)} "
                               f"| Required prefix for non-DICOM files: {required_prefixes} ")
     output_manager.console_update(f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "

@@ -137,7 +137,6 @@ def main():
     output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
     output_manager.console_update(f' ')
 
-    output_manager.console_update(f" Number of selected models: {len(model_names)} | {', '.join(model_names)}")
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     modalities = display.expectations(model_names, output_manager)
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')

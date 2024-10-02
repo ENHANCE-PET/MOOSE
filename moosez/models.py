@@ -163,7 +163,7 @@ class Model:
         return "\n".join(result)
 
     @staticmethod
-    def get_expectation_from_identifier(model_identifier: str, output_manager: resources.OutputManager) -> (list[str], list[str]):
+    def get_expectation_from_identifier(model_identifier: str) -> (list[str], list[str], list[str]):
         modality = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_MODALITY]
         if modality == 'FDG-PET-CT':
             expected_modalities = ['FDG-PET', 'CT']
@@ -173,9 +173,8 @@ class Model:
 
         description = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_TEXT]
         imaging = resources.MODELS[model_identifier][KEY_DESCRIPTION][KEY_DESCRIPTION_IMAGING]
-        output_manager.console_update(f" Tissue of interest: {description:<42} | Imaging: {imaging:<12} | Modality: {modality:<6}")
-
-        return list(set(expected_modalities)), list(set(expected_prefixes))
+        model_information = [description, imaging, modality]
+        return list(set(expected_modalities)), list(set(expected_prefixes)), model_information
 
     @staticmethod
     def model_identifier_valid(model_identifier: str) -> bool:

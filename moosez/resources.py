@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
+import rich.table
 import torch
 import os
 import sys
 from halo import Halo
 from datetime import datetime
 from rich.console import Console
+from rich.table import Table
 from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, VERSION,
                               KEY_DESCRIPTION, KEY_DESCRIPTION_TEXT, KEY_DESCRIPTION_IMAGING, KEY_DESCRIPTION_MODALITY)
@@ -235,34 +238,27 @@ class OutputManager:
         self.verbose_console = verbose_console
         self.verbose_log = verbose_log
 
+        self.console = Console()
         self.logger = None
         self.spinner = None
         self.nnunet_log_filename = os.devnull
 
     def create_file_progress_bar(self):
-        if self.verbose_console:
-            console = Console()
-            disable_progress = False
-        else:
-            console = Console(file=None)
-            disable_progress = True
-
         progress_bar = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
                                 "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
-                                TransferSpeedColumn(), TimeRemainingColumn(), console=console, expand=True,
-                                disable=disable_progress)
+                                TransferSpeedColumn(), TimeRemainingColumn(), console=self.console, expand=True,
+                                disable=not self.verbose_console)
         return progress_bar
 
     def create_progress_bar(self):
-        if self.verbose_console:
-            console = Console()
-            disable_progress = False
-        else:
-            console = Console(file=None)
-            disable_progress = True
-
-        progress_bar = Progress(console=console, disable=disable_progress)
+        progress_bar = Progress(console=self.console, disable=not self.verbose_console)
         return progress_bar
+
+    def create_table(self, header: list[str]) -> rich.table.Table:
+        table = Table()
+        for header in header:
+            table.add_column(header)
+        return table
 
     def configure_logging(self, log_file_directory: str | None):
         if self.verbose_log and not self.logger:
@@ -287,20 +283,23 @@ class OutputManager:
 
                 self.logger.addHandler(file_handler)
 
-    def log_update(self, text: str, force=False):
-        if (self.verbose_log and self.logger) or force:
+    def log_update(self, text: str):
+        if self.verbose_log and self.logger:
             self.logger.info(text)
 
-    def console_update(self, text: str, force=False):
-        if self.verbose_console or force:
-            print(text)
+    def console_update(self, text: str):
+        if self.verbose_console:
+            if isinstance(text, str):
+                print(text)
+            else:
+                self.console.print(text)
 
     def configure_spinner(self):
         if self.verbose_console and not self.spinner:
             self.spinner = Halo(text=' Initiating', spinner='dots')
 
-    def spinner_update(self, text: str, force=False):
-        if (self.spinner and self.verbose_console) or force:
+    def spinner_update(self, text: str):
+        if self.spinner and self.verbose_console:
             self.spinner.text = text
 
     def spinner_stop(self):
