@@ -34,22 +34,26 @@ MOOSE 3.0 isn't just an upgrade—it's a lifestyle. A faster, leaner, and strong
 MOOSE 3.0 offers a wide range of segmentation models catering to various clinical and preclinical needs. Here are the models currently available:
 
 ### Clinical 👫🏽
-- [`clin_ct_lungs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L85)
-- [`clin_ct_organs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L66)
-- [`clin_ct_body`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L92)
-- [`clin_ct_ribs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L124)
-- [`clin_ct_muscles`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L151)
-- [`clin_ct_peripheral_bones`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L163)
-- [`clin_ct_fat`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L199)
-- [`clin_ct_vertebrae`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L209)
-- [`clin_ct_cardiac`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L239)
-- [`clin_ct_digestive`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L251)
-- [`clin_ct_all_bones_v1`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L264)
-- [`clin_pt_fdg_brain_v1`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L311)
+
+| **Model Name**        | **Intensities and Regions**                                                                                                                                                                                                                           |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `clin_ct_body`        | 1:Legs, 2:Body, 3:Head, 4:Arms                                                                                                                                                                                                                        |
+| `clin_ct_cardiac`     | 1:heart_myocardium, 2:heart_atrium_left, 3:heart_ventricle_left, 4:heart_atrium_right, 5:heart_ventricle_right, 6:pulmonary_artery, 7:iliac_artery_left, 8:iliac_artery_right, 9:iliac_vena_left, 10:iliac_vena_right                                 |
+| `clin_ct_digestive`   | 1:esophagus, 2:trachea, 3:small_bowel, 4:duodenum, 5:colon, 6:urinary_bladder, 7:face                                                                                                                                                                  |
+| `clin_ct_fat`         | 1:spinal_chord, 2:skeletal_muscle, 3:subcutaneous_fat, 4:visceral_fat, 5:thoracic_fat, 6:eyes, 7:testicles, 8:prostate                                                                                                                                |
+| `clin_ct_lungs`       | 1:lung_upper_lobe_left, 2:lung_lower_lobe_left, 3:lung_upper_lobe_right, 4:lung_middle_lobe_right, 5:lung_lower_lobe_right                                                                                                                             |
+| `clin_ct_muscles`     | 1:gluteus_maximus_left, 2:gluteus_maximus_right, 3:gluteus_medius_left, 4:gluteus_medius_right, 5:gluteus_minimus_left, 6:gluteus_minimus_right, 7:autochthon_left, 8:autochthon_right, 9:iliopsoas_left, 10:iliopsoas_right                          |
+| `clin_ct_organs`      | 1:spleen, 2:kidney_right, 3:kidney_left, 4:gallbladder, 5:liver, 6:stomach, 7:aorta, 8:inferior_vena_cava, 9:portal_vein_and_splenic_vein, 10:pancreas, 11:adrenal_gland_right, 12:adrenal_gland_left, 13:lung_upper_lobe_left, 14:lung_lower_lobe_left, 15:lung_upper_lobe_right, 16:lung_middle_lobe_right, 17:lung_lower_lobe_right |
+| `clin_ct_peripheral_bones` | 1:carpal_left, 2:carpal_right, 3:clavicle_left, 4:clavicle_right, 5:femur_left, 6:femur_right, 7:fibula_left, 8:fibula_right, 9:humerus_left, 10:humerus_right, 11:metacarpal_left, 12:metacarpal_right, 13:metatarsal_left, 14:metatarsal_right, 15:patella_left, 16:patella_right, 17:fingers_left, 18:fingers_right, 19:radius_left, 20:radius_right, 21:scapula_left, 22:scapula_right, 23:skull, 24:tarsal_left, 25:tarsal_right, 26:tibia_left, 27:tibia_right, 28:toes_left, 29:toes_right, 30:ulna_left, 31:ulna_right, 32:thyroid_left, 33:thyroid_right, 34:bladder |
+| `clin_ct_ribs`        | 1:rib_left_1, 2:rib_left_2, 3:rib_left_3, 4:rib_left_4, 5:rib_left_5, 6:rib_left_6, 7:rib_left_7, 8:rib_left_8, 9:rib_left_9, 10:rib_left_10, 11:rib_left_11, 12:rib_left_12, 13:rib_right_1, 14:rib_right_2, 15:rib_right_3, 16:rib_right_4, 17:rib_right_5, 18:rib_right_6, 19:rib_right_7, 20:rib_right_8, 21:rib_right_9, 22:rib_right_10, 23:rib_right_11, 24:rib_right_12, 25:sternum |
+| `clin_ct_vertebrae`   | 1:vertebra_C1, 2:vertebra_C2, 3:vertebra_C3, 4:vertebra_C4, 5:vertebra_C5, 6:vertebra_C6, 7:vertebra_C7, 8:vertebra_T1, 9:vertebra_T2, 10:vertebra_T3, 11:vertebra_T4, 12:vertebra_T5, 13:vertebra_T6, 14:vertebra_T7, 15:vertebra_T8, 16:vertebra_T9, 17:vertebra_T10, 18:vertebra_T11, 19:vertebra_T12, 20:vertebra_L1, 21:vertebra_L2, 22:vertebra_L3, 23:vertebra_L4, 24:vertebra_L5, 25:vertebra_S1, 26:hip_left, 27:hip_right, 28:sacrum |
 
 ### Preclinical 🐁
-- [`preclin_ct_legs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L260)
-- [`preclin_mr_all`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L101)
+| **Model Name**        | **Intensities and Regions**                                                                                                                                                                                                                           |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `preclin_ct_legs`     | 1:right_leg_muscle, 2:left_leg_muscle                                                                                                                                                                                                                |
+| `preclin_mr_all`      | 1:Brain, 2:Liver, 3:Intestines, 4:Pancreas, 5:Thyroid, 6:Spleen, 7:Bladder, 8:OuterKidney, 9:InnerKidney, 10:HeartInside, 11:HeartOutside, 12:WAT Subcutaneous, 13:WAT Visceral, 14:BAT, 15:Muscle TF, 16:Muscle TB, 17:Muscle BB, 18:Muscle BF, 19:Aorta, 20:Lung, 21:Stomach |
+
 
 Each model is designed to provide high-quality segmentation with MOOSE 3.0's optimized algorithms and data-centric AI principles.
 
