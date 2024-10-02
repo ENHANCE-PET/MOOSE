@@ -1,20 +1,20 @@
 ![Moose-logo](Images/moose.png)
-## MOOSE 2.0 🦌- Leaner. Meaner. Stronger 💪
+## MOOSE 3.0 🦌- Leaner. Meaner. Stronger 💪
 [![Documentation Status](https://img.shields.io/readthedocs/moosez/latest.svg?style=flat-square&logo=read-the-docs&color=CC00FF)](https://moosez.rtfd.io/en/latest/?badge=latest) [![PyPI version](https://img.shields.io/pypi/v/moosez?color=FF1493&style=flat-square&logo=pypi)](https://pypi.org/project/moosez/) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-red.svg?style=flat-square&logo=gnu&color=FF0000)](https://www.gnu.org/licenses/gpl-3.0) [![Discord](https://img.shields.io/badge/Discord-Chat-blue.svg?style=flat-square&logo=discord&color=0000FF)](https://discord.gg/9uTHYhWCA5) [![Monthly Downloads](https://img.shields.io/pypi/dm/moosez?label=Downloads%20(Monthly)&color=9400D3&style=flat-square&logo=python)](https://pypi.org/project/moosez/) [![Daily Downloads](https://img.shields.io/pypi/dd/moosez?label=Downloads%20(Daily)&color=9400D3&style=flat-square&logo=python)](https://pypi.org/project/moosez/)
 
-Unveiling a new dimension in 3D medical image segmentation: MOOSE 2.0 🚀
+Unveiling a new dimension in 3D medical image segmentation: MOOSE 3.0 🚀
 
-Crafted meticulously from the core principles of data-centric AI, MOOSE 2.0 is our response to the demands of both preclinical and clinical imaging.
+Crafted meticulously from the core principles of data-centric AI, MOOSE 3.0 is our response to the demands of both preclinical and clinical imaging.
 
-:sparkles: **It's Leaner**: We've hacked away the fluff and made MOOSE 2.0 leaner than ever before. This bad boy doesn't need heavy-duty computing. With less than 32GB of RAM, compatibility across OS, and the flexibility to work with or without NVIDIA GPUs, MOOSE 2.0 fits right into any environment. :microscope:
+:sparkles: **It's Leaner**: We've hacked away the fluff and made MOOSE 3.0 leaner than ever before. This bad boy doesn't need heavy-duty computing. With less than 32GB of RAM, compatibility across OS, and the flexibility to work with or without NVIDIA GPUs, MOOSE 3.0 fits right into any environment. :microscope:
 
-:boom: **It's Meaner**: The QIMPies have poured their hearts and souls into building this beast from scratch. With the speed clocking 5x faster than its predecessor, MOOSE 2.0 cuts through the noise and gets down to business instantly. It serves up a range of segmentation models designed for both clinical and preclinical settings. No more waiting, no more compromises. It's Mean Machine time! :zap:
+:boom: **It's Meaner**: The QIMPies have poured their hearts and souls into building this beast from scratch. With the speed clocking 5x faster than its predecessor, MOOSE 3.0 cuts through the noise and gets down to business instantly. It serves up a range of segmentation models designed for both clinical and preclinical settings. No more waiting, no more compromises. It's Mean Machine time! :zap:
 
-:fire: **It's Stronger**: MOOSE 2.0 is powered by the sheer strength of Data-centric AI principles. With a whopping 1.5k whole-body PET/CT datasets, that's ~40x times more data than our first model, we're packing a punch. MOOSE 2.0 comes with the strength and knowledge gained from an array of data that's simply unparalleled. The result? Better precision, improved outcomes, and a tool you can trust. :briefcase:
+:fire: **It's Stronger**: MOOSE 3.0 is powered by the sheer strength of Data-centric AI principles. With a whopping 1.5k whole-body PET/CT datasets, that's ~40x times more data than our first model, we're packing a punch. MOOSE 3.0 comes with the strength and knowledge gained from an array of data that's simply unparalleled. The result? Better precision, improved outcomes, and a tool you can trust. :briefcase:
 
-:bell: :loudspeaker: :boom: And now, it's even more **versatile**, with MOOSE 2.0, you now have the flexibility to use it as a powerful command-line tool for batch processing, or as a library package for individual processing in your Python projects. The choice is yours! :sunglasses:
+:bell: :loudspeaker: :boom: And now, it's even more **versatile**, with MOOSE 3.0, you now have the flexibility to use it as a powerful command-line tool for batch processing, or as a library package for individual processing in your Python projects. The choice is yours! :sunglasses:
 
-Accommodating an array of modalities including PET, CT, and MRI, MOOSE 2.0 stands at the cusp of a paradigm shift. It’s not just an upgrade; it’s our commitment to making MOOSE 2.0 your go-to for segmentation tasks.
+Accommodating an array of modalities including PET, CT, and MRI, MOOSE 3.0 stands at the cusp of a paradigm shift. It’s not just an upgrade; it’s our commitment to making MOOSE 3.0 your go-to for segmentation tasks.
 
 Join us as we embark on this journey.
 
@@ -29,7 +29,7 @@ Join us as we embark on this journey.
 
 ## Available Segmentation Models 🧬
 
-MOOSE 2.0 offers a wide range of segmentation models catering to various clinical and preclinical needs. Here are the models currently available:
+MOOSE 3.0 offers a wide range of segmentation models catering to various clinical and preclinical needs. Here are the models currently available:
 
 ### Clinical 👫🏽
 - [`clin_ct_lungs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L85)
@@ -49,7 +49,7 @@ MOOSE 2.0 offers a wide range of segmentation models catering to various clinica
 - [`preclin_ct_legs`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L260)
 - [`preclin_mr_all`](https://github.com/QIMP-Team/MOOSE/blob/f48e4b6f9155f7b50bb042b045550b9cc25f6989/moosez/constants.py#L101)
 
-Each model is designed to provide high-quality segmentation with MOOSE 2.0's optimized algorithms and data-centric AI principles.
+Each model is designed to provide high-quality segmentation with MOOSE 3.0's optimized algorithms and data-centric AI principles.
 
 <div align="center">
 <picture>
@@ -79,21 +79,21 @@ Each model is designed to provide high-quality segmentation with MOOSE 2.0's opt
 
 ## Requirements ✅
 
-Before you dive into the incredible world of MOOSE 2.0, here are a few things you need to ensure for an optimal experience:
+Before you dive into the incredible world of MOOSE 3.0, here are a few things you need to ensure for an optimal experience:
 
-- **Operating System**: We've got you covered whether you're on Windows, Mac, or Linux. MOOSE 2.0 has been tested across these platforms to ensure seamless operation.
+- **Operating System**: We've got you covered whether you're on Windows, Mac, or Linux. MOOSE 3.0 has been tested across these platforms to ensure seamless operation.
 
-- **Memory**: MOOSE 2.0 has quite an appetite! Make sure you have at least 32GB of RAM for the smooth running of all tasks.
+- **Memory**: MOOSE 3.0 has quite an appetite! Make sure you have at least 32GB of RAM for the smooth running of all tasks.
 
-- **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 2.0 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
+- **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 3.0 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
 
-- **Python**: Ensure that you have Python 3.10 installed on your system. MOOSE 2.0 likes to keep up with the latest, after all!
+- **Python**: Ensure that you have Python 3.10 installed on your system. MOOSE 3.0 likes to keep up with the latest, after all!
 
-So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 2.0 has to offer. 🚀🌐
+So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 3.0 has to offer. 🚀🌐
 
 ## Installation Guide 🛠️
 
-Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 2.0.
+Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 3.0.
 
 ## For Linux (and Intel x86 Mac)🐧
 
@@ -107,12 +107,12 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    source moose-env/bin/activate  # for Linux
    ```
 
-3. Install MOOSE 2.0.
+3. Install MOOSE 3.0.
    ```bash
    pip install moosez
    ```
 
-Voila! You're all set to explore with MOOSE 2.0.
+Voila! You're all set to explore with MOOSE 3.0.
 
 ## For Macs powered by Apple Silicon (M series chips with MPS) 🍏
 
@@ -126,7 +126,7 @@ Voila! You're all set to explore with MOOSE 2.0.
    source moose-env/bin/activate 
    ```
 
-3. Install MOOSE 2.0 and a special fork of PyTorch (MPS specific). You need to install the MPS specific branch for making MOOSE work with MPS
+3. Install MOOSE 3.0 and a special fork of PyTorch (MPS specific). You need to install the MPS specific branch for making MOOSE work with MPS
    ```bash
    pip install moosez
    pip install git+https://github.com/LalithShiyam/pytorch-mps.git
@@ -147,12 +147,12 @@ Now you are ready to use MOOSE on Apple Silicon 🏎⚡️.
 
 3. Go to the PyTorch website and install the appropriate PyTorch version for your system. **!DO NOT SKIP THIS!**
 
-4. Finally, install MOOSE 2.0.
+4. Finally, install MOOSE 3.0.
    ```bash
    pip install moosez
    ```
 
-There you have it! You're ready to venture into the world of 3D medical image segmentation with MOOSE 2.0.
+There you have it! You're ready to venture into the world of 3D medical image segmentation with MOOSE 3.0.
 
 Happy exploring! 🚀🔬
 
@@ -160,7 +160,7 @@ Happy exploring! 🚀🔬
 
 ### Command-line tool for batch processing :computer: 
 
-Embarking on your journey with MOOSE 2.0 is straightforward and easy. Our command-line tool for batch processing requires only two arguments: the directory path where your subject images are stored, and the segmentation model name you wish to use. Here's how you can get started:
+Embarking on your journey with MOOSE 3.0 is straightforward and easy. Our command-line tool for batch processing requires only two arguments: the directory path where your subject images are stored, and the segmentation model name you wish to use. Here's how you can get started:
 
 ```bash
 moosez -d <path_to_image_dir> -m <model_name>
@@ -176,7 +176,7 @@ moosez -d <path_to_image_dir> -m clin_ct_organs
 
 In this example, 'clin_ct_organs' is the segmentation model name for clinical CT organ segmentation.
 
-And that's it! With just one command, you're all set to explore the new horizons of 3D medical image segmentation with MOOSE 2.0.
+And that's it! With just one command, you're all set to explore the new horizons of 3D medical image segmentation with MOOSE 3.0.
 
 Need assistance along the way? Don't worry, we've got you covered. Simply type:
 
@@ -186,9 +186,9 @@ moosez -h
 
 This command will provide you with all the help and the information about the available [models](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/resources.py#L29) and the [regions](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/constants.py#L64) it segments.
 
-### Using MOOSE 2.0 as a Library :books:
+### Using MOOSE 3.0 as a Library :books:
 
-MOOSE 2.0 can also be imported and used as a library in your own Python projects. Here's how you can do it:
+MOOSE 3.0 can also be imported and used as a library in your own Python projects. Here's how you can do it:
 
 First, import the `moose` function from the `moosez` package in your python script:
 
@@ -215,13 +215,13 @@ Here's an example of how to call the `moose` function:
 
 Remember to replace `model_name`, `input_dir`, `output_dir`, and `accelerator` with the actual values you want to use.
 
-That's it! MOOSE 2.0 will now process the images in the input directory and save the output in the output directory. Enjoy using MOOSE 2.0 as a library in your Python projects!
+That's it! MOOSE 3.0 will now process the images in the input directory and save the output in the output directory. Enjoy using MOOSE 3.0 as a library in your Python projects!
 
 ## Directory Structure and Naming Conventions for MOOSE 📂🏷️
 
 ### Applicable only for batch mode ⚠️
 
-Using MOOSE 2.0 optimally requires your data to be structured according to specific conventions. MOOSE 2.0 supports both DICOM and NIFTI formats. For DICOM files, MOOSE infers the modality from the DICOM tags and checks if the given modality is suitable for the chosen segmentation model. However, for NIFTI files, users need to ensure that the files are named with the correct modality as a suffix.
+Using MOOSE 3.0 optimally requires your data to be structured according to specific conventions. MOOSE 3.0 supports both DICOM and NIFTI formats. For DICOM files, MOOSE infers the modality from the DICOM tags and checks if the given modality is suitable for the chosen segmentation model. However, for NIFTI files, users need to ensure that the files are named with the correct modality as a suffix.
 
 ### Required Directory Structure 🌳
 Please structure your dataset as follows:
@@ -252,14 +252,14 @@ MOOSEv2_data/
 └── S5
     └── CT_S5.nii
 ```
-**Note:** If the necessary naming conventions are not followed, MOOSE 2.0 will skip the subjects.
+**Note:** If the necessary naming conventions are not followed, MOOSE 3.0 will skip the subjects.
 
 ### Naming Conventions for NIFTI files 📝
 When using NIFTI files, you should name the file with the appropriate modality as a suffix. 
 
 For instance, if you have chosen the `model_name` as `clin_ct_organs`, the CT scan for subject 'S2' in NIFTI format, should have the modality tag 'CT_' attached to the file name, e.g. `CT_S2.nii`. In the directory shown above, every subject will be processed by `moosez` except S4.
 
-**Remember:** Adhering to these file naming and directory structure conventions ensures smooth and efficient processing with MOOSE 2.0. Happy segmenting! 🚀
+**Remember:** Adhering to these file naming and directory structure conventions ensures smooth and efficient processing with MOOSE 3.0. Happy segmenting! 🚀
 
 ## :tada: Add and contribute Your Own nnUNetv2 Models to MooseZ :rocket:
 

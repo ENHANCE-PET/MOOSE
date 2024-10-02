@@ -17,29 +17,14 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import logging
-
 import emoji
 import pyfiglet
 from moosez import constants
+from moosez import models
 from moosez import resources
 
 
-def get_usage_message():
-    usage_message = """
-    Usage:
-      moosez -d <MAIN_DIRECTORY> -m <MODEL_NAME>
-    Example:  
-      moosez -d /Documents/Data_to_moose/ -m clin_ct_organs
-
-    Description:
-      MOOSE (Multi-organ objective segmentation) - A data-centric AI solution that
-      generates multilabel organ segmentations for systemic TB whole-person research.
-    """
-    return usage_message
-
-
-def logo():
+def logo(output_manager: resources.OutputManager):
     """
     Display MOOSE logo
 
@@ -47,18 +32,18 @@ def logo():
 
     :return: None
     """
-    print(' ')
+    output_manager.console_update(' ')
     logo_color_code = constants.ANSI_VIOLET
     slogan_color_code = constants.ANSI_VIOLET
-    result = logo_color_code + pyfiglet.figlet_format(" MOOSE 2.0", font="smslant").rstrip() + "\033[0m"
+    result = logo_color_code + pyfiglet.figlet_format(" MOOSE 3.0", font="smslant").rstrip() + "\033[0m"
     text = slogan_color_code + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of " \
                                "PET imaging together." + "\033[0m"
-    print(result)
-    print(text)
-    print(' ')
+    output_manager.console_update(result)
+    output_manager.console_update(text)
+    output_manager.console_update(' ')
 
 
-def citation():
+def citation(output_manager: resources.OutputManager):
     """
     Display manuscript citation
 
@@ -66,51 +51,51 @@ def citation():
 
     :return: None
     """
-    print(f'{constants.ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{constants.ANSI_RESET}')
-    print(" ")
-    print(
+    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{constants.ANSI_RESET}')
+    output_manager.console_update(" ")
+    output_manager.console_update(
         " Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT "
         "images based on data-centric artificial intelligence. J Nucl Med. June 2022.")
-    print(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
+    output_manager.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def expectations(model_name: str) -> list:
+def expectations(model_identifiers: list[str], output_manager: resources.OutputManager) -> list:
     """
     Display expected modality for the model.
 
     This function displays the expected modality for the given model name. It also checks for a special case where
     'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
 
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model_identifiers: The desired models
+    :type model_identifiers: list[str]
+    :param output_manager: The output manager
+    :type output_manager: resources.OutputManager
     :return: A list of modalities.
     :rtype: list
     """
-    model_info = resources.expected_modality(model_name)
-    modality = model_info['Modality']
+    required_modalities = []
+    required_prefixes = []
 
-    # check for special case where 'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'
-    if modality == 'FDG-PET-CT':
-        modalities = ['FDG-PET', 'CT']
-    else:
-        modalities = [modality]
-    expected_prefix = [m.replace('-', '_') + "_" for m in modalities]
+    header = ["Nr", "Model Name", "Tissue of Interest", "Imaging", "Required Modality", "Required Prefix (non-DICOM)"]
+    table = output_manager.create_table(header)
 
-    print(
-        f" Imaging: {model_info['Imaging']} |"
-        f" Modality: {modality} | "
-        f"Tissue of interest: {model_info['Tissue of interest']}")
-    print(
-        f" Required modalities: {modalities} | "
-        f" No. of modalities: {len(modalities)}"
-        f" | Required prefix for non-DICOM files: {expected_prefix}")
-    logging.info(f" Required modalities: {modalities} |  No. of modalities: {len(modalities)} "
-                 f"| Required prefix for non-DICOM files: {expected_prefix} ")
-    print(
-        f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
-        f"will be skipped. {constants.ANSI_RESET}")
-    warning_message = " Skipping subjects without the required modalities (check file prefix).\n" \
-                      " These subjects will be excluded from analysis and their data will not be used."
-    logging.warning(warning_message)
+    for model_nr, model_identifier in enumerate(model_identifiers):
+        modalities, prefixes, information = models.Model.get_expectation_from_identifier(model_identifier)
+        required_modalities = required_modalities + modalities
+        required_prefixes = required_prefixes + prefixes
+        information = [str(model_nr + 1), model_identifier] + information + [', '.join(prefixes)]
+        table.add_row(*information)
 
-    return modalities
+    output_manager.console_update(table)
+
+    required_modalities = list(set(required_modalities))
+    required_prefixes = list(set(required_prefixes))
+
+    output_manager.log_update(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)} "
+                              f"| Required prefix for non-DICOM files: {required_prefixes} ")
+    output_manager.console_update(f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
+                                  f"will be skipped. {constants.ANSI_RESET}")
+    output_manager.log_update(" Skipping subjects without the required modalities (check file prefix).\n"
+                              " These subjects will be excluded from analysis and their data will not be used.")
+
+    return required_modalities

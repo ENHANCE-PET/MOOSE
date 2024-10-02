@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Author: Lalith Kumar Shiyam Sundar
+# Author: Lalith Kumar Shyam Sundar
 # Institution: Medical University of Vienna
 # Research Group: Quantitative Imaging and Medical Physics (QIMP) Team
 # Date: 13.02.2023
@@ -19,10 +19,8 @@
 import glob
 import os
 import shutil
-import sys
 from datetime import datetime
 from multiprocessing import Pool
-
 from moosez import constants
 
 
@@ -37,67 +35,51 @@ def create_directory(directory_path: str) -> None:
         os.makedirs(directory_path)
 
 
-def get_virtual_env_root() -> str:
-    """
-    Returns the root directory of the virtual environment.
-    
-    :return: The root directory of the virtual environment.
-    :rtype: str
-    """
-    python_exe = sys.executable
-    virtual_env_root = os.path.dirname(os.path.dirname(python_exe))
-    return virtual_env_root
-
-
-def get_files(directory: str, wildcard: str) -> list:
+def get_files(directory: str, prefix: str, suffix: str | tuple) -> list[str]:
     """
     Returns the list of files in the directory with the specified wildcard.
     
     :param directory: The directory path.
     :type directory: str
     
-    :param wildcard: The wildcard to be used.
-    :type wildcard: str
+    :param suffix: The wildcard to be used.
+    :type suffix: str
+
+    :param prefix: The wildcard to be used.
+    :type prefix: str
     
     :return: The list of files.
     :rtype: list
     """
+
+    if isinstance(suffix, str):
+        suffix = (suffix,)
+
     files = []
     for file in os.listdir(directory):
-        if file.endswith(wildcard):
+        if file.startswith(prefix) and file.endswith(suffix):
             files.append(os.path.join(directory, file))
     return files
 
 
-def moose_folder_structure(parent_directory: str, model_name: str, modalities: list) -> tuple:
+def moose_folder_structure(parent_directory: str) -> tuple[str, str, str]:
     """
     Creates the moose folder structure.
     
     :param parent_directory: The path to the parent directory.
     :type parent_directory: str
     
-    :param model_name: The name of the model.
-    :type model_name: str
-    
-    :param modalities: The list of modalities.
-    :type modalities: list
-    
-    :return: A tuple containing the paths to the moose directory, input directories, output directory, and stats directory.
+    :return: A tuple containing the paths to the moose directory, output directory, and stats directory.
     :rtype: tuple
     """
-    moose_dir = os.path.join(parent_directory,
-                             'moosez-' + model_name + '-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
+    moose_dir = os.path.join(parent_directory, 'moosez-' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     create_directory(moose_dir)
-    input_dirs = []
-    for modality in modalities:
-        input_dirs.append(os.path.join(moose_dir, modality))
-        create_directory(input_dirs[-1])
 
-    output_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
+    segmentation_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
     stats_dir = os.path.join(moose_dir, constants.STATS_FOLDER)
-    create_directory(output_dir)
+    create_directory(segmentation_dir)
     create_directory(stats_dir)
-    return moose_dir, input_dirs, output_dir, stats_dir
+    return moose_dir, segmentation_dir, stats_dir
 
 
 def copy_file(file: str, destination: str) -> None:
@@ -113,7 +95,7 @@ def copy_file(file: str, destination: str) -> None:
     shutil.copy(file, destination)
 
 
-def copy_files_to_destination(files: list, destination: str) -> None:
+def copy_files_to_destination(files: list[str], destination: str) -> None:
     """
     Copies the files inside the list to the destination directory in a parallel fashion.
     
@@ -127,7 +109,7 @@ def copy_files_to_destination(files: list, destination: str) -> None:
         pool.starmap(copy_file, [(file, destination) for file in files])
 
 
-def select_files_by_modality(moose_compliant_subjects: list, modality_tag: str) -> list:
+def select_files_by_modality(moose_compliant_subjects: list[str], modality_tag: str) -> list:
     """
     Selects the files with the selected modality tag from the moose-compliant folders.
     
@@ -149,25 +131,7 @@ def select_files_by_modality(moose_compliant_subjects: list, modality_tag: str) 
     return selected_files
 
 
-def organise_files_by_modality(moose_compliant_subjects: list, modalities: list, moose_dir: str) -> None:
-    """
-    Organises the files by modality.
-    
-    :param moose_compliant_subjects: The list of moose-compliant subjects paths.
-    :type moose_compliant_subjects: list
-    
-    :param modalities: The list of modalities.
-    :type modalities: list
-    
-    :param moose_dir: The path to the moose directory.
-    :type moose_dir: str
-    """
-    for modality in modalities:
-        files_to_copy = select_files_by_modality(moose_compliant_subjects, modality)
-        copy_files_to_destination(files_to_copy, os.path.join(moose_dir, modality))
-
-
-def find_pet_file(folder: str) -> str:
+def find_pet_file(folder: str) -> str | None:
     """
     Finds the PET file in the specified folder.
     
@@ -186,3 +150,8 @@ def find_pet_file(folder: str) -> str:
         raise ValueError("More than one PET file found in the directory.")
     else:
         return None
+
+
+def get_nifti_file_stem(file_path: str) -> str:
+    file_stem = os.path.basename(file_path).split('.gz')[0].split('.nii')[0]
+    return file_stem

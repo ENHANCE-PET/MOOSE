@@ -17,19 +17,21 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-import os
-
-import SimpleITK as sitk
-import dask
+import SimpleITK
+import itertools
 import dask.array as da
-import nibabel
 import numpy as np
 import pandas as pd
-from moosez.constants import MATRIX_THRESHOLD, Z_AXIS_THRESHOLD, CHUNK_THRESHOLD, MARGIN_PADDING, ORGAN_INDICES, \
-    CHUNK_FILENAMES
+import scipy.ndimage as ndimage
+import nibabel
+import os
+from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
+from moosez import predict
+from moosez import models
+from moosez import resources
 
 
-def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
+def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
     """
     Get the intensity statistics of a NIFTI image file.
 
@@ -37,8 +39,8 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     :type image: sitk.Image
     :param mask_image: The multilabel mask image.
     :type mask_image: sitk.Image
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model: The model.
+    :type model: Model
     :param out_csv: The path to the output CSV file.
     :type out_csv: str
     :return: None
@@ -56,7 +58,7 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df = pd.DataFrame(data=stats_list, index=intensity_statistics.GetLabels(), columns=columns)
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = ORGAN_INDICES[model_name]
+    organ_indices_dict = model.organ_indices
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
@@ -66,19 +68,19 @@ def get_intensity_statistics(image: sitk.Image, mask_image: sitk.Image, model_na
     stats_df.to_csv(out_csv)
 
 
-def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) -> None:
+def get_shape_statistics(mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
     """
     Get the shape statistics of a NIFTI image file.
 
     :param mask_image: The multilabel mask image.
     :type mask_image: sitk.Image
-    :param model_name: The name of the model.
-    :type model_name: str
+    :param model: The model.
+    :type model: Model
     :param out_csv: The path to the output CSV file.
     :type out_csv: str
     :return: None
     """
-    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    label_shape_filter = SimpleITK.LabelShapeStatisticsImageFilter()
     label_shape_filter.Execute(mask_image)
 
     stats_list = [(label_shape_filter.GetPhysicalSize(i),) for i in label_shape_filter.GetLabels() if
@@ -89,7 +91,7 @@ def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) 
 
     labels_present = stats_df.index.to_list()
     regions_present = []
-    organ_indices_dict = ORGAN_INDICES[model_name]
+    organ_indices_dict = model.organ_indices
     for label in labels_present:
         if label in organ_indices_dict:
             regions_present.append(organ_indices_dict[label])
@@ -99,231 +101,242 @@ def get_shape_statistics(mask_image: sitk.Image, model_name: str, out_csv: str) 
     stats_df.to_csv(out_csv)
 
 
-def split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
-    """
-    Get a chunk of the image and save it.
+def limit_fov(image_array: np.array, segmentation_array: np.array, fov_label: list[int] | int, largest_component_only: bool = False):
 
-    :param image_chunk: The Dask array chunk.
-    :type image_chunk: da.Array
-    :param image_affine: The image affine transformation.
-    :type image_affine: np.ndarray
-    :param image_chunk_path: The path to save the image chunk.
-    :type image_chunk_path: str
-    :return: None
-    """
-    chunk_part = nibabel.Nifti1Image(image_chunk, image_affine)
-    nibabel.save(chunk_part, image_chunk_path)
+    if largest_component_only:
+        segmentation_array = largest_connected_component(segmentation_array, fov_label)
 
-
-@dask.delayed
-def delayed_split_and_save(image_chunk: da.Array, image_affine: np.ndarray, image_chunk_path: str) -> None:
-    """
-    Delayed function to get a chunk of the image and save it.
-
-    :param image_chunk: The Dask array chunk.
-    :type image_chunk: da.Array
-    :param image_affine: The image affine transformation.
-    :type image_affine: np.ndarray
-    :param image_chunk_path: The path to save the image chunk.
-    :type image_chunk_path: str
-    :return: None
-    """
-    split_and_save(image_chunk, image_affine, image_chunk_path)
-
-
-def write_image(image: nibabel.Nifti1Image, out_image_path: str, large_image: bool = False,
-                is_label: bool = False) -> None:
-    """
-    Writes an image either as a single file or multiple files depending on the image size.
-
-    :param image: The image to save.
-    :type image: nibabel.Nifti1Image
-    :param out_image_path: The path to save the image.
-    :type out_image_path: str
-    :param large_image: Indicates whether the image classifies as large or not.
-    :type large_image: bool
-    :param is_label: Indicates whether the image is a label or not.
-    :type is_label: bool
-    :return: None
-    """
-    image_shape = image.shape
-    image_data = da.from_array(image.get_fdata(), chunks=(image_shape[0], image_shape[1], image_shape[2] // 3))
-    image_affine = image.affine
-
-    if large_image:
-        # Calculate indices for image chunks
-        num_chunks = 3
-        chunk_size = image_shape[2] // num_chunks
-        chunk_indices = [(0, chunk_size + MARGIN_PADDING),
-                         (chunk_size + 1 - MARGIN_PADDING, chunk_size * 2 + MARGIN_PADDING),
-                         (chunk_size * 2 + 1 - MARGIN_PADDING, None)]
-        filenames = CHUNK_FILENAMES
-        save_dir = os.path.dirname(out_image_path)
-        chunk_paths = [os.path.join(save_dir, filename) for filename in filenames]
-
-        tasks = []
-        for i, chunk_path in enumerate(chunk_paths):
-            tasks.append(delayed_split_and_save(image_data[:, :, chunk_indices[i][0]:chunk_indices[i][1]].compute(),
-                                                image_affine, chunk_path))
-
-        dask.compute(*tasks)
-
+    if type(fov_label) is list:
+        z_indices = np.where((segmentation_array >= fov_label[0]) & (segmentation_array <= fov_label[1]))[0]
     else:
-        if is_label:
-            resampled_image_path = out_image_path
-            image_as_uint8 = nibabel.Nifti1Image(image.get_fdata().astype(np.uint8), image.affine ,header=image.header)
-            nibabel.save(image_as_uint8, resampled_image_path)
-        else:
-            resampled_image_path = out_image_path
-            nibabel.save(image, resampled_image_path)
+        z_indices = np.where(segmentation_array == fov_label)[0]
+    z_min, z_max = np.min(z_indices), np.max(z_indices)
+
+    # Crop the CT data along the z-axis
+    limited_fov_array = image_array[z_min:z_max + 1, :, :]
+
+    return limited_fov_array, {"z_min": z_min, "z_max": z_max, "original_shape": image_array.shape}
 
 
-class NiftiPreprocessor:
+def expand_segmentation_fov(limited_fov_segmentation_array: np.ndarray, original_fov_info: dict) -> np.ndarray:
+    z_min = original_fov_info["z_min"]
+    z_max = original_fov_info["z_max"]
+    original_shape = original_fov_info["original_shape"]
+    # Initialize an array of zeros with the shape of the original CT
+    filled_segmentation_array = np.zeros(original_shape, np.uint8)
+    # Place the cropped segmentation back into its original position
+    filled_segmentation_array[z_min:z_max + 1, :, :] = limited_fov_segmentation_array
+
+    return filled_segmentation_array
+
+
+def largest_connected_component(segmentation_array, intensities):
     """
-    A class for processing NIfTI images using nibabel and SimpleITK.
+    Extracts the largest connected component for one or more specific intensities from a multilabel segmentation array
+    and returns a new multilabel array where the largest components retain their original intensity.
 
-    Attributes:
-    -----------
-    image: nibabel.Nifti1Image
-        The NIfTI image to be processed.
-    original_header: nibabel Header
-        The original header information of the NIfTI image.
-    is_large: bool
-        Flag indicating if the image is classified as large.
-    sitk_image: SimpleITK.Image
-        The image converted into a SimpleITK object.
+    Parameters:
+    - segmentation_array: 3D or 2D numpy array with multiple labels.
+    - intensities: A single intensity or a list of intensities for which the largest component(s) should be extracted.
+
+    Returns:
+    - largest_components_multilabel: A multilabel array of the same shape as `segmentation_array`, where the largest
+      connected component(s) of the specified intensity or intensities retain their original intensity, and all other
+      areas are 0.
     """
 
-    def __init__(self, image: nibabel.Nifti1Image):
-        """
-        Constructs all the necessary attributes for the NiftiPreprocessor object.
+    # Ensure intensities is a list (even if only one intensity is provided)
+    if not isinstance(intensities, (list, tuple, np.ndarray)):
+        intensities = [intensities]
 
-        Parameters:
-        -----------
-        image: nibabel.Nifti1Image
-            The NIfTI image to be processed.
-        """
-        self.image = image
-        self.original_header = image.header.copy()
-        self.is_large = self._is_large_image(image.shape)
-        self.sitk_image = self._convert_to_sitk(self.image)
+    # Initialize an array to store the largest connected components
+    largest_components_multilabel = np.zeros_like(segmentation_array, dtype=segmentation_array.dtype)
+
+    # Loop over each intensity
+    for intensity in intensities:
+        # Create a binary mask for the current intensity
+        binary_mask = segmentation_array == intensity
+
+        # Label connected components in the binary mask
+        labeled_array, num_features = ndimage.label(binary_mask)
+
+        # Find the sizes of each connected component
+        component_sizes = np.bincount(labeled_array.ravel())
+
+        # Ignore the background (component 0)
+        component_sizes[0] = 0
+
+        # Find the largest connected component for this intensity
+        largest_component_label = component_sizes.argmax()
+
+        # Create a mask for the largest connected component of this intensity
+        largest_component = labeled_array == largest_component_label
+
+        # Assign the original intensity value to the largest connected component
+        largest_components_multilabel[largest_component] = intensity
+
+    return largest_components_multilabel
+
+
+def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.ModelWorkflow, accelerator, nnunet_log_filename):
+    """
+    Process segmentation by resampling, limiting FOV, and predicting.
+
+    Parameters:
+        image (SimpleITK.Image): The input image.
+        segmentation_array (np.array): The segmentation array to be processed.
+        workflow (models.ModelWorkflow): List of routines where the second element contains model info.
+        accelerator (any): The accelerator used for prediction.
+        nnunet_log_filename (str): Path to the nnunet log file.
+
+    Returns:
+        model (str): The model name used in the process.
+        segmentation_array (np.array): The final processed segmentation array.
+    """
+    # Get the second model from the routine
+    model_to_crop_from = workflow[0]
+    target_model = workflow[1]
+    target_model_fov_information = target_model.limit_fov
+
+    # Convert the segmentation array to SimpleITK image and set properties
+    to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+    to_crop_segmentation.SetOrigin(image.GetOrigin())
+    to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
+    to_crop_segmentation.SetDirection(image.GetDirection())
+
+    # Resample the image using the desired spacing
+    desired_spacing = target_model.voxel_spacing
+    to_crop_image_array = ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+    to_crop_image = SimpleITK.GetImageFromArray(to_crop_image_array)
+    to_crop_image.SetOrigin(image.GetOrigin())
+    to_crop_image.SetSpacing(desired_spacing)
+    to_crop_image.SetDirection(image.GetDirection())
+
+    # Resample the segmentation
+    resampled_to_crop_segmentation = ImageResampler.resample_segmentation(to_crop_image, to_crop_segmentation)
+    del to_crop_segmentation
+    resampled_to_crop_segmentation_array = SimpleITK.GetArrayFromImage(resampled_to_crop_segmentation)
+
+    # Limit FOV based on model information
+    limited_fov_image_array, original_fov_info = limit_fov(to_crop_image_array, resampled_to_crop_segmentation_array,
+                                                           target_model_fov_information["inference_fov_intensities"])
+
+    to_write_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
+    to_write_image.SetOrigin(image.GetOrigin())
+    to_write_image.SetSpacing(desired_spacing)
+    to_write_image.SetDirection(image.GetDirection())
+
+    # Predict the limited FOV segmentation
+    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(limited_fov_image_array, target_model,
+                                                                            accelerator, nnunet_log_filename)
+
+    # Expand the segmentation to the original FOV
+    expanded_segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+
+    # Limit the FOV again based on label intensities and largest component condition
+    limited_fov_segmentation_array, original_fov_info = limit_fov(expanded_segmentation_array, resampled_to_crop_segmentation_array,
+                                                                  target_model_fov_information["label_intensity_to_crop_from"],
+                                                                  target_model_fov_information["largest_component_only"])
+
+    # Expand the segmentation array to the original FOV
+    segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+
+    # Return the segmentation array and spacing
+    return segmentation_array, desired_spacing
+
+
+class ImageChunker:
+    @staticmethod
+    def __compute_interior_indices(axis_length: int, number_of_chunks: int) -> (list[int], list[int]):
+        start = [int(round(k * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
+        end = [int(round((k + 1) * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
+        return start, end
 
     @staticmethod
-    def _is_large_image(image_shape) -> bool:
-        """
-        Check if the image classifies as large based on pre-defined thresholds.
+    def __chunk_array_with_overlap(array_shape: list[int] | tuple[int, ...], splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> list[dict]:
+        dims = array_shape
+        num_dims = len(array_shape)
+        starts_list = []
+        ends_list = []
 
-        Parameters:
-        -----------
-        image_shape: tuple
-            The shape of the NIfTI image.
+        for dimension_index in range(num_dims):
+            axis_length = dims[dimension_index]
+            number_of_chunks = splits_per_dimension[dimension_index]
+            start_index, end_index = ImageChunker.__compute_interior_indices(axis_length, number_of_chunks)
+            starts_list.append(start_index)
+            ends_list.append(end_index)
 
-        Returns:
-        --------
-        bool
-            True if the image is large, False otherwise.
-        """
-        return np.prod(image_shape) > MATRIX_THRESHOLD and image_shape[2] > Z_AXIS_THRESHOLD
+        chunk_info = []
+        for idx in itertools.product(*(range(len(s)) for s in starts_list)):
+            chunk_slice = []
+            interior_slice = []
+            dest_slice = []
+            for dimension_index, chunk_index in enumerate(idx):
+                start_index = starts_list[dimension_index]
+                end_index = ends_list[dimension_index]
+                axis_length = dims[dimension_index]
+                number_of_chunks = splits_per_dimension[dimension_index]
+                overlap = overlap_per_dimension[dimension_index]
 
-    @staticmethod
-    def _is_orthonormal(image: nibabel.Nifti1Image) -> bool:
-        """
-        Check if the qform or sform of a NIfTI image is orthonormal.
+                start = max(0, start_index[chunk_index] - overlap if chunk_index > 0 else start_index[chunk_index])
+                end = min(axis_length, end_index[chunk_index] + overlap if chunk_index < number_of_chunks - 1 else end_index[chunk_index])
 
-        Parameters:
-        -----------
-        image: nibabel.Nifti1Image
-            The NIfTI image to check.
+                start_in_chunk = start_index[chunk_index] - start
+                end_in_chunk = start_in_chunk + (end_index[chunk_index] - start_index[chunk_index])
 
-        Returns:
-        --------
-        bool
-            True if qform or sform is orthonormal, False otherwise.
-        """
-        # Check qform
-        qform_code = image.header["qform_code"]
-        if qform_code != 0:
-            qform = image.get_qform()
-            q_rotation = qform[:3, :3]
-            q_orthonormal = np.allclose(np.dot(q_rotation, q_rotation.T), np.eye(3))
-            # if not q_orthonormal:
-            # return False
+                start_in_full = start_index[chunk_index]
+                end_in_full = end_index[chunk_index]
 
-        # Check sform
-        sform = image.get_sform()
-        s_rotation = sform[:3, :3]
-        s_orthonormal = np.allclose(np.dot(s_rotation, s_rotation.T), np.eye(3))
-        if not s_orthonormal:
-            return False
+                chunk_slice.append(slice(start, end))
+                interior_slice.append(slice(start_in_chunk, end_in_chunk))
+                dest_slice.append(slice(start_in_full, end_in_full))
 
-        return True
+            chunk_info.append({
+                'chunk_slice': tuple(chunk_slice),
+                'interior_slice': tuple(interior_slice),
+                'dest_slice': tuple(dest_slice)
+            })
+
+        return chunk_info
 
     @staticmethod
-    def _make_orthonormal(image: nibabel.Nifti1Image) -> nibabel.Nifti1Image:
-        """
-        Make a NIFTI image orthonormal while keeping the diagonal of the rotation matrix positive.
+    def array_to_chunks(image_array: np.ndarray, splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> (list[np.ndarray], list[dict]):
+        chunk_info = ImageChunker.__chunk_array_with_overlap(image_array.shape, splits_per_dimension, overlap_per_dimension)
+        image_chunks = []
+        positions = []
 
-        Parameters:
-        -----------
-        image: nibabel.Nifti1Image
-            The NIfTI image to make orthonormal.
+        for info in chunk_info:
+            image_chunk = image_array[info['chunk_slice']]
+            positions.append({
+                'interior_slice': info['interior_slice'],
+                'dest_slice': info['dest_slice']
+            })
+            image_chunks.append(image_chunk)
 
-        Returns:
-        --------
-        nibabel.Nifti1Image
-            The orthonormal NIFTI image.
-        """
-        new_affine = image.affine
-        new_header = image.header
-
-        rotation_scaling = new_affine[:3, :3]
-
-        q, r = np.linalg.qr(rotation_scaling)
-        diagonal_sign = np.sign(np.diag(r))
-        q = q @ np.diag(diagonal_sign)
-        orthonormal = q
-
-        new_affine[:3, :3] = orthonormal
-        new_header['pixdim'][1:4] = np.diag(orthonormal)
-        new_header['srow_x'] = new_affine[0, :]
-        new_header['srow_y'] = new_affine[1, :]
-        new_header['srow_z'] = new_affine[2, :]
-
-        new_image = nibabel.Nifti1Image(image.get_fdata(), affine=new_affine, header=new_header)
-
-        return new_image
+        return image_chunks, positions
 
     @staticmethod
-    def _convert_to_sitk(image: nibabel.Nifti1Image) -> sitk.Image:
-        """
-        Convert a NIfTI image to a SimpleITK image, retaining the original header information.
+    def chunks_to_array(image_chunks: list[np.ndarray], image_chunk_positions: dict, final_shape: list[int] | tuple[int, ...]) -> np.ndarray:
+        final_arr = np.empty(final_shape, dtype=image_chunks[0].dtype)
+        for image_chunk, image_chunk_position in zip(image_chunks, image_chunk_positions):
+            interior_region = image_chunk[image_chunk_position['interior_slice']]
+            final_arr[image_chunk_position['dest_slice']] = interior_region
 
-        Parameters:
-        -----------
-        image: nibabel.Nifti1Image
-            The NIfTI image to convert.
+        return final_arr
 
-        Returns:
-        --------
-        sitk.Image
-            The SimpleITK image.
-        """
-        image_data = image.get_fdata()
-        image_affine = image.affine
-        original_spacing = image.header.get_zooms()
-
-        image_data_swapped_axes = image_data.swapaxes(0, 2)
-        sitk_image = sitk.GetImageFromArray(image_data_swapped_axes)
-
-        translation_vector = image_affine[:3, 3]
-        rotation_matrix = image_affine[:3, :3]
-        axis_flip_matrix = np.diag([-1, -1, 1])
-
-        sitk_image.SetSpacing([spacing.item() for spacing in original_spacing])
-        sitk_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))
-        sitk_image.SetDirection((np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(original_spacing)).flatten())
-
-        return sitk_image
+    @staticmethod
+    def determine_splits(image_array: np.ndarray) -> tuple:
+        image_shape = image_array.shape
+        splits = []
+        for axis in image_shape:
+            if axis == 1:
+                splits.append(1)
+                continue
+            split = round((axis // CHUNK_THRESHOLD_INFERRING) + 0.5)
+            if split == 0:
+                split = 1
+            splits.append(split)
+        return tuple(splits)
 
 
 class ImageResampler:
@@ -343,17 +356,17 @@ class ImageResampler:
         if axis < 0:
             raise ValueError('Axis must be non-negative')
 
-        if CHUNK_THRESHOLD <= 0:
+        if CHUNK_THRESHOLD_RESAMPLING <= 0:
             raise ValueError('CHUNK_THRESHOLD must be greater than 0')
 
         # If the axis is smaller than the threshold, it cannot be split into smaller chunks
-        if axis < CHUNK_THRESHOLD:
+        if axis < CHUNK_THRESHOLD_RESAMPLING:
             return 1
 
         # Determine the maximum number of chunks that the axis can be split into
-        split = axis // CHUNK_THRESHOLD
+        split = axis // CHUNK_THRESHOLD_RESAMPLING
 
-        # Reduce the number of chunks until axis is evenly divisible by split
+        # Reduce the number of chunks until the axis is evenly divisible by split
         while axis % split != 0:
             split -= 1
 
@@ -378,25 +391,21 @@ class ImageResampler:
         :return: The resampled chunk (part of an image).
         :rtype: da.array
         """
-        sitk_image_chunk = sitk.GetImageFromArray(image_chunk)
+        sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
         sitk_image_chunk.SetSpacing(input_spacing)
-        input_size = sitk_image_chunk.GetSize()
 
-        if all(x == 0 for x in input_size):
-            return image_chunk
+        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
+                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
+                                                  sitk_image_chunk.GetDirection(), 0.0,
+                                                  sitk_image_chunk.GetPixelIDValue())
 
-        resampled_sitk_image = sitk.Resample(sitk_image_chunk, output_size, sitk.Transform(),
-                                             interpolation_method,
-                                             sitk_image_chunk.GetOrigin(), output_spacing,
-                                             sitk_image_chunk.GetDirection(), 0.0, sitk_image_chunk.GetPixelIDValue())
-
-        resampled_array = sitk.GetArrayFromImage(resampled_sitk_image)
+        resampled_array = SimpleITK.GetArrayFromImage(resampled_sitk_image)
         return resampled_array
 
     @staticmethod
-    def resample_image_SimpleITK_DASK(sitk_image: sitk.Image, interpolation: str,
+    def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: str,
                                       output_spacing: tuple = (1.5, 1.5, 1.5),
-                                      output_size: tuple = None) -> sitk.Image:
+                                      output_size: tuple = None) -> SimpleITK.Image:
         """
         Resamples a sitk_image using Dask and SimpleITK.
 
@@ -412,35 +421,10 @@ class ImageResampler:
         :rtype: sitk.Image
         :raises ValueError: If the interpolation method is not supported.
         """
-        if interpolation == 'nearest':
-            interpolation_method = sitk.sitkNearestNeighbor
-        elif interpolation == 'linear':
-            interpolation_method = sitk.sitkLinear
-        elif interpolation == 'bspline':
-            interpolation_method = sitk.sitkBSpline
-        else:
-            raise ValueError('The interpolation method is not supported.')
 
-        input_spacing = sitk_image.GetSpacing()
-        input_size = sitk_image.GetSize()
-        input_chunks = (input_size[0] / ImageResampler.chunk_along_axis(input_size[0]),
-                        input_size[1] / ImageResampler.chunk_along_axis(input_size[1]),
-                        input_size[2] / ImageResampler.chunk_along_axis(input_size[2]))
-        input_chunks_reversed = list(reversed(input_chunks))
+        resample_result = ImageResampler.resample_image_SimpleITK_DASK_array(sitk_image, interpolation, output_spacing, output_size)
 
-        image_dask = da.from_array(sitk.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
-
-        if output_size is not None:
-            output_spacing = [input_spacing[i] * (input_size[i] / output_size[i]) for i in range(len(input_size))]
-
-        output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in
-                         range(len(input_chunks))]
-        output_chunks_reversed = list(reversed(output_chunks))
-
-        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
-                               output_spacing, output_chunks, chunks=output_chunks_reversed)
-
-        resampled_image = sitk.GetImageFromArray(result)
+        resampled_image = SimpleITK.GetImageFromArray(resample_result)
         resampled_image.SetSpacing(output_spacing)
         resampled_image.SetOrigin(sitk_image.GetOrigin())
         resampled_image.SetDirection(sitk_image.GetDirection())
@@ -448,160 +432,8 @@ class ImageResampler:
         return resampled_image
 
     @staticmethod
-    def resample_image_SimpleITK(sitk_image: sitk.Image, interpolation: str,
-                                 output_spacing: tuple = (1.5, 1.5, 1.5),
-                                 output_size: tuple = None) -> sitk.Image:
-        """
-        Resamples an image to a new spacing using SimpleITK.
-
-        :param sitk_image: The input image.
-        :type sitk_image: SimpleITK.Image
-        :param interpolation: The interpolation method to use. Supported methods are 'nearest', 'linear', and 'bspline'.
-        :type interpolation: str
-        :param output_spacing: The new spacing to use. Default is (1.5, 1.5, 1.5).
-        :type output_spacing: tuple
-        :param output_size: The new size to use. Default is None.
-        :type output_size: tuple
-        :return: The resampled image as SimpleITK.Image.
-        :rtype: SimpleITK.Image
-        :raises ValueError: If the interpolation method is not supported.
-        """
-        if interpolation == 'nearest':
-            interpolation_method = sitk.sitkNearestNeighbor
-        elif interpolation == 'linear':
-            interpolation_method = sitk.sitkLinear
-        elif interpolation == 'bspline':
-            interpolation_method = sitk.sitkBSpline
-        else:
-            raise ValueError('The interpolation method is not supported.')
-
-        desired_spacing = np.array(output_spacing).astype(np.float64)
-        if output_size is None:
-            input_size = sitk_image.GetSize()
-            input_spacing = sitk_image.GetSpacing()
-            output_size = [round(input_size[i] * (input_spacing[i] / output_spacing[i])) for i in
-                           range(len(input_size))]
-
-        # Interpolation:
-        resampled_sitk_image = sitk.Resample(sitk_image, output_size, sitk.Transform(), interpolation_method,
-                                             sitk_image.GetOrigin(), desired_spacing,
-                                             sitk_image.GetDirection(), 0.0, sitk_image.GetPixelIDValue())
-
-        return resampled_sitk_image
-
-    @staticmethod
-    def resample_image(moose_img_object, interpolation: str, desired_spacing: tuple,
-                       desired_size: tuple = None) -> nibabel.Nifti1Image:
-        """
-        Resamples an image to a new spacing.
-
-        :param moose_img_object: The moose_img_object to be resampled.
-        :type moose_img_object: MooseImage
-        :param interpolation: The interpolation method to use. Supported methods are 'nearest', 'linear', and 'bspline'.
-        :type interpolation: str
-        :param desired_spacing: The new spacing to use.
-        :type desired_spacing: tuple
-        :param desired_size: The new size to use. Default is None.
-        :type desired_size: tuple
-        :return: The resampled image as nibabel.Nifti1Image.
-        :rtype: nibabel.Nifti1Image
-        """
-
-        image_header = moose_img_object.original_header
-        image_affine = moose_img_object.image.affine
-        sitk_input_image = moose_img_object.sitk_image
-        # Resampling scheme based on image size
-        if moose_img_object.is_large:
-            resampled_sitk_image = ImageResampler.resample_image_SimpleITK_DASK(sitk_input_image, interpolation,
-                                                                                desired_spacing, desired_size)
-        else:
-            resampled_sitk_image = ImageResampler.resample_image_SimpleITK(sitk_input_image, interpolation,
-                                                                           desired_spacing, desired_size)
-
-        new_size = resampled_sitk_image.GetSize()
-
-        # Edit affine to fit the new image
-        new_affine = image_affine
-        for diagonal, spacing in enumerate(desired_spacing):
-            new_affine[diagonal, diagonal] = (new_affine[diagonal, diagonal] / abs(
-                new_affine[diagonal, diagonal])) * spacing
-
-        # Edit header to fit the new image
-        image_header['pixdim'][1:4] = desired_spacing
-        image_header['dim'][1:4] = new_size
-        image_header['srow_x'] = new_affine[0, :]
-        image_header['srow_y'] = new_affine[1, :]
-        image_header['srow_z'] = new_affine[2, :]
-
-        resampled_image = nibabel.Nifti1Image(sitk.GetArrayFromImage(resampled_sitk_image).swapaxes(0, 2),
-                                              affine=new_affine,
-                                              header=image_header)
-
-        return resampled_image
-
-    @staticmethod
-    def resample_segmentations(input_image_path: str, desired_spacing: tuple,
-                               desired_size: tuple) -> nibabel.Nifti1Image:
-        """
-        Resamples an image to a new spacing.
-
-        :param input_image_path: Path to the input image.
-        :type input_image_path: str
-        :param desired_spacing: The new spacing to use.
-        :type desired_spacing: tuple
-        :param desired_size: The new size to use.
-        :type desired_size: tuple
-        :return: The resampled image as nibabel.Nifti1Image.
-        :rtype: nibabel.Nifti1Image
-        """
-        # Load the image and get necessary information
-        input_image = nibabel.load(input_image_path)
-        image_data = input_image.get_fdata()
-        image_header = input_image.header
-        image_affine = input_image.affine
-        original_spacing = image_header.get_zooms()
-        translation_vector = image_affine[:3, 3]
-        rotation_matrix = image_affine[:3, :3]
-
-        # Convert to SimpleITK image format
-        image_data_swapped_axes = image_data.swapaxes(0, 2)
-        sitk_input_image = sitk.GetImageFromArray(image_data_swapped_axes)
-        sitk_input_image.SetSpacing([spacing.item() for spacing in original_spacing])
-        axis_flip_matrix = np.diag([-1, -1, 1])
-        sitk_input_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))
-        sitk_input_image.SetDirection(
-            (np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(original_spacing)).ravel())
-
-        desired_spacing = np.array(desired_spacing).astype(np.float64)
-
-        # Interpolation:
-        resampled_sitk_image = sitk.Resample(sitk_input_image, desired_size, sitk.Transform(),
-                                             sitk.sitkNearestNeighbor,
-                                             sitk_input_image.GetOrigin(), desired_spacing,
-                                             sitk_input_image.GetDirection(), 0.0, sitk_input_image.GetPixelIDValue())
-
-        # Edit affine to fit the new image
-        new_affine = image_affine
-        for diagonal, spacing in enumerate(desired_spacing):
-            new_affine[diagonal, diagonal] = (new_affine[diagonal, diagonal] / abs(
-                new_affine[diagonal, diagonal])) * spacing
-
-        # Edit header to fit the new image
-        image_header['pixdim'][1:4] = desired_spacing
-        image_header['dim'][1:4] = desired_size
-        image_header['srow_x'] = new_affine[0, :]
-        image_header['srow_y'] = new_affine[1, :]
-        image_header['srow_z'] = new_affine[2, :]
-
-        resampled_image = nibabel.Nifti1Image(sitk.GetArrayFromImage(resampled_sitk_image).swapaxes(0, 2),
-                                              affine=new_affine,
-                                              header=image_header)
-
-        return resampled_image
-
-    @staticmethod
-    def reslice_identity(reference_image: sitk.Image, moving_image: sitk.Image,
-                         output_image_path: str = None, is_label_image: bool = False) -> sitk.Image:
+    def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
+                         output_image_path: str = None, is_label_image: bool = False) -> SimpleITK.Image:
         """
         Reslices an image to the same space as another image.
 
@@ -616,16 +448,169 @@ class ImageResampler:
         :return: The resliced image as SimpleITK.Image.
         :rtype: SimpleITK.Image
         """
-        resampler = sitk.ResampleImageFilter()
+        resampler = SimpleITK.ResampleImageFilter()
         resampler.SetReferenceImage(reference_image)
 
         if is_label_image:
-            resampler.SetInterpolator(sitk.sitkNearestNeighbor)
+            resampler.SetInterpolator(SimpleITK.sitkNearestNeighbor)
         else:
-            resampler.SetInterpolator(sitk.sitkLinear)
+            resampler.SetInterpolator(SimpleITK.sitkLinear)
 
         resampled_image = resampler.Execute(moving_image)
-        resampled_image = sitk.Cast(resampled_image, sitk.sitkInt32)
+        resampled_image = SimpleITK.Cast(resampled_image, SimpleITK.sitkInt32)
         if output_image_path is not None:
-            sitk.WriteImage(resampled_image, output_image_path)
+            SimpleITK.WriteImage(resampled_image, output_image_path)
         return resampled_image
+
+    @staticmethod
+    def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
+                                            output_spacing: tuple = (1.5, 1.5, 1.5),
+                                            output_size: tuple = None) -> np.array:
+        if interpolation == 'nearest':
+            interpolation_method = SimpleITK.sitkNearestNeighbor
+        elif interpolation == 'linear':
+            interpolation_method = SimpleITK.sitkLinear
+        elif interpolation == 'bspline':
+            interpolation_method = SimpleITK.sitkBSpline
+        else:
+            raise ValueError('The interpolation method is not supported.')
+
+        input_spacing = sitk_image.GetSpacing()
+        input_size = sitk_image.GetSize()
+        input_chunks = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size]
+        input_chunks_reversed = list(reversed(input_chunks))
+
+        image_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
+
+        if output_size is not None:
+            output_spacing = [input_spacing[i] * (input_size[i] / output_size[i]) for i in range(len(input_size))]
+
+        output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in
+                         range(len(input_chunks))]
+        output_chunks_reversed = list(reversed(output_chunks))
+
+        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
+                               output_spacing, output_chunks, chunks=output_chunks_reversed, meta=np.array(()),
+                               dtype=np.float32)
+
+        return result.compute()
+
+    @staticmethod
+    def resample_segmentation(reference_image: SimpleITK.Image, segmentation_image: SimpleITK.Image):
+        resampled_sitk_image = SimpleITK.Resample(segmentation_image, reference_image.GetSize(), SimpleITK.Transform(),
+                                                  SimpleITK.sitkNearestNeighbor, reference_image.GetOrigin(),
+                                                  reference_image.GetSpacing(), reference_image.GetDirection(), 0.0,
+                                                  segmentation_image.GetPixelIDValue())
+        return resampled_sitk_image
+
+
+def determine_orientation_code(image: nibabel.Nifti1Image) -> [tuple | list, str]:
+    affine = image.affine
+    orthonormal_orientation = nibabel.orientations.aff2axcodes(affine)
+    return orthonormal_orientation, ''.join(orthonormal_orientation)
+
+
+def confirm_orthonormality(image: nibabel.Nifti1Image) -> tuple[nibabel.Nifti1Image, bool]:
+    data = image.get_fdata()
+    affine = image.affine
+    header = image.header
+
+    rotation_matrix = affine[:3, :3]
+    spacing = np.linalg.norm(rotation_matrix, axis=0)
+
+    ortho_rotation_matrix = rotation_matrix / spacing
+    is_orthonormal = np.allclose(ortho_rotation_matrix.T @ ortho_rotation_matrix, np.eye(3))
+
+    if not is_orthonormal:
+        orthonormalized = True
+        q, _ = np.linalg.qr(ortho_rotation_matrix)
+        ortho_rotation_matrix = q * spacing
+
+        orthonormal_affine = np.eye(4)
+        orthonormal_affine[:3, :3] = ortho_rotation_matrix
+        orthonormal_affine[:3, 3] = affine[:3, 3]
+
+        orthonormal_header = header.copy()
+        orthonormal_header.set_qform(orthonormal_affine)
+        orthonormal_header.set_sform(orthonormal_affine)
+
+        image = nibabel.Nifti1Image(data, orthonormal_affine, orthonormal_header)
+    else:
+        orthonormalized = False
+
+    return image, orthonormalized
+
+
+def confirm_orientation(image: nibabel.Nifti1Image) -> tuple[nibabel.Nifti1Image, bool]:
+    data = image.get_fdata()
+    affine = image.affine
+    header = image.header
+
+    original_orientation = nibabel.orientations.aff2axcodes(affine)
+
+    if original_orientation[0] == 'R':
+        reoriented = True
+
+        current_orientation = nibabel.orientations.axcodes2ornt(original_orientation)
+        target_orientation = nibabel.orientations.axcodes2ornt(('L', original_orientation[1], original_orientation[2]))
+
+        orientation_transform = nibabel.orientations.ornt_transform(current_orientation, target_orientation)
+        reoriented_data = nibabel.orientations.apply_orientation(data, orientation_transform)
+        reoriented_affine = nibabel.orientations.inv_ornt_aff(orientation_transform, data.shape).dot(affine)
+
+        reoriented_header = header.copy()
+        reoriented_header.set_qform(reoriented_affine)
+        reoriented_header.set_sform(reoriented_affine)
+
+        image = nibabel.Nifti1Image(reoriented_data, reoriented_affine, reoriented_header)
+    else:
+        reoriented = False
+
+    return image, reoriented
+
+
+def convert_to_sitk(image: nibabel.Nifti1Image) -> SimpleITK.Image:
+    data = image.get_fdata()
+    affine = image.affine
+    spacing = image.header.get_zooms()
+
+    image_data_swapped_axes = data.swapaxes(0, 2)
+    sitk_image = SimpleITK.GetImageFromArray(image_data_swapped_axes)
+
+    translation_vector = affine[:3, 3]
+    rotation_matrix = affine[:3, :3]
+    axis_flip_matrix = np.diag([-1, -1, 1])
+
+    sitk_image.SetSpacing([spacing.item() for spacing in spacing])
+    sitk_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))
+    sitk_image.SetDirection((np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(spacing)).flatten())
+
+    return sitk_image
+
+
+def standardize_image(image_path: str, output_manager: resources.OutputManager, standardization_output_path: str | None) -> SimpleITK.Image:
+    image = nibabel.load(image_path)
+    _, original_orientation = determine_orientation_code(image)
+    output_manager.log_update(f"   Image loaded. Orientation: {original_orientation}")
+
+    image, orthonormalized = confirm_orthonormality(image)
+    if orthonormalized:
+        _, orthonormal_orientation = determine_orientation_code(image)
+        output_manager.log_update(f"   Image orthonormalized. Orientation: {orthonormal_orientation}")
+    image, reoriented = confirm_orientation(image)
+    if reoriented:
+        _, reoriented_orientation = determine_orientation_code(image)
+        output_manager.log_update(f"   Image reoriented. Orientation: {reoriented_orientation}")
+    sitk_image = convert_to_sitk(image)
+    output_manager.log_update(f"   Image converted to SimpleITK.")
+
+    processing_steps = [orthonormalized, reoriented]
+    prefixes = ["orthonormal", "reoriented"]
+
+    if standardization_output_path is not None and any(processing_steps):
+        output_manager.log_update(f"   Writing standardized image.")
+        prefix = "_".join([prefix for processing_step, prefix in zip(processing_steps, prefixes) if processing_step])
+        output_path = os.path.join(standardization_output_path, f"{prefix}_{os.path.basename(image_path)}")
+        SimpleITK.WriteImage(sitk_image, output_path)
+
+    return sitk_image

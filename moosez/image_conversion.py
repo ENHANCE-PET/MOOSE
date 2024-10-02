@@ -27,27 +27,7 @@ import unicodedata
 import SimpleITK
 import dicom2nifti
 import pydicom
-from rich.progress import Progress
-
-
-def read_dicom_folder(folder_path: str) -> SimpleITK.Image:
-    """
-    Reads a folder of DICOM files and returns the image.
-
-    :param folder_path: str
-        The path to the folder containing the DICOM files.
-    :type folder_path: str
-
-    :return: SimpleITK.Image
-        The image obtained from the DICOM files.
-    :rtype: SimpleITK.Image
-    """
-    reader = SimpleITK.ImageSeriesReader()
-    dicom_names = reader.GetGDCMSeriesFileNames(folder_path)
-    reader.SetFileNames(dicom_names)
-
-    dicom_image = reader.Execute()
-    return dicom_image
+from moosez import resources
 
 
 def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
@@ -57,7 +37,8 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         :param input_path: The path to the directory or filename to convert to nii.gz.
         :type input_path: str
         
-        :param output_directory: Optional. The output directory to write the image to. If not specified, the output image will be written to the same directory as the input image.
+        :param output_directory: Optional. The output directory to write the image to. If not specified, the
+                                 output image will be written to the same directory as the input image.
         :type output_directory: str
         
         :return: None
@@ -66,7 +47,10 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         :raises: FileNotFoundError if the input path does not exist.
         
         Usage:
-        This function can be used to convert any image format known to ITK to NIFTI. If the input path is a directory, the function will convert all images in the directory to NIFTI format. If the input path is a file, the function will convert the file to NIFTI format. The output image will be written to the specified output directory, or to the same directory as the input image if no output directory is specified.
+        This function can be used to convert any image format known to ITK to NIFTI. If the input path is a directory,
+        the function will convert all images in the directory to NIFTI format. If the input path is a file,
+        the function will convert the file to NIFTI format. The output image will be written to the specified
+        output directory, or to the same directory as the input image if no output directory is specified.
     """
 
     if not os.path.exists(input_path):
@@ -86,9 +70,9 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         _, filename = os.path.split(input_path)
         if filename.startswith('.') or filename.endswith(('.nii.gz', '.nii')):
             return
-        else:
-            output_image = SimpleITK.ReadImage(input_path)
-            output_image_basename = f"{os.path.splitext(filename)[0]}.nii"
+
+    output_image = SimpleITK.ReadImage(input_path)
+    output_image_basename = f"{os.path.splitext(filename)[0]}.nii"
 
     if output_directory is None:
         output_directory = os.path.dirname(input_path)
@@ -97,7 +81,7 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     SimpleITK.WriteImage(output_image, output_image_path)
 
 
-def standardize_to_nifti(parent_dir: str) -> None:
+def standardize_to_nifti(parent_dir: str, output_manager: resources.OutputManager) -> None:
     """
     Converts all non-NIfTI images in a parent directory and its subdirectories to NIfTI format.
 
@@ -110,7 +94,8 @@ def standardize_to_nifti(parent_dir: str) -> None:
     subjects = [subject for subject in subjects if os.path.isdir(os.path.join(parent_dir, subject))]
 
     # Convert all non-NIfTI images in each subdirectory to NIfTI format
-    with Progress() as progress:
+    progress = output_manager.create_progress_bar()
+    with progress:
         task = progress.add_task("[white] Processing subjects...", total=len(subjects))
         for subject in subjects:
             subject_path = os.path.join(parent_dir, subject)
