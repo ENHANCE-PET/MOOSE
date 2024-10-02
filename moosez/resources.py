@@ -12,8 +12,7 @@ from datetime import datetime
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
-from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, VERSION,
-                              KEY_DESCRIPTION, KEY_DESCRIPTION_TEXT, KEY_DESCRIPTION_IMAGING, KEY_DESCRIPTION_MODALITY)
+from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, VERSION)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -52,152 +51,97 @@ MODELS = {
     "clin_ct_lungs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_lungs_24062023.zip",
         KEY_FOLDER_NAME: "Dataset333_HMS3dlungs",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Lungs",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_organs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_05082024.zip",
         KEY_FOLDER_NAME: "Dataset123_Organs",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Organs",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "preclin_mr_all": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_mr_all_05122023.zip",
         KEY_FOLDER_NAME: "Dataset234_minimoose",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "All regions",
-                          KEY_DESCRIPTION_IMAGING: "Prelinical",
-                          KEY_DESCRIPTION_MODALITY: "MR"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_body": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_27112023.zip",
         KEY_FOLDER_NAME: "Dataset001_body",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Body, Arms, Legs, Head",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_ribs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ribs_11082024.zip",
         KEY_FOLDER_NAME: "Dataset444_Ribs",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Ribs",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_muscles": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_muscles_09082024.zip",
         KEY_FOLDER_NAME: "Dataset555_Muscles",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Muscles",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_peripheral_bones": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_05082024.zip",
         KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Peripheral Bones",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_fat": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
         KEY_FOLDER_NAME: "Dataset777_Fat",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Fat",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_vertebrae": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_11082024.zip",
         KEY_FOLDER_NAME: "Dataset111_Vertebrae",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Vertebrae",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_cardiac": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac_09082024.zip",
         KEY_FOLDER_NAME: "Dataset888_Cardiac",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Cardiac",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_digestive": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
         KEY_FOLDER_NAME: "Dataset999_Digestive",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Digestive",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "preclin_ct_legs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
         KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Legs",
-                          KEY_DESCRIPTION_IMAGING: "Preclinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_all_bones_v1": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
         KEY_FOLDER_NAME: "Dataset600_Original_bones",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "All bones",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_PUMA": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA_1k_23052024.zip",
         KEY_FOLDER_NAME: "Dataset002_PUMA",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "PUMA tissues",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_pt_fdg_brain_v1": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_fdg_pt_brain_v1_17112023.zip",
         KEY_FOLDER_NAME: "Dataset100_Brain_v1",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Brain regions",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_ALPACA": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ALPACA.zip",
         KEY_FOLDER_NAME: "Dataset080_Alpaca",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "ALPACA tissues",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_PUMA4": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
         KEY_FOLDER_NAME: "Dataset003_PUMA4",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "PUMA tissues",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_fast_organs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_6_02092024.zip",
         KEY_FOLDER_NAME: "Dataset145_Fast_organs",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Organs",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     },
     "clin_pt_fdg_tumor": {
         KEY_URL: None,
         KEY_FOLDER_NAME: None,
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: None
+        KEY_LIMIT_FOV: None
     },
     "clin_ct_body_composition": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_composition_05092024.zip",
@@ -207,26 +151,17 @@ MODELS = {
             "inference_fov_intensities": [20, 24],
             "label_intensity_to_crop_from": 22,
             "largest_component_only": True
-        },
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Body composition on the L3 vertebra region",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        }
     },
     "clin_ct_fast_vertebrae": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae3_10092024.zip",
         KEY_FOLDER_NAME: "Dataset112_FastVertebrae",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Vertebrae",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
         },
     "clin_ct_fast_cardiac": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac3_10092024.zip",
         KEY_FOLDER_NAME: "Dataset890_FastCardiac",
-        KEY_LIMIT_FOV: None,
-        KEY_DESCRIPTION: {KEY_DESCRIPTION_TEXT: "Cardiac",
-                          KEY_DESCRIPTION_IMAGING: "Clinical",
-                          KEY_DESCRIPTION_MODALITY: "CT"}
+        KEY_LIMIT_FOV: None
     }
 }
 
@@ -238,9 +173,14 @@ class OutputManager:
         self.verbose_console = verbose_console
         self.verbose_log = verbose_log
 
-        self.console = Console()
+        if self.verbose_console:
+            self.console = Console()
+            self.spinner = Halo(spinner='dots')
+        else:
+            self.console = Console()
+            self.spinner = None
+
         self.logger = None
-        self.spinner = None
         self.nnunet_log_filename = os.devnull
 
     def create_file_progress_bar(self):
@@ -254,10 +194,12 @@ class OutputManager:
         progress_bar = Progress(console=self.console, disable=not self.verbose_console)
         return progress_bar
 
-    def create_table(self, header: list[str]) -> rich.table.Table:
+    def create_table(self, header: list[str], styles: list[str] | None = None) -> rich.table.Table:
         table = Table()
-        for header in header:
-            table.add_column(header)
+        if styles is None:
+            styles = [None] * len(header)
+        for header, style in zip(header, styles):
+            table.add_column(header, style = style)
         return table
 
     def configure_logging(self, log_file_directory: str | None):
@@ -294,11 +236,7 @@ class OutputManager:
             else:
                 self.console.print(text)
 
-    def configure_spinner(self):
-        if self.verbose_console and not self.spinner:
-            self.spinner = Halo(text=' Initiating', spinner='dots')
-
-    def spinner_update(self, text: str):
+    def spinner_update(self, text: str = None):
         if self.spinner and self.verbose_console:
             self.spinner.text = text
 
@@ -306,11 +244,11 @@ class OutputManager:
         if self.spinner:
             self.spinner.stop()
 
-    def spinner_start(self):
+    def spinner_start(self, text: str = None):
         if self.spinner:
-            self.spinner.start()
+            self.spinner.start(text)
 
-    def spinner_succeed(self, text: str):
+    def spinner_succeed(self, text: str = None):
         if self.spinner and self.verbose_console:
             self.spinner.succeed(text)
 

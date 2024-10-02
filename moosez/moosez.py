@@ -117,7 +117,6 @@ def main():
 
     output_manager = resources.OutputManager(verbose_console, verbose_log)
     output_manager.configure_logging(parent_folder)
-    output_manager.configure_spinner()
 
     display.logo(output_manager)
     display.citation(output_manager)
@@ -125,6 +124,17 @@ def main():
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
     output_manager.log_update('                                     STARTING MOOSE-Z V.3.0.0                                       ')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
+
+    # ----------------------------------
+    # DOWNLOADING THE MODEL
+    # ----------------------------------
+
+    output_manager.console_update(f'')
+    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
+    output_manager.console_update(f'')
+    model_path = resources.MODELS_DIRECTORY_PATH
+    file_utilities.create_directory(model_path)
+    model_routine = models.construct_model_routine(model_names, output_manager)
 
     # ----------------------------------
     # INPUT VALIDATION AND PREPARATION
@@ -138,22 +148,11 @@ def main():
     output_manager.console_update(f' ')
 
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
-    modalities = display.expectations(model_names, output_manager)
+    modalities = display.expectations(model_routine, output_manager)
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
     accelerator = resources.check_device(output_manager)
     if moose_instances is not None:
         output_manager.console_update(f" Number of moose instances run in parallel: {moose_instances}")
-
-    # ----------------------------------
-    # DOWNLOADING THE MODEL
-    # ----------------------------------
-
-    output_manager.console_update(f'')
-    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
-    output_manager.console_update(f'')
-    model_path = resources.MODELS_DIRECTORY_PATH
-    file_utilities.create_directory(model_path)
-    model_routine = models.construct_model_routine(model_names, output_manager)
 
     # ----------------------------------
     # INPUT STANDARDIZATION
@@ -192,7 +191,7 @@ def main():
     output_manager.log_update(' ')
     output_manager.log_update(' PERFORMING PREDICTION:')
 
-    output_manager.spinner_start()
+    output_manager.spinner_start(' Initiating')
     start_total_time = time.time()
 
     subject_performance_parameters = []
