@@ -1,23 +1,25 @@
 ![Moose-logo](Images/moose.png)
-## MOOSE 3.0 🦌- Leaner. Meaner. Stronger 💪
+## MOOSE 3.0 🦌- Furiously Fast. Brutally Efficient. Unmatched Precision. 💪
 [![Documentation Status](https://img.shields.io/readthedocs/moosez/latest.svg?style=flat-square&logo=read-the-docs&color=CC00FF)](https://moosez.rtfd.io/en/latest/?badge=latest) [![PyPI version](https://img.shields.io/pypi/v/moosez?color=FF1493&style=flat-square&logo=pypi)](https://pypi.org/project/moosez/) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-red.svg?style=flat-square&logo=gnu&color=FF0000)](https://www.gnu.org/licenses/gpl-3.0) [![Discord](https://img.shields.io/badge/Discord-Chat-blue.svg?style=flat-square&logo=discord&color=0000FF)](https://discord.gg/9uTHYhWCA5) [![Monthly Downloads](https://img.shields.io/pypi/dm/moosez?label=Downloads%20(Monthly)&color=9400D3&style=flat-square&logo=python)](https://pypi.org/project/moosez/) [![Daily Downloads](https://img.shields.io/pypi/dd/moosez?label=Downloads%20(Daily)&color=9400D3&style=flat-square&logo=python)](https://pypi.org/project/moosez/)
 
-Unveiling a new dimension in 3D medical image segmentation: MOOSE 3.0 🚀
+Welcome to the new and improved MOOSE (v3.0), where speed and efficiency aren't just buzzwords—they're a way of life. 
 
-Crafted meticulously from the core principles of data-centric AI, MOOSE 3.0 is our response to the demands of both preclinical and clinical imaging.
+**💨 3x Faster Than Before**  
+Like a moose sprinting through the woods (okay, maybe not that fast), MOOSE 3.0 is built for speed. It's 3x faster than its older sibling, MOOSE 2.0, which was already no slouch. Blink and you'll miss it. ⚡
 
-:sparkles: **It's Leaner**: We've hacked away the fluff and made MOOSE 3.0 leaner than ever before. This bad boy doesn't need heavy-duty computing. With less than 32GB of RAM, compatibility across OS, and the flexibility to work with or without NVIDIA GPUs, MOOSE 3.0 fits right into any environment. :microscope:
+**💻 Memory: Light as a Feather, Strong as a Bull**  
+Forget "Does it fit on my laptop?" The answer is YES. 🕺 Thanks to Dask wizardry, all that data stays in memory. No disk writes, no fuss. Run total-body CT on that 'decent' laptop you bought three years ago and feel like you’ve upgraded. 🥳
 
-:boom: **It's Meaner**: The QIMPies have poured their hearts and souls into building this beast from scratch. With the speed clocking 5x faster than its predecessor, MOOSE 3.0 cuts through the noise and gets down to business instantly. It serves up a range of segmentation models designed for both clinical and preclinical settings. No more waiting, no more compromises. It's Mean Machine time! :zap:
+**🛠️ Any OS, Anytime, Anywhere**  
+Windows, Mac, Linux—we don’t play favorites. 🍏 Mac users, you’re in luck: MOOSE runs natively on MPS, getting you GPU-like speeds without the NVIDIA guilt. 🚀 
 
-:fire: **It's Stronger**: MOOSE 3.0 is powered by the sheer strength of Data-centric AI principles. With a whopping 1.5k whole-body PET/CT datasets, that's ~40x times more data than our first model, we're packing a punch. MOOSE 3.0 comes with the strength and knowledge gained from an array of data that's simply unparalleled. The result? Better precision, improved outcomes, and a tool you can trust. :briefcase:
+**🎯 Trained to Perfection**  
+This is our best model yet, trained on a whopping 1.7k datasets. More data, better results. Plus you can run multiple models at the same time - You'll be slicing through images like a knife through warm butter. (Or tofu, if you prefer.) 🧈🔪
 
-:bell: :loudspeaker: :boom: And now, it's even more **versatile**, with MOOSE 3.0, you now have the flexibility to use it as a powerful command-line tool for batch processing, or as a library package for individual processing in your Python projects. The choice is yours! :sunglasses:
+**🖥️ The 'Herd' Mode 🖥️**  
+Got a powerhouse server just sitting around? Time to let the herd loose! Flip the **Herd Mode** switch and watch MOOSE multiply across your compute like... well, like a herd of moose! 🦌🦌🦌 The more hardware you have, the faster your inference gets done. Scale up, speed up, and make every bit of your server earn its oats. 🌾💨
 
-Accommodating an array of modalities including PET, CT, and MRI, MOOSE 3.0 stands at the cusp of a paradigm shift. It’s not just an upgrade; it’s our commitment to making MOOSE 3.0 your go-to for segmentation tasks.
-
-Join us as we embark on this journey.
-
+MOOSE 3.0 isn't just an upgrade—it's a lifestyle. A faster, leaner, and stronger lifestyle. Ready to join the herd? 🦌✨
 
 <div align="center">
 <picture>
@@ -83,7 +85,7 @@ Before you dive into the incredible world of MOOSE 3.0, here are a few things yo
 
 - **Operating System**: We've got you covered whether you're on Windows, Mac, or Linux. MOOSE 3.0 has been tested across these platforms to ensure seamless operation.
 
-- **Memory**: MOOSE 3.0 has quite an appetite! Make sure you have at least 32GB of RAM for the smooth running of all tasks.
+- **Memory**: MOOSE 3.0 has quite an appetite! Make sure you have at least 16GB of RAM for the smooth running of all tasks.
 
 - **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 3.0 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
 
@@ -158,25 +160,56 @@ Happy exploring! 🚀🔬
 
 ## Usage Guide 📚
 
-### Command-line tool for batch processing :computer: 
+### Command-Line Tool for Batch Processing 🖥️🚀
 
-Embarking on your journey with MOOSE 3.0 is straightforward and easy. Our command-line tool for batch processing requires only two arguments: the directory path where your subject images are stored, and the segmentation model name you wish to use. Here's how you can get started:
+Getting started with MOOSE 3.0 is as easy as slicing through butter 🧈🔪. Use the command-line tool to process multiple segmentation models in sequence or in parallel, making your workflow a breeze. 🌬️
+
+#### *Running Single/Multiple Models in Sequence* 🏃‍♂️🎯
+
+You can now run single or several models in sequence with a single command. Just provide the path to your subject images and list the segmentation models you wish to apply:
 
 ```bash
+# For single model inference
 moosez -d <path_to_image_dir> -m <model_name>
+
+# For multiple model inference
+moosez -d <path_to_image_dir> \
+       -m <model_name1> \
+          <model_name2> \
+          <model_name3> \
 ```
 
-Here `<path_to_image_dir>` refers to the directory containing your subject images and `<model_name>` is the name of the segmentation model you intend to utilize. 
-
-For instance, to perform clinical CT organ segmentation, the command would be:
+For instance, to run clinical CT organ segmentation on a directory of images, you can use the following command:
 
 ```bash
 moosez -d <path_to_image_dir> -m clin_ct_organs
 ```
+Likewise, to run multiple models e.g. organs, ribs, and vertebrae, you can use the following command:
 
-In this example, 'clin_ct_organs' is the segmentation model name for clinical CT organ segmentation.
+```bash
+moosez -d <path_to_image_dir> \
+       -m clin_ct_organs \
+          clin_ct_ribs \
+          clin_ct_vertebrae
+ ```
+MOOSE 3.0 will handle each model one after the other—no fuss, no hassle. 🙌✨
 
-And that's it! With just one command, you're all set to explore the new horizons of 3D medical image segmentation with MOOSE 3.0.
+#### *Herd Mode: Running Parallel Instances* 🦌💨💻
+
+Got a powerful server or HPC? Let the herd roam! 🦌🚀 Use **Herd Mode** to run multiple MOOSE instances in parallel. Just add the `-herd` flag with the number of instances you wish to run simultaneously:
+
+```bash
+moosez -d <path_to_image_dir> \
+       -m clin_ct_organs \
+          clin_ct_ribs \
+          clin_ct_vertebrae \
+       -herd 2
+```
+MOOSE will run two instances at the same time, utilizing your compute power like a true multitasking pro. 💪👨‍💻👩‍💻
+
+And that's it! MOOSE 3.0 lets you process with ease and speed. ⚡✨
+
+
 
 Need assistance along the way? Don't worry, we've got you covered. Simply type:
 
@@ -186,36 +219,53 @@ moosez -h
 
 This command will provide you with all the help and the information about the available [models](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/resources.py#L29) and the [regions](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/constants.py#L64) it segments.
 
-### Using MOOSE 3.0 as a Library :books:
+### Using MOOSE 3.0 as a Library 📦🐍
 
-MOOSE 3.0 can also be imported and used as a library in your own Python projects. Here's how you can do it:
+MOOSE 3.0 isn't just a command-line powerhouse; it’s also a flexible library for Python projects. Here’s how to make the most of it:
 
-First, import the `moose` function from the `moosez` package in your python script:
-
- ```python
- from moosez import moose
- ```
-
-Then, call the `moose` function to run predictions. The `moose` function takes four arguments:
-
-1. `model_name`: The name of the model to use for the predictions.
-2. `input_dir`: The directory containing the images (in nifti, either .nii or .nii.gz) to process.
-3. `output_dir`: The directory where the output will be saved.
-4. `accelerator`: The type of accelerator to use (e.g., "cpu", "cuda").
-
-Here's an example of how to call the `moose` function:
+First, import the `moose` function from the `moosez` package in your Python script:
 
  ```python
- model_name = 'clin_ct_organs'
- input_dir = '/home/Documents/your_project/data/input'
- output_dir = '/home/Documents/your_project/data/output'
- accelerator = 'cuda'
- moose(model_name, input_dir, output_dir, accelerator)
+from moosez import moose
  ```
 
-Remember to replace `model_name`, `input_dir`, `output_dir`, and `accelerator` with the actual values you want to use.
+#### *Calling the `moose` Function* 🦌
 
-That's it! MOOSE 3.0 will now process the images in the input directory and save the output in the output directory. Enjoy using MOOSE 3.0 as a library in your Python projects!
+The `moose` function is versatile and accepts various input types. It takes four main arguments:
+
+1. `input`: The data to process, which can be:
+   - A path to an input file or directory (NIfTI, either `.nii` or `.nii.gz`).
+   - A tuple containing a NumPy array and its spacing (e.g., `numpy_array`, `(spacing_x, spacing_y, spacing_z)`).
+   - A `SimpleITK` image object.
+2. `model_names`: A single model name or a list of model names for segmentation.
+3. `output_dir`: The directory where the results will be saved.
+4. `accelerator`: The type of accelerator to use (`"cpu"`, `"cuda"`, or `"mps"` for Mac).
+
+#### Examples 📂✂️💻
+
+Here are some examples to illustrate different ways to use the `moose` function:
+
+1. **Using a file path and multiple models:**
+    ```python
+    moose('/path/to/input/file', ['clin_ct_organs', 'clin_ct_ribs'], '/path/to/save/output', 'cuda')
+    ```
+
+2. **Using a NumPy array with spacing:**
+    ```python
+    moose((numpy_array, (1.5, 1.5, 1.5)), 'clin_ct_organs', '/path/to/save/output', 'cuda')
+    ```
+
+3. **Using a SimpleITK image:**
+    ```python
+    moose(simple_itk_image, 'clin_ct_organs', '/path/to/save/output', 'cuda')
+    ```
+
+#### Ready, Set, Segment! 🚀
+
+That's it! With these flexible inputs, you can use MOOSE 3.0 to fit your workflow perfectly—whether you’re processing a single image, a stack of files, or leveraging different data formats. 🖥️🎉
+
+Happy segmenting with MOOSE 3.0! 🦌💫
+
 
 ## Directory Structure and Naming Conventions for MOOSE 📂🏷️
 
@@ -227,30 +277,27 @@ Using MOOSE 3.0 optimally requires your data to be structured according to speci
 Please structure your dataset as follows:
 
 ```
-MOOSEv2_data/
-├── S1
-│   ├── AC-CT
-│   │   ├── WBACCTiDose2_2001_CT001.dcm
-│   │   ├── WBACCTiDose2_2001_CT002.dcm
-│   │   ├── .
-│   │   ├── .
-│   │   ├── .
-│   │   └── WBACCTiDose2_2001_CT532.dcm
-│   └── AC-PT
-│       ├── DetailWB_CTACWBPT001_PT001.dcm
-│       ├── DetailWB_CTACWBPT001_PT002.dcm
-│       ├── .
-│       ├── .
-│       ├── .
-│       └── DetailWB_CTACWBPT001_PT532.dcm
-├── S2
-│   └── CT_S2.nii
-├── S3
-│   └── CT_S3.nii
-├── S4
-│   └── S4_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20211025075852_2.nii
-└── S5
-    └── CT_S5.nii
+MOOSEv2_data/ 📁
+├── S1 📂
+│   ├── AC-CT 📂
+│   │   ├── WBACCTiDose2_2001_CT001.dcm 📄
+│   │   ├── WBACCTiDose2_2001_CT002.dcm 📄
+│   │   ├── ... 🗂️
+│   │   └── WBACCTiDose2_2001_CT532.dcm 📄
+│   └── AC-PT 📂
+│       ├── DetailWB_CTACWBPT001_PT001.dcm 📄
+│       ├── DetailWB_CTACWBPT001_PT002.dcm 📄
+│       ├── ... 🗂️
+│       └── DetailWB_CTACWBPT001_PT532.dcm 📄
+├── S2 📂
+│   └── CT_S2.nii 📄
+├── S3 📂
+│   └── CT_S3.nii 📄
+├── S4 📂
+│   └── S4_ULD_FDG_60m_Dynamic_Patlak_HeadNeckThoAbd_20211025075852_2.nii 📄
+└── S5 📂
+    └── CT_S5.nii 📄
+
 ```
 **Note:** If the necessary naming conventions are not followed, MOOSE 3.0 will skip the subjects.
 
