@@ -37,7 +37,7 @@ from moosez import image_conversion
 from moosez import image_processing
 from moosez import input_validation
 from moosez import predict
-from moosez import resources
+from moosez import system
 from moosez import models
 from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
 from moosez.benchmarking.benchmark import PerformanceObserver
@@ -67,10 +67,10 @@ def main():
         "-m", "--model_names",
         nargs='+',
         type=str,
-        choices=resources.AVAILABLE_MODELS,
+        choices=models.AVAILABLE_MODELS,
         required=True,
         metavar="<MODEL_NAMES>",
-        help="Choose the models for segmentation from the following:\n" + "\n".join(resources.AVAILABLE_MODELS)
+        help="Choose the models for segmentation from the following:\n" + "\n".join(models.AVAILABLE_MODELS)
     )
 
     parser.add_argument(
@@ -115,7 +115,7 @@ def main():
     verbose_console = args.verbose_off
     verbose_log = args.logging_off
 
-    output_manager = resources.OutputManager(verbose_console, verbose_log)
+    output_manager = system.OutputManager(verbose_console, verbose_log)
     output_manager.configure_logging(parent_folder)
 
     display.logo(output_manager)
@@ -132,7 +132,7 @@ def main():
     output_manager.console_update(f'')
     output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
     output_manager.console_update(f'')
-    model_path = resources.MODELS_DIRECTORY_PATH
+    model_path = system.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names, output_manager)
 
@@ -150,7 +150,7 @@ def main():
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     modalities = display.expectations(model_routine, output_manager)
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
-    accelerator = resources.check_device(output_manager)
+    accelerator, device_count = system.check_device(output_manager)
     if moose_instances is not None:
         output_manager.console_update(f" Number of moose instances run in parallel: {moose_instances}")
 
@@ -207,9 +207,14 @@ def main():
         processed_subjects = 0
         output_manager.spinner_update(f'[{processed_subjects}/{num_subjects}] subjects processed.')
 
+        if device_count is not None and device_count > 1:
+            accelerator_assignments = [f"{accelerator}:{i % device_count}" for i in range(len(subjects))]
+        else:
+            accelerator_assignments = [accelerator] * len(subjects)
+
         with concurrent.futures.ProcessPoolExecutor(max_workers=moose_instances, mp_context=mp_context) as executor:
             futures = []
-            for i, subject in enumerate(moose_compliant_subjects):
+            for i, (subject, accelerator) in enumerate(zip(moose_compliant_subjects, accelerator_assignments)):
                 futures.append(executor.submit(moose_subject, subject, i, num_subjects,
                                                model_routine, accelerator,
                                                None, benchmark))
@@ -308,9 +313,9 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
     if isinstance(model_names, str):
         model_names = [model_names]
 
-    output_manager = resources.OutputManager(False, False)
+    output_manager = system.OutputManager(False, False)
 
-    model_path = resources.MODELS_DIRECTORY_PATH
+    model_path = system.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names, output_manager)
 
@@ -329,11 +334,9 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
                 if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
                     continue
 
-                segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image,
-                                                                                                       segmentation_array,
-                                                                                                       model_workflow,
-                                                                                                       accelerator,
-                                                                                                       os.devnull)
+                segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array,
+                                                                                              model_workflow,
+                                                                                              accelerator, os.devnull)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
@@ -347,15 +350,13 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
             SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
 
 
-def moose_subject(subject: str, subject_index: int, number_of_subjects: int,
-                  model_routine: dict, accelerator: str,
-                  output_manager: resources.OutputManager | None,
-                  benchmark: bool = False):
+def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_routine: dict, accelerator: str,
+                  output_manager: system.OutputManager | None, benchmark: bool = False):
     # SETTING UP DIRECTORY STRUCTURE
     subject_name = os.path.basename(subject)
 
     if output_manager is None:
-        output_manager = resources.OutputManager(False, False)
+        output_manager = system.OutputManager(False, False)
 
     output_manager.log_update(' ')
     output_manager.log_update(f' SUBJECT: {subject_name}')
@@ -417,9 +418,10 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int,
                 if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
                     output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Organ to crop from not in initial FOV...')
                     output_manager.log_update("     - Organ to crop from not in initial FOV.")
+                    performance_observer.time_phase()
                     continue
 
-                segmentation_array, desired_spacing = image_processing.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager.nnunet_log_filename)
+                segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager.nnunet_log_filename)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)

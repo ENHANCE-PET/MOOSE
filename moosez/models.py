@@ -2,18 +2,139 @@ import os
 import json
 import zipfile
 import requests
-from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV,
-                              DEFAULT_SPACING, FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
-from moosez import resources
+from moosez import system
+from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, FILE_NAME_DATASET_JSON,
+                              FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
+
+
+MODEL_METADATA = {
+    "clin_ct_lungs": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_lungs_24062023.zip",
+        KEY_FOLDER_NAME: "Dataset333_HMS3dlungs",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_organs": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_05082024.zip",
+        KEY_FOLDER_NAME: "Dataset123_Organs",
+        KEY_LIMIT_FOV: None
+    },
+    "preclin_mr_all": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_mr_all_05122023.zip",
+        KEY_FOLDER_NAME: "Dataset234_minimoose",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_body": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_27112023.zip",
+        KEY_FOLDER_NAME: "Dataset001_body",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_ribs": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ribs_11082024.zip",
+        KEY_FOLDER_NAME: "Dataset444_Ribs",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_muscles": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_muscles_09082024.zip",
+        KEY_FOLDER_NAME: "Dataset555_Muscles",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_peripheral_bones": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_05082024.zip",
+        KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_fat": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
+        KEY_FOLDER_NAME: "Dataset777_Fat",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_vertebrae": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_11082024.zip",
+        KEY_FOLDER_NAME: "Dataset111_Vertebrae",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_cardiac": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac_09082024.zip",
+        KEY_FOLDER_NAME: "Dataset888_Cardiac",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_digestive": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
+        KEY_FOLDER_NAME: "Dataset999_Digestive",
+        KEY_LIMIT_FOV: None
+    },
+    "preclin_ct_legs": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
+        KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_all_bones_v1": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_all_bones_25102023.zip",
+        KEY_FOLDER_NAME: "Dataset600_Original_bones",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_PUMA": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA_1k_23052024.zip",
+        KEY_FOLDER_NAME: "Dataset002_PUMA",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_pt_fdg_brain_v1": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_fdg_pt_brain_v1_17112023.zip",
+        KEY_FOLDER_NAME: "Dataset100_Brain_v1",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_ALPACA": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_ALPACA.zip",
+        KEY_FOLDER_NAME: "Dataset080_Alpaca",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_PUMA4": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_PUMA4_06032024.zip",
+        KEY_FOLDER_NAME: "Dataset003_PUMA4",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_fast_organs": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_6_02092024.zip",
+        KEY_FOLDER_NAME: "Dataset145_Fast_organs",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_pt_fdg_tumor": {
+        KEY_URL: None,
+        KEY_FOLDER_NAME: None,
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_body_composition": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_body_composition_05092024.zip",
+        KEY_FOLDER_NAME: "Dataset778_Body_composition",
+        KEY_LIMIT_FOV: {
+            "model_to_crop_from": "clin_ct_fast_vertebrae",
+            "inference_fov_intensities": [20, 24],
+            "label_intensity_to_crop_from": 22,
+            "largest_component_only": True
+        }
+    },
+    "clin_ct_fast_vertebrae": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae3_10092024.zip",
+        KEY_FOLDER_NAME: "Dataset112_FastVertebrae",
+        KEY_LIMIT_FOV: None
+        },
+    "clin_ct_fast_cardiac": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac3_10092024.zip",
+        KEY_FOLDER_NAME: "Dataset890_FastCardiac",
+        KEY_LIMIT_FOV: None
+    }
+}
+
+AVAILABLE_MODELS = MODEL_METADATA.keys()
 
 
 class Model:
-    def __init__(self, model_identifier: str, output_manager: resources.OutputManager):
+    def __init__(self, model_identifier: str, output_manager: system.OutputManager):
         self.model_identifier = model_identifier
-        self.folder_name = resources.MODELS[self.model_identifier][KEY_FOLDER_NAME]
-        self.url = resources.MODELS[self.model_identifier][KEY_URL]
-        self.limit_fov = resources.MODELS[self.model_identifier][KEY_LIMIT_FOV]
-        self.directory = os.path.join(resources.MODELS_DIRECTORY_PATH, self.folder_name)
+        self.folder_name = MODEL_METADATA[self.model_identifier][KEY_FOLDER_NAME]
+        self.url = MODEL_METADATA[self.model_identifier][KEY_URL]
+        self.limit_fov = MODEL_METADATA[self.model_identifier][KEY_LIMIT_FOV]
+        self.directory = os.path.join(system.MODELS_DIRECTORY_PATH, self.folder_name)
 
         self.__download(output_manager)
         self.configuration_folders = self.__get_configuration_folders(output_manager)
@@ -36,7 +157,7 @@ class Model:
 
         return expected_modalities, expected_prefixes
 
-    def __get_configuration_folders(self, output_manager: resources.OutputManager) -> list[str]:
+    def __get_configuration_folders(self, output_manager: system.OutputManager) -> list[str]:
         items = os.listdir(self.directory)
         folders = [item for item in items if not item.startswith(".") and item.count("__") == 2 and os.path.isdir(os.path.join(self.directory, item))]
 
@@ -80,18 +201,18 @@ class Model:
 
         return dataset, plans
 
-    def __download(self, output_manager: resources.OutputManager):
+    def __download(self, output_manager: system.OutputManager):
         if os.path.exists(self.directory):
             output_manager.log_update(f"    - A local instance of {self.model_identifier} has been detected.")
             output_manager.console_update(f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}")
             return
 
         output_manager.log_update(f"    - Downloading {self.model_identifier}")
-        if not os.path.exists(resources.MODELS_DIRECTORY_PATH):
-            os.makedirs(resources.MODELS_DIRECTORY_PATH)
+        if not os.path.exists(system.MODELS_DIRECTORY_PATH):
+            os.makedirs(system.MODELS_DIRECTORY_PATH)
 
         download_file_name = os.path.basename(self.url)
-        download_file_path = os.path.join(resources.MODELS_DIRECTORY_PATH, download_file_name)
+        download_file_path = os.path.join(system.MODELS_DIRECTORY_PATH, download_file_name)
 
         response = requests.get(self.url, stream=True)
         if response.status_code != 200:
@@ -116,7 +237,7 @@ class Model:
                 total_size = sum((file.file_size for file in zip_ref.infolist()))
                 task = progress.add_task(f"[white] Extracting {self.model_identifier}...", total=total_size)
                 for file in zip_ref.infolist():
-                    zip_ref.extract(file, resources.MODELS_DIRECTORY_PATH)
+                    zip_ref.extract(file, system.MODELS_DIRECTORY_PATH)
                     progress.update(task, advance=file.file_size)
         output_manager.log_update(f"    - {self.model_identifier} extracted.")
 
@@ -162,11 +283,11 @@ class Model:
 
     @staticmethod
     def model_identifier_valid(model_identifier: str) -> bool:
-        if model_identifier not in resources.MODELS:
+        if model_identifier not in MODEL_METADATA:
             print("No valid model selected.")
             return False
 
-        model_information = resources.MODELS[model_identifier]
+        model_information = MODEL_METADATA[model_identifier]
         if KEY_URL not in model_information or KEY_FOLDER_NAME not in model_information or KEY_LIMIT_FOV not in model_information:
             print("One or more of the required keys url, folder_name, limit_fov are missing.")
             return False
@@ -179,16 +300,16 @@ class Model:
 
 
 class ModelWorkflow:
-    def __init__(self, model_identifier: str, output_manager: resources.OutputManager):
+    def __init__(self, model_identifier: str, output_manager: system.OutputManager):
         self.workflow: list[Model] = []
         self.__construct_workflow(model_identifier, output_manager)
         if self.workflow:
             self.initial_desired_spacing = self.workflow[0].voxel_spacing
             self.target_model = self.workflow[-1]
 
-    def __construct_workflow(self, model_identifier: str, output_manager: resources.OutputManager):
+    def __construct_workflow(self, model_identifier: str, output_manager: system.OutputManager):
         model = Model(model_identifier, output_manager)
-        if model.limit_fov and 'model_to_crop_from' in model.limit_fov:
+        if model.limit_fov and isinstance(model.limit_fov, dict) and 'model_to_crop_from' in model.limit_fov:
             self.__construct_workflow(model.limit_fov["model_to_crop_from"], output_manager)
         self.workflow.append(model)
 
@@ -205,7 +326,7 @@ class ModelWorkflow:
         return " -> ".join([model.model_identifier for model in self.workflow])
 
 
-def construct_model_routine(model_identifiers: str | list[str], output_manager: resources.OutputManager) -> dict[tuple, list[ModelWorkflow]]:
+def construct_model_routine(model_identifiers: str | list[str], output_manager: system.OutputManager) -> dict[tuple, list[ModelWorkflow]]:
     if isinstance(model_identifiers, str):
         model_identifiers = [model_identifiers]
 

@@ -26,9 +26,8 @@ import scipy.ndimage as ndimage
 import nibabel
 import os
 from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
-from moosez import predict
 from moosez import models
-from moosez import resources
+from moosez import system
 
 
 def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
@@ -45,9 +44,9 @@ def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image
     :type out_csv: str
     :return: None
     """
-    intensity_statistics = sitk.LabelIntensityStatisticsImageFilter()
-    min_intensity = sitk.GetArrayViewFromImage(image).min()
-    max_intensity = sitk.GetArrayViewFromImage(image).max()
+    intensity_statistics = SimpleITK.LabelIntensityStatisticsImageFilter()
+    min_intensity = SimpleITK.GetArrayViewFromImage(image).min()
+    max_intensity = SimpleITK.GetArrayViewFromImage(image).max()
     bins = int(max_intensity - min_intensity)
     intensity_statistics.SetNumberOfBins(bins)
     intensity_statistics.Execute(mask_image, image)
@@ -176,73 +175,6 @@ def largest_connected_component(segmentation_array, intensities):
         largest_components_multilabel[largest_component] = intensity
 
     return largest_components_multilabel
-
-
-def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.ModelWorkflow, accelerator, nnunet_log_filename):
-    """
-    Process segmentation by resampling, limiting FOV, and predicting.
-
-    Parameters:
-        image (SimpleITK.Image): The input image.
-        segmentation_array (np.array): The segmentation array to be processed.
-        workflow (models.ModelWorkflow): List of routines where the second element contains model info.
-        accelerator (any): The accelerator used for prediction.
-        nnunet_log_filename (str): Path to the nnunet log file.
-
-    Returns:
-        model (str): The model name used in the process.
-        segmentation_array (np.array): The final processed segmentation array.
-    """
-    # Get the second model from the routine
-    model_to_crop_from = workflow[0]
-    target_model = workflow[1]
-    target_model_fov_information = target_model.limit_fov
-
-    # Convert the segmentation array to SimpleITK image and set properties
-    to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-    to_crop_segmentation.SetOrigin(image.GetOrigin())
-    to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
-    to_crop_segmentation.SetDirection(image.GetDirection())
-
-    # Resample the image using the desired spacing
-    desired_spacing = target_model.voxel_spacing
-    to_crop_image_array = ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
-    to_crop_image = SimpleITK.GetImageFromArray(to_crop_image_array)
-    to_crop_image.SetOrigin(image.GetOrigin())
-    to_crop_image.SetSpacing(desired_spacing)
-    to_crop_image.SetDirection(image.GetDirection())
-
-    # Resample the segmentation
-    resampled_to_crop_segmentation = ImageResampler.resample_segmentation(to_crop_image, to_crop_segmentation)
-    del to_crop_segmentation
-    resampled_to_crop_segmentation_array = SimpleITK.GetArrayFromImage(resampled_to_crop_segmentation)
-
-    # Limit FOV based on model information
-    limited_fov_image_array, original_fov_info = limit_fov(to_crop_image_array, resampled_to_crop_segmentation_array,
-                                                           target_model_fov_information["inference_fov_intensities"])
-
-    to_write_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
-    to_write_image.SetOrigin(image.GetOrigin())
-    to_write_image.SetSpacing(desired_spacing)
-    to_write_image.SetDirection(image.GetDirection())
-
-    # Predict the limited FOV segmentation
-    limited_fov_segmentation_array = predict.predict_from_array_by_iterator(limited_fov_image_array, target_model,
-                                                                            accelerator, nnunet_log_filename)
-
-    # Expand the segmentation to the original FOV
-    expanded_segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-
-    # Limit the FOV again based on label intensities and largest component condition
-    limited_fov_segmentation_array, original_fov_info = limit_fov(expanded_segmentation_array, resampled_to_crop_segmentation_array,
-                                                                  target_model_fov_information["label_intensity_to_crop_from"],
-                                                                  target_model_fov_information["largest_component_only"])
-
-    # Expand the segmentation array to the original FOV
-    segmentation_array = expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-
-    # Return the segmentation array and spacing
-    return segmentation_array, desired_spacing
 
 
 class ImageChunker:
@@ -588,7 +520,7 @@ def convert_to_sitk(image: nibabel.Nifti1Image) -> SimpleITK.Image:
     return sitk_image
 
 
-def standardize_image(image_path: str, output_manager: resources.OutputManager, standardization_output_path: str | None) -> SimpleITK.Image:
+def standardize_image(image_path: str, output_manager: system.OutputManager, standardization_output_path: str | None) -> SimpleITK.Image:
     image = nibabel.load(image_path)
     _, original_orientation = determine_orientation_code(image)
     output_manager.log_update(f"   Image loaded. Orientation: {original_orientation}")
