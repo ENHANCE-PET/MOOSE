@@ -128,7 +128,7 @@ class OutputManager:
             self.spinner.succeed(text)
 
 
-def check_device(output_manager: OutputManager) -> str:
+def check_device(output_manager: OutputManager = OutputManager(False, False)) -> tuple[str, int | None]:
     """
     This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
 
@@ -139,17 +139,17 @@ def check_device(output_manager: OutputManager) -> str:
     if torch.cuda.is_available():
         device_count = torch.cuda.device_count()
         output_manager.console_update(f" CUDA is available with {device_count} GPU(s). Predictions will be run on GPU.")
-        return "cuda"
+        return "cuda", device_count
     # Check for MPS (Apple Silicon) Here for the future but not compatible right now
     elif torch.backends.mps.is_available():
         output_manager.console_update(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
-        return "mps"
+        return "mps", None
     elif not torch.backends.mps.is_built():
         output_manager.console_update(" MPS not available because the current PyTorch install was not built with MPS enabled.")
-        return "cpu"
+        return "cpu", None
     else:
         output_manager.console_update(" CUDA/MPS not available. Predictions will be run on CPU.")
-        return "cpu"
+        return "cpu", None
 
 
 def get_virtual_env_root() -> str:

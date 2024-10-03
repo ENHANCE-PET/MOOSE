@@ -150,7 +150,7 @@ def main():
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     modalities = display.expectations(model_routine, output_manager)
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
-    accelerator = system.check_device(output_manager)
+    accelerator, device_count = system.check_device(output_manager)
     if moose_instances is not None:
         output_manager.console_update(f" Number of moose instances run in parallel: {moose_instances}")
 
@@ -207,9 +207,14 @@ def main():
         processed_subjects = 0
         output_manager.spinner_update(f'[{processed_subjects}/{num_subjects}] subjects processed.')
 
+        if device_count is not None and device_count > 1:
+            accelerator_assignments = [f"{accelerator}:{i % device_count}" for i in range(len(subjects))]
+        else:
+            accelerator_assignments = [accelerator] * len(subjects)
+
         with concurrent.futures.ProcessPoolExecutor(max_workers=moose_instances, mp_context=mp_context) as executor:
             futures = []
-            for i, subject in enumerate(moose_compliant_subjects):
+            for i, (subject, accelerator) in enumerate(zip(moose_compliant_subjects, accelerator_assignments)):
                 futures.append(executor.submit(moose_subject, subject, i, num_subjects,
                                                model_routine, accelerator,
                                                None, benchmark))
