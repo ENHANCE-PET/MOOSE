@@ -21,10 +21,10 @@ import emoji
 import pyfiglet
 from moosez import constants
 from moosez import models
-from moosez import resources
+from moosez import system
 
 
-def logo(output_manager: resources.OutputManager):
+def logo(output_manager: system.OutputManager):
     """
     Display MOOSE logo
 
@@ -33,17 +33,15 @@ def logo(output_manager: resources.OutputManager):
     :return: None
     """
     output_manager.console_update(' ')
-    logo_color_code = constants.ANSI_VIOLET
-    slogan_color_code = constants.ANSI_VIOLET
-    result = logo_color_code + pyfiglet.figlet_format(" MOOSE 3.0", font="smslant").rstrip() + "\033[0m"
-    text = slogan_color_code + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of " \
-                               "PET imaging together." + "\033[0m"
+    result = constants.ANSI_VIOLET + pyfiglet.figlet_format(" MOOSE 3.0", font="smslant").rstrip() + constants.ANSI_RESET
+    text = constants.ANSI_VIOLET + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of " \
+                               "PET imaging together." + constants.ANSI_RESET
     output_manager.console_update(result)
     output_manager.console_update(text)
     output_manager.console_update(' ')
 
 
-def citation(output_manager: resources.OutputManager):
+def citation(output_manager: system.OutputManager):
     """
     Display manuscript citation
 
@@ -59,17 +57,17 @@ def citation(output_manager: resources.OutputManager):
     output_manager.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_manager: resources.OutputManager) -> list:
+def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_manager: system.OutputManager) -> list:
     """
     Display expected modality for the model.
 
     This function displays the expected modality for the given model name. It also checks for a special case where
     'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
 
-    :param model_identifiers: The desired models
-    :type model_identifiers: list[str]
+    :param model_routine: The model routine
+    :type model_routine: dict[tuple, list[models.ModelWorkflow]]
     :param output_manager: The output manager
-    :type output_manager: resources.OutputManager
+    :type output_manager: system.OutputManager
     :return: A list of modalities.
     :rtype: list
     """
