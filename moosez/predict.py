@@ -20,9 +20,9 @@ import dask
 import sys
 import torch
 import numpy as np
+import SimpleITK
 from moosez import models
 from moosez import image_processing
-from moosez.resources import check_device
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
 
@@ -77,20 +77,18 @@ def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties:
     return iterator, locations
 
 
-def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model, accelerator: str = None, nnunet_log_filename: str = None):
+def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model, accelerator: str, nnunet_log_filename: str = None):
     image_array = image_array[None, ...]
 
     original_stdout = sys.stdout
     original_stderr = sys.stderr
+    nnunet_log_file = None
     if nnunet_log_filename is not None:
         nnunet_log_file = open(nnunet_log_filename, "a")
         sys.stdout = nnunet_log_file
         sys.stderr = nnunet_log_file
 
     try:
-        if accelerator is None:
-            accelerator = check_device()
-
         predictor = initialize_predictor(model, accelerator)
         image_properties = {
             'spacing': model.voxel_spacing
@@ -106,5 +104,72 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model,
     finally:
         sys.stdout = original_stdout
         sys.stderr = original_stderr
-        if nnunet_log_filename is not None:
+        if nnunet_log_filename is not None and nnunet_log_file is not None:
             nnunet_log_file.close()
+
+
+def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.ModelWorkflow, accelerator, nnunet_log_filename):
+    """
+    Process segmentation by resampling, limiting FOV, and predicting.
+
+    Parameters:
+        image (SimpleITK.Image): The input image.
+        segmentation_array (np.array): The segmentation array to be processed.
+        workflow (models.ModelWorkflow): List of routines where the second element contains model info.
+        accelerator (any): The accelerator used for prediction.
+        nnunet_log_filename (str): Path to the nnunet log file.
+
+    Returns:
+        model (str): The model name used in the process.
+        segmentation_array (np.array): The final processed segmentation array.
+    """
+    # Get the second model from the routine
+    model_to_crop_from = workflow[0]
+    target_model = workflow[1]
+    target_model_fov_information = target_model.limit_fov
+
+    # Convert the segmentation array to SimpleITK image and set properties
+    to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+    to_crop_segmentation.SetOrigin(image.GetOrigin())
+    to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
+    to_crop_segmentation.SetDirection(image.GetDirection())
+
+    # Resample the image using the desired spacing
+    desired_spacing = target_model.voxel_spacing
+    to_crop_image_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+    to_crop_image = SimpleITK.GetImageFromArray(to_crop_image_array)
+    to_crop_image.SetOrigin(image.GetOrigin())
+    to_crop_image.SetSpacing(desired_spacing)
+    to_crop_image.SetDirection(image.GetDirection())
+
+    # Resample the segmentation
+    resampled_to_crop_segmentation = image_processing.ImageResampler.resample_segmentation(to_crop_image, to_crop_segmentation)
+    del to_crop_segmentation
+    resampled_to_crop_segmentation_array = SimpleITK.GetArrayFromImage(resampled_to_crop_segmentation)
+
+    # Limit FOV based on model information
+    limited_fov_image_array, original_fov_info = image_processing.limit_fov(to_crop_image_array, resampled_to_crop_segmentation_array,
+                                                                            target_model_fov_information["inference_fov_intensities"])
+
+    to_write_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
+    to_write_image.SetOrigin(image.GetOrigin())
+    to_write_image.SetSpacing(desired_spacing)
+    to_write_image.SetDirection(image.GetDirection())
+
+    # Predict the limited FOV segmentation
+    limited_fov_segmentation_array = predict_from_array_by_iterator(limited_fov_image_array, target_model,
+                                                                            accelerator, nnunet_log_filename)
+
+    # Expand the segmentation to the original FOV
+    expanded_segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+
+    # Limit the FOV again based on label intensities and largest component condition
+    limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array, resampled_to_crop_segmentation_array,
+                                                                                   target_model_fov_information["label_intensity_to_crop_from"],
+                                                                                   target_model_fov_information["largest_component_only"])
+
+    # Expand the segmentation array to the original FOV
+    segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+
+    # Return the segmentation array and spacing
+    return segmentation_array, desired_spacing

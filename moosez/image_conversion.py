@@ -27,7 +27,7 @@ import unicodedata
 import SimpleITK
 import dicom2nifti
 import pydicom
-from moosez import resources
+from moosez import system
 
 
 def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
@@ -81,12 +81,14 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     SimpleITK.WriteImage(output_image, output_image_path)
 
 
-def standardize_to_nifti(parent_dir: str, output_manager: resources.OutputManager) -> None:
+def standardize_to_nifti(parent_dir: str, output_manager: system.OutputManager) -> None:
     """
     Converts all non-NIfTI images in a parent directory and its subdirectories to NIfTI format.
 
     :param parent_dir: The path to the parent directory containing the images to convert.
     :type parent_dir: str
+    :param output_manager: The output manager to handle console and log output.
+    :type output_manager: system.OutputManager
     :return: None
     """
     # Get a list of all subdirectories in the parent directory

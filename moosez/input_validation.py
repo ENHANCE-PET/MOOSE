@@ -19,10 +19,10 @@
 
 import os
 from moosez import constants
-from moosez import resources
+from moosez import system
 
 
-def select_moose_compliant_subjects(subject_paths: list[str], modality_tags: list[str], output_manager: resources.OutputManager) -> list[str]:
+def select_moose_compliant_subjects(subject_paths: list[str], modality_tags: list[str], output_manager: system.OutputManager) -> list[str]:
     """
     Selects the subjects that have the files that have names that are compliant with the moosez.
 
@@ -31,6 +31,8 @@ def select_moose_compliant_subjects(subject_paths: list[str], modality_tags: lis
     :param modality_tags: The list of appropriate modality prefixes that should be attached to the files for
                           them to be moose compliant.
     :type modality_tags: List[str]
+    :param output_manager: The output manager that will be used to write the output files.
+    :type output_manager: system.OutputManager
     :return: The list of subject paths that are moose compliant.
     :rtype: List[str]
     """
