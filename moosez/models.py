@@ -43,11 +43,6 @@ MODEL_METADATA = {
         KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
         KEY_LIMIT_FOV: None
     },
-    "clin_ct_fat": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
-        KEY_FOLDER_NAME: "Dataset777_Fat",
-        KEY_LIMIT_FOV: None
-    },
     "clin_ct_vertebrae": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_11082024.zip",
         KEY_FOLDER_NAME: "Dataset111_Vertebrae",
@@ -59,7 +54,7 @@ MODEL_METADATA = {
         KEY_LIMIT_FOV: None
     },
     "clin_ct_digestive": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_06102024.zip",
         KEY_FOLDER_NAME: "Dataset999_Digestive",
         KEY_LIMIT_FOV: None
     },
