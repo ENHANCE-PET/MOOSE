@@ -19,6 +19,7 @@
 
 import emoji
 import pyfiglet
+import random
 from moosez import constants
 from moosez import models
 from moosez import system
@@ -41,7 +42,20 @@ def logo(output_manager: system.OutputManager):
     output_manager.console_update(' ')
 
 
-def citation(output_manager: system.OutputManager):
+def authors(output_manager: system.OutputManager):
+    """
+    Display manuscript citation
+
+    This function displays the manuscript citation for the MOOSE project.
+
+    :return: None
+    """
+    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":desktop_computer:")}  AUTHORS:{constants.ANSI_RESET}')
+    output_manager.console_update(" ")
+    output_manager.console_update(" The Three Moose-keteers 🤺: Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires")
+    output_manager.console_update(" ")
+
+def doi(output_manager: system.OutputManager):
     """
     Display manuscript citation
 
@@ -52,8 +66,8 @@ def citation(output_manager: system.OutputManager):
     output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{constants.ANSI_RESET}')
     output_manager.console_update(" ")
     output_manager.console_update(
-        " Shiyam Sundar LK, Yu J, Muzik O, et al. Fully-automated, semantic segmentation of whole-body 18F-FDG PET/CT "
-        "images based on data-centric artificial intelligence. J Nucl Med. June 2022.")
+        " 10.2967/jnumed.122.264063")
+    output_manager.console_update(" ")
     output_manager.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
