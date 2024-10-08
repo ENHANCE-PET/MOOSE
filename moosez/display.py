@@ -88,8 +88,9 @@ def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_
     required_modalities = []
     required_prefixes = []
 
-    header = ["Nr", "Model Name", "Indices & Regions", "Imaging", "Required Modality", "Required Prefix (non-DICOM)"]
-    styles = [None, "cyan", None, None, None, None]
+    header = ["Nr", "Model Name", "Indices & Regions", "Imaging", "Required Modality", "Required Prefix (non-DICOM)",
+              "Nr of training datasets"]
+    styles = [None, "cyan", None, None, None, None, None]
     table = output_manager.create_table(header, styles)
 
     model_nr = 0
@@ -104,7 +105,8 @@ def expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_
             modality = model_workflow.target_model.modality
             imaging = f"{model_workflow.target_model.imaging_type}ical".capitalize()
             regions = str(model_workflow.target_model.organ_indices)
-            table.add_row(str(model_nr), model_identifier, regions, imaging, modality, ', '.join(prefixes))
+            nr_training_data = str(model_workflow.target_model.nr_training_data)
+            table.add_row(str(model_nr), model_identifier, regions, imaging, modality, ', '.join(prefixes), nr_training_data)
 
     output_manager.console_update(table)
 

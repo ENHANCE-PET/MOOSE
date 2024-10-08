@@ -315,48 +315,6 @@ For instance, if you have chosen the `model_name` as `clin_ct_organs`, the CT sc
 
 **Remember:** Adhering to these file naming and directory structure conventions ensures smooth and efficient processing with MOOSE 3.0. Happy segmenting! 🚀
 
-## :tada: Add and contribute Your Own nnUNetv2 Models to MooseZ :rocket:
-
-Want to power-up your medical image segmentation tasks? :zap: Join the MooseZ community and contribute your own `nnUNetv2` models! 🥇:
-
-By adding your custom models to MooseZ, you can enjoy:
-
-- :fast_forward: **Increased Speed** - MooseZ is optimized for fast performance. Use it to get your results faster!
-- :floppy_disk: **Reduced Memory** - MooseZ is designed to be efficient and lean, so it uses less memory!
-
-So why wait? Make your models fly with MooseZ :airplane:
-
-## How to Contribute Your Model :hammer_and_wrench:
-
-1. **Prepare Your Model** :file_folder:
-
-    Train your model using `nnUNetv2` and get it ready for the big leagues!
-
-2. **Update AVAILABLE_MODELS List** :pencil2:
-
-    Include your model's unique identifier to the `AVAILABLE_MODELS` list in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L29) file. The model name should follow a specific syntax: 'clin' or 'preclin' (indicating Clinical or Preclinical), modality tag (like 'ct', 'pt', 'mr'), and then the tissue of interest.
-
-3. **Update MODELS Dictionary** :clipboard:
-
-    Add a new entry to the `MODELS` dictionary in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L49) file. Fill in the corresponding details (like URL, filename, directory, trainer type, voxel spacing, and multilabel prefix). 
-
-4. **Update expected_modality Function** :memo:
-
-    Update the `expected_modality` function in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L100) file to return the imaging technique, modality, and tissue of interest for your model.
-
-5. **Update map_model_name_to_task_number Function** :world_map:
-
-    Modify the `map_model_name_to_task_number` function in the [resources.py](https://github.com/LalithShiyam/MOOSE/blob/d131a7c88b3d0defd43339c7d788f092a242f59d/moosez/resources.py#L130) file to return the task number associated with your model.
-
-6. **Update `ORGAN_INDICES` in `constants.py`** 🧠
-
-   Append the `ORGAN_INDICES` dictionary in the [constants.py](https://github.com/LalithShiyam/MOOSE/blob/3f5f9537365a41478060c96815c38c3824353bb9/moosez/constants.py#L66C1-L66C14) with your label intensity to region mapping. This is particularly important if you would like to have your stats from the PET images based on your CT masks.
-
-That's it! You've successfully contributed your own model to the MooseZ community! :confetti_ball:
-
-With your contribution 🙋, MooseZ becomes a stronger and more robust tool for medical image segmentation! :muscle:
-
-
 ## A Note on QIMP Python Packages: The 'Z' Factor 📚🚀
 
 All of our Python packages here at QIMP carry a special signature – a distinctive 'Z' at the end of their names. The 'Z' is more than just a letter to us; it's a symbol of our forward-thinking approach and commitment to continuous innovation.

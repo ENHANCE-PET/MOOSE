@@ -43,11 +43,6 @@ MODEL_METADATA = {
         KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
         KEY_LIMIT_FOV: None
     },
-    "clin_ct_fat": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
-        KEY_FOLDER_NAME: "Dataset777_Fat",
-        KEY_LIMIT_FOV: None
-    },
     "clin_ct_vertebrae": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_vertebrae_11082024.zip",
         KEY_FOLDER_NAME: "Dataset111_Vertebrae",
@@ -59,7 +54,7 @@ MODEL_METADATA = {
         KEY_LIMIT_FOV: None
     },
     "clin_ct_digestive": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_10092023.zip",
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_06102024.zip",
         KEY_FOLDER_NAME: "Dataset999_Digestive",
         KEY_LIMIT_FOV: None
     },
@@ -147,6 +142,7 @@ class Model:
         self.multilabel_prefix = f"{self.imaging_type}_{self.modality}_{self.region}_"
 
         self.organ_indices = self.__get_organ_indices()
+        self.nr_training_data = self.__get_number_training_data()
 
     def get_expectation(self):
         if self.modality == 'FDG-PET-CT':
@@ -248,6 +244,10 @@ class Model:
     def __get_organ_indices(self) -> dict[int, str]:
         labels = self.dataset.get('labels', {})
         return {int(value): key for key, value in labels.items() if value != "0"}
+
+    def __get_number_training_data(self) -> int:
+        nr_training_data = self.dataset.get('numTraining', "Not Available")
+        return nr_training_data
 
     def __str__(self):
         return self.model_identifier
