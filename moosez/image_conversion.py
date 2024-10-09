@@ -30,7 +30,7 @@ import pydicom
 from moosez import system
 
 
-def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
+def non_nifti_to_nifti(input_path: str, output_manager: system.OutputManager, output_directory: str = None) -> None:
     """
     Converts any image format known to ITK to NIFTI
 
@@ -40,6 +40,9 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
         :param output_directory: Optional. The output directory to write the image to. If not specified, the
                                  output image will be written to the same directory as the input image.
         :type output_directory: str
+
+        :param output_manager: The OutputManager for handling console output
+        :type output_manager: system.OutputManager
         
         :return: None
         :rtype: None
@@ -54,7 +57,7 @@ def non_nifti_to_nifti(input_path: str, output_directory: str = None) -> None:
     """
 
     if not os.path.exists(input_path):
-        print(f"Input path {input_path} does not exist.")
+        output_manager.console_update(f"Input path {input_path} does not exist.")
         return
 
     # Processing a directory
@@ -108,7 +111,7 @@ def standardize_to_nifti(parent_dir: str, output_manager: system.OutputManager) 
                     path_is_valid = os.path.isdir(image_path) | os.path.isfile(image_path)
                     path_is_valid = path_is_valid & ("moosez" not in os.path.basename(image_path))
                     if path_is_valid:
-                        non_nifti_to_nifti(image_path)
+                        non_nifti_to_nifti(image_path, output_manager)
             else:
                 continue
             progress.update(task, advance=1, description=f"[white] Processing {subject}...")

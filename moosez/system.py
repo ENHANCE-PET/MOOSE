@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
-import rich.table
 import torch
 import os
 import sys
+import emoji
+import pyfiglet
 from halo import Halo
 from datetime import datetime
 from rich.console import Console, RenderableType
 from rich.table import Table
 from rich.text import Text
 from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
-from moosez.constants import VERSION
+from moosez.constants import VERSION, ANSI_VIOLET, ANSI_RESET
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -68,7 +69,7 @@ class OutputManager:
         progress_bar = Progress(console=self.console)
         return progress_bar
 
-    def create_table(self, header: list[str], styles: list[str] | None = None) -> rich.table.Table:
+    def create_table(self, header: list[str], styles: list[str] | None = None) -> Table:
         table = Table()
         if styles is None:
             styles = [None] * len(header)
@@ -126,6 +127,50 @@ class OutputManager:
     def spinner_succeed(self, text: str = None):
         if self.spinner.enabled:
             self.spinner.succeed(text)
+
+    def display_logo(self):
+        """
+        Display MOOSE logo
+
+        This function displays the MOOSE logo using the pyfiglet library and ANSI color codes.
+
+        :return: None
+        """
+        self.console_update(' ')
+        result = ANSI_VIOLET + pyfiglet.figlet_format(" MOOSE 3.0", font="smslant").rstrip() + ANSI_RESET
+        text = ANSI_VIOLET + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of" \
+                             " PET imaging together." + ANSI_RESET
+        self.console_update(result)
+        self.console_update(text)
+        self.console_update(' ')
+
+    def display_authors(self):
+        """
+        Display manuscript citation
+
+        This function displays authors for the MOOSE project.
+
+        :return: None
+        """
+        self.console_update(f'{ANSI_VIOLET} {emoji.emojize(":desktop_computer:")}  AUTHORS:{ANSI_RESET}')
+        self.console_update(" ")
+        self.console_update(" The Three Moose-keteers 🤺: Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires")
+        self.console_update(" ")
+
+    def display_doi(self):
+        """
+        Display manuscript citation
+
+        This function displays the manuscript citation for the MOOSE project.
+
+        :return: None
+        """
+        self.console_update(f'{ANSI_VIOLET} {emoji.emojize(":scroll:")} CITATION:{ANSI_RESET}')
+        self.console_update(" ")
+        self.console_update(" Fully Automated, Semantic Segmentation of Whole-Body [18F]-FDG PET/CT Images Based on Data-Centric Artificial Intelligence")
+        self.console_update(" 10.2967/jnumed.122.264063")
+        self.console_update(" ")
+        self.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
 def check_device(output_manager: OutputManager = OutputManager(False, False)) -> tuple[str, int | None]:

@@ -245,8 +245,8 @@ class Model:
         labels = self.dataset.get('labels', {})
         return {int(value): key for key, value in labels.items() if value != "0"}
 
-    def __get_number_training_data(self) -> int:
-        nr_training_data = self.dataset.get('numTraining', "Not Available")
+    def __get_number_training_data(self) -> str:
+        nr_training_data = str(self.dataset.get('numTraining', "Not Available"))
         return nr_training_data
 
     def __str__(self):
@@ -282,18 +282,18 @@ class Model:
         return "\n".join(result)
 
     @staticmethod
-    def model_identifier_valid(model_identifier: str) -> bool:
+    def model_identifier_valid(model_identifier: str, output_manager: system.OutputManager) -> bool:
         if model_identifier not in MODEL_METADATA:
-            print("No valid model selected.")
+            output_manager.console_update("No valid model selected.")
             return False
 
         model_information = MODEL_METADATA[model_identifier]
         if KEY_URL not in model_information or KEY_FOLDER_NAME not in model_information or KEY_LIMIT_FOV not in model_information:
-            print("One or more of the required keys url, folder_name, limit_fov are missing.")
+            output_manager.console_update("One or more of the required keys url, folder_name, limit_fov are missing.")
             return False
 
         if model_information[KEY_URL] == "" or model_information[KEY_FOLDER_NAME] == "" or (model_information[KEY_LIMIT_FOV] is not None and not isinstance(model_information[KEY_LIMIT_FOV], dict)):
-            print("One or more of the required keys url, folder_name, limit_fov are not defined correctly.")
+            output_manager.console_update("One or more of the required keys url, folder_name, limit_fov are not defined correctly.")
             return False
 
         return True

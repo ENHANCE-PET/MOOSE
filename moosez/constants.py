@@ -51,6 +51,9 @@ DEFAULT_SPACING = (1.5, 1.5, 1.5)
 FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
 
+
+ENHANCE_URL = "https://enhance-pet.s3.eu-central-1.amazonaws.com/enhance-pet-1_6k/ENHANCE-PET-1_6k.zip"
+
 USAGE_MESSAGE = """
 Usage:
   moosez -d <MAIN_DIRECTORY> -m <MODEL_NAMES> -b
