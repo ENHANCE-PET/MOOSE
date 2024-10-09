@@ -31,7 +31,6 @@ import pandas as pd
 import multiprocessing as mp
 import concurrent.futures
 from moosez import constants
-from moosez import display
 from moosez import download
 from moosez import file_utilities
 from moosez import image_conversion
@@ -96,19 +95,22 @@ def main():
         nargs='?',
         const=2,
         type=int,
-        help='Specify the concurrent jobs (default: 2)')
+        help='Specify the concurrent jobs (default: 2)'
+    )
 
     parser.add_argument(
         '-dtd', '--download_training_data',
         action="store_true",
         default=False,
-        help='Download the enhance 1.6k ENHANCE dataset')
+        help='Download the enhance 1.6k ENHANCE dataset'
+    )
 
     parser.add_argument(
-        '-o', '--output',
+        '-dd', '--download_directory',
         default=None,
         type=str,
-        help='Path to save the enhance 1.6k ENHANCE dataset')
+        help='Path to save the enhance 1.6k ENHANCE dataset'
+    )
 
     # Custom help option
     parser.add_argument(
@@ -121,34 +123,42 @@ def main():
     args = parser.parse_args()
 
     # ----------------------------------
+    # OUTPUT SETTINGS
+    # ----------------------------------
+
+    verbose_console = args.verbose_off
+    verbose_log = args.logging_off
+
+    if args.download_training_data:
+        verbose_console = True
+        verbose_log = False
+
+    output_manager = system.OutputManager(verbose_console, verbose_log)
+    output_manager.display_logo()
+    output_manager.display_authors()
+    output_manager.display_doi()
+
+    # ----------------------------------
     # DOWNLOADING THE ENHANCE DATA
     # ----------------------------------
 
     if args.download_training_data:
-        output_manager = system.OutputManager(True, False)
-        display.logo(output_manager)
-        display.authors(output_manager)
-        display.doi(output_manager)
         output_manager.console_update(f'')
-        output_manager.console_update(
-            f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} ENHANCE 1.6k DATA DOWNLOAD:{constants.ANSI_RESET}')
+        output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} ENHANCE 1.6k DATA DOWNLOAD:{constants.ANSI_RESET}')
         output_manager.console_update(f'')
-        download.download_enhance_data(args.output, output_manager)
+        download.download_enhance_data(args.download_directory, output_manager)
         return
+
+    # ----------------------------------
+    # START MOOSE
+    # ----------------------------------
 
     parent_folder = os.path.abspath(args.main_directory)
     model_names = args.model_names
     benchmark = args.benchmark
     moose_instances = args.moose_herd
-    verbose_console = args.verbose_off
-    verbose_log = args.logging_off
 
-    output_manager = system.OutputManager(verbose_console, verbose_log)
     output_manager.configure_logging(parent_folder)
-
-    display.logo(output_manager)
-    display.citation(output_manager)
-
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
     output_manager.log_update('                                     STARTING MOOSE-Z V.3.0.0                                       ')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
@@ -177,7 +187,7 @@ def main():
     output_manager.console_update(f' ')
 
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
-    modalities = display.expectations(model_routine, output_manager)
+    modalities = input_validation.determine_model_expectations(model_routine, output_manager)
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
     accelerator, device_count = system.check_device(output_manager)
     if moose_instances is not None:

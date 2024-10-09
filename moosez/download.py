@@ -6,18 +6,18 @@ from moosez import constants
 from moosez import system
 
 
-def download_enhance_data(output_path, output_manager: system.OutputManager):
+def download_enhance_data(download_directory: str | None, output_manager: system.OutputManager):
 
     output_manager.log_update(f"    - Downloading ENHANCE 1.6k data")
-    if not output_path:
-        output_path = get_default_download_folder()
+    if not download_directory:
+        download_directory = get_default_download_folder()
 
     download_file_name = os.path.basename(constants.ENHANCE_URL)
-    download_file_path = os.path.join(output_path, download_file_name)
+    download_file_path = os.path.join(download_directory, download_file_name)
 
     response = requests.get(constants.ENHANCE_URL, stream=True)
     if response.status_code != 200:
-        output_manager.log_update(f"    X Failed to download model from {constants.ENHANCE_URL}")
+        output_manager.console_update(f"    X Failed to download model from {constants.ENHANCE_URL}")
         raise Exception(f"Failed to download model from {constants.ENHANCE_URL}")
     total_size = int(response.headers.get("Content-Length", 0))
     chunk_size = 1024 * 10
