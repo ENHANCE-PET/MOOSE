@@ -303,61 +303,65 @@ def main():
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
 
 
-def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | SimpleITK.Image, model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> None:
+def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | SimpleITK.Image,
+          model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> str | SimpleITK.Image | numpy.ndarray:
     """
     Execute the MOOSE 3.0 image segmentation process.
 
-    :param input_data: This can be either:
-                       1. A file path to the NIfTI file (as a string),
-                       2. A tuple containing a numpy array and the corresponding spacing (as (array, spacing)),
-                       3. A SimpleITK image.
+    :param input_data: The input data to process, which can be one of the following:
+                       - str: A file path to a NIfTI file.
+                       - tuple[numpy.ndarray, tuple[float, float, float]]: A tuple containing a numpy array and spacing.
+                       - SimpleITK.Image: An image object to process.
+                       
+    :param model_names: The name(s) of the model(s) to be used for segmentation.
+    :type model_names: str or list[str]
 
-    :param model_names: The name of the model to be used for predictions. This model will be downloaded and used
-                       for the image segmentation process.
-    :type model_names: str
+    :param output_dir: Path to the directory where the output will be saved if the input is a file path.
+    :type output_dir: Optional[str]
 
-    :param output_dir: Path to the directory where the segmented output will be saved.
-    :type output_dir: str
+    :param accelerator: Specifies the accelerator type, e.g., "cpu" or "cuda".
+    :type accelerator: Optional[str]
 
-    :param accelerator: Specifies the type of accelerator to be used. Common values include "cpu" and "cuda" for
-                        GPU acceleration.
-    :type accelerator: str
-
-    :return: None
-    :rtype: None
+    :return: The output type aligns with the input type:
+             - str (file path): If `input_data` is a file path.
+             - SimpleITK.Image: If `input_data` is a SimpleITK.Image.
+             - numpy.ndarray: If `input_data` is a numpy array.
+    :rtype: str or SimpleITK.Image or numpy.ndarray
 
     :Example:
-    >>> moose('/path/to/input/file', '[list, of, models]', '/path/to/save/output', 'cuda')
-    >>> moose((numpy_array, (1.5, 1.5, 1.5)), 'model_name', '/path/to/save/output', 'cuda')
-    >>> moose(simple_itk_image, 'model_name', '/path/to/save/output', 'cuda')
-
+    >>> moose('/path/to/input/file', '[list, of, models]', '/path/to/output', 'cuda')
+    >>> moose((numpy_array, (1.5, 1.5, 1.5)), 'model_name', '/path/to/output', 'cuda')
+    >>> moose(simple_itk_image, 'model_name', '/path/to/output', 'cuda')
     """
-
+    # Load the image and set a default filename based on input type
     if isinstance(input_data, str):
         image = SimpleITK.ReadImage(input_data)
         file_name = file_utilities.get_nifti_file_stem(input_data)
     elif isinstance(input_data, SimpleITK.Image):
         image = input_data
         file_name = 'image_from_simpleitk'
-    elif isinstance(input_data, tuple) and isinstance(input_data[0], numpy.ndarray) and isinstance(input_data[1],
-                                                                                                   tuple):
+    elif isinstance(input_data, tuple) and isinstance(input_data[0], numpy.ndarray) and isinstance(input_data[1], tuple):
         numpy_array, spacing = input_data
         image = SimpleITK.GetImageFromArray(numpy_array)
         image.SetSpacing(spacing)
         file_name = 'image_from_array'
     else:
         raise ValueError(
-            "Input data must be either a file path (str), a SimpleITK.Image, or a tuple (numpy array, spacing).")
+            "Invalid input format. `input_data` must be either a file path (str), "
+            "a SimpleITK.Image, or a tuple (numpy array, spacing)."
+        )
 
+    # Ensure model_names is a list for consistency
     if isinstance(model_names, str):
         model_names = [model_names]
 
+    # Output manager and model routine setup
     output_manager = system.OutputManager(False, False)
-
     model_path = system.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names, output_manager)
 
+    # Perform segmentation
     for desired_spacing, model_workflows in model_routine.items():
         resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
 
@@ -370,12 +374,12 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
                     inference_fov_intensities = [inference_fov_intensities]
 
                 existing_intensities = numpy.unique(segmentation_array)
-                if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
+                if not all(intensity in existing_intensities for intensity in inference_fov_intensities):
                     continue
 
-                segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array,
-                                                                                              model_workflow,
-                                                                                              accelerator, os.devnull)
+                segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(
+                    image, segmentation_array, model_workflow, accelerator, os.devnull
+                )
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
@@ -383,10 +387,19 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
             segmentation.SetDirection(image.GetDirection())
             resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
 
-            if output_dir is None:
-                output_dir = os.path.dirname(input_data) if isinstance(input_data, str) else '.'
-            segmentation_image_path = os.path.join(output_dir, f"{model_workflow.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz")
-            SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
+            # Return based on input type
+            if isinstance(input_data, str):  # Return file path if input was a file path
+                if output_dir is None:
+                    output_dir = os.path.dirname(input_data)
+                segmentation_image_path = os.path.join(
+                    output_dir, f"{model_workflow.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz"
+                )
+                SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
+                return segmentation_image_path
+            elif isinstance(input_data, SimpleITK.Image):  # Return SimpleITK.Image if input was SimpleITK.Image
+                return resampled_segmentation
+            elif isinstance(input_data, tuple):  # Return numpy array if input was numpy array
+                return SimpleITK.GetArrayFromImage(resampled_segmentation)
 
 
 def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_routine: dict, accelerator: str,
