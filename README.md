@@ -266,6 +266,19 @@ Here are some examples to illustrate different ways to use the `moose` function:
     ```python
     moose(simple_itk_image, 'clin_ct_organs', '/path/to/save/output', 'cuda')
     ```
+    
+#### Usage of `moose()` in your code
+To use the `moose()` function, ensure that you wrap the function call within a main guard to prevent recursive process creation errors:
+```python
+from moosez import moose
+
+if __name__ == '__main__':
+    input_file = '/path/to/input/file'
+    models = ['clin_ct_organs', 'clin_ct_ribs']
+    output_directory = '/path/to/save/output'
+    accelerator = 'cuda'
+    moose(input_file, models, output_directory, accelerator)
+```
 
 #### Ready, Set, Segment! 🚀
 
