@@ -30,7 +30,7 @@ setup(
              ' preclinical-segmentation clinical-segmentation',
     packages=find_packages(),
     install_requires=[
-        'acvl~=0.2',
+        'acvl==0.2',
         'nnunetv2',
         'halo~=0.0.31',
         'SimpleITK~=2.2.1',
