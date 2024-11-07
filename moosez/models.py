@@ -117,6 +117,11 @@ MODEL_METADATA = {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_cardiac3_10092024.zip",
         KEY_FOLDER_NAME: "Dataset890_FastCardiac",
         KEY_LIMIT_FOV: None
+    },
+    "clin_ct_fat_old": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
+        KEY_FOLDER_NAME: "Dataset777_Fat",
+        KEY_LIMIT_FOV: None
     }
 }
 
