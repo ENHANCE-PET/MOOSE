@@ -60,13 +60,11 @@ MOOSE 3.0 offers a wide range of segmentation models catering to various clinica
 
 Each model is designed to provide high-quality segmentation with MOOSE 3.0's optimized algorithms and data-centric AI principles.
 
-<div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
-  <img alt="Shows an illustrated MOOSE story board adopted to different themes" src="https://github.com/QIMP-Team/MOOSE/blob/main/Images/MOOSE-Rotational-MIP.gif">
-</picture>
-</div>
+
+
+https://github.com/user-attachments/assets/b121a9f5-30b6-4a40-a451-6bad6570eb55
+
+
 
 ## Star History 🤩
 
