@@ -163,7 +163,6 @@ def main():
     output_manager.log_update('                                     STARTING MOOSE-Z V.3.0.0                                       ')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
 
-
     # ----------------------------------
     # DOWNLOADING THE MODEL
     # ----------------------------------
@@ -254,9 +253,8 @@ def main():
         with concurrent.futures.ProcessPoolExecutor(max_workers=moose_instances, mp_context=mp_context) as executor:
             futures = []
             for i, (subject, accelerator) in enumerate(zip(moose_compliant_subjects, accelerator_assignments)):
-                futures.append(executor.submit(moose_subject, subject, i, num_subjects,
-                                               model_routine, accelerator,
-                                               None, benchmark))
+                futures.append(executor.submit(moose_subject, subject, i, num_subjects, model_routine,
+                                               accelerator, None, benchmark))
 
             for future in concurrent.futures.as_completed(futures):
                 if benchmark:
@@ -271,9 +269,8 @@ def main():
 
     else:
         for i, subject in enumerate(moose_compliant_subjects):
-            subject_performance = moose_subject(subject, i, num_subjects,
-                                                model_routine, accelerator,
-                                                output_manager, benchmark)
+            subject_performance = moose_subject(subject, i, num_subjects, model_routine,
+                                                accelerator, output_manager, benchmark)
             if benchmark:
                 subject_performance_parameters.append(subject_performance)
 
@@ -304,7 +301,7 @@ def main():
 
 
 def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | SimpleITK.Image,
-          model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> str | SimpleITK.Image | numpy.ndarray:
+          model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> tuple[list[str] | list[SimpleITK.Image] | list[numpy.ndarray], list[models.Model]]:
     """
     Execute the MOOSE 3.0 image segmentation process.
 
@@ -346,10 +343,8 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
         image.SetSpacing(spacing)
         file_name = 'image_from_array'
     else:
-        raise ValueError(
-            "Invalid input format. `input_data` must be either a file path (str), "
-            "a SimpleITK.Image, or a tuple (numpy array, spacing)."
-        )
+        raise ValueError("Invalid input format. `input_data` must be either a file path (str), "
+                         "a SimpleITK.Image, or a tuple (numpy array, spacing).")
 
     # Ensure model_names is a list for consistency
     if isinstance(model_names, str):
@@ -361,12 +356,17 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names, output_manager)
 
+    if accelerator is None:
+        accelerator, _ = system.check_device(output_manager)
+
     # Perform segmentation
+    generated_segmentations = []
+    used_models = []
     for desired_spacing, model_workflows in model_routine.items():
         resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
 
         for model_workflow in model_workflows:
-            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, os.devnull)
+            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, output_manager)
 
             if len(model_workflow) == 2:
                 inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
@@ -378,8 +378,7 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
                     continue
 
                 segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(
-                    image, segmentation_array, model_workflow, accelerator, os.devnull
-                )
+                    image, segmentation_array, model_workflow, accelerator, output_manager)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
@@ -387,19 +386,21 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
             segmentation.SetDirection(image.GetDirection())
             resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
 
-            # Return based on input type
+            image_output = None
             if isinstance(input_data, str):  # Return file path if input was a file path
                 if output_dir is None:
                     output_dir = os.path.dirname(input_data)
-                segmentation_image_path = os.path.join(
-                    output_dir, f"{model_workflow.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz"
-                )
-                SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
-                return segmentation_image_path
+                image_output = os.path.join(output_dir, f"{model_workflow.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz")
+                SimpleITK.WriteImage(resampled_segmentation, image_output)
             elif isinstance(input_data, SimpleITK.Image):  # Return SimpleITK.Image if input was SimpleITK.Image
-                return resampled_segmentation
+                image_output = resampled_segmentation
             elif isinstance(input_data, tuple):  # Return numpy array if input was numpy array
-                return SimpleITK.GetArrayFromImage(resampled_segmentation)
+                image_output = SimpleITK.GetArrayFromImage(resampled_segmentation)
+
+            generated_segmentations.append(image_output)
+            used_models.append(model_workflow.target_model)
+
+    return generated_segmentations, used_models
 
 
 def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_routine: dict, accelerator: str,
@@ -459,7 +460,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
             model_time_start = time.time()
             output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {model_workflow[0]}...')
             output_manager.log_update(f'   - Model {model_workflow.target_model}')
-            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, output_manager.nnunet_log_filename)
+            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, output_manager)
 
             if len(model_workflow) == 2:
                 inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
@@ -473,7 +474,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
                     performance_observer.time_phase()
                     continue
 
-                segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager.nnunet_log_filename)
+                segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
             segmentation.SetSpacing(desired_spacing)
