@@ -8,6 +8,7 @@ import emoji
 import pyfiglet
 from halo import Halo
 from datetime import datetime
+from contextlib import contextmanager, redirect_stdout, redirect_stderr
 from rich.console import Console, RenderableType
 from rich.table import Table
 from rich.text import Text
@@ -127,6 +128,13 @@ class OutputManager:
     def spinner_succeed(self, text: str = None):
         if self.spinner.enabled:
             self.spinner.succeed(text)
+
+    @contextmanager
+    def manage_nnUNet_output(self):
+        target_path = self.nnunet_log_filename if self.verbose_log else os.devnull
+        mode = "a" if self.verbose_log else 'w'
+        with open(target_path, mode) as target, redirect_stdout(target), redirect_stderr(target):
+            yield
 
     def display_logo(self):
         """
