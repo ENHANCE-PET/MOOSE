@@ -182,7 +182,7 @@ class OutputManager:
         self.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def check_device(output_manager: OutputManager = OutputManager(False, False)) -> Tuple[str, Union[int | None]]:
+def check_device(output_manager: OutputManager = OutputManager(False, False)) -> Tuple[str, Union[int, None]]:
     """
     This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
 
