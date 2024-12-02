@@ -21,6 +21,7 @@ import os
 import shutil
 from datetime import datetime
 from multiprocessing import Pool
+from typing import Union, Tuple, List
 from moosez import constants
 
 
@@ -35,7 +36,7 @@ def create_directory(directory_path: str) -> None:
         os.makedirs(directory_path)
 
 
-def get_files(directory: str, prefix: str | tuple[str, ...], suffix: str | tuple[str, ...]) -> list[str]:
+def get_files(directory: str, prefix: Union[str, Tuple[str, ...]], suffix: Union[str, Tuple[str, ...]]) -> List[str]:
     """
     Returns the list of files in the directory with the specified wildcard.
     
@@ -65,7 +66,7 @@ def get_files(directory: str, prefix: str | tuple[str, ...], suffix: str | tuple
     return files
 
 
-def moose_folder_structure(parent_directory: str) -> tuple[str, str, str]:
+def moose_folder_structure(parent_directory: str) -> Tuple[str, str, str]:
     """
     Creates the moose folder structure.
     
@@ -98,7 +99,7 @@ def copy_file(file: str, destination: str) -> None:
     shutil.copy(file, destination)
 
 
-def copy_files_to_destination(files: list[str], destination: str) -> None:
+def copy_files_to_destination(files: List[str], destination: str) -> None:
     """
     Copies the files inside the list to the destination directory in a parallel fashion.
     
@@ -112,7 +113,7 @@ def copy_files_to_destination(files: list[str], destination: str) -> None:
         pool.starmap(copy_file, [(file, destination) for file in files])
 
 
-def select_files_by_modality(moose_compliant_subjects: list[str], modality_tag: str) -> list:
+def select_files_by_modality(moose_compliant_subjects: List[str], modality_tag: str) -> List:
     """
     Selects the files with the selected modality tag from the moose-compliant folders.
     
@@ -134,7 +135,7 @@ def select_files_by_modality(moose_compliant_subjects: list[str], modality_tag: 
     return selected_files
 
 
-def find_pet_file(folder: str) -> str | None:
+def find_pet_file(folder: str) -> Union[str, None]:
     """
     Finds the PET file in the specified folder.
     

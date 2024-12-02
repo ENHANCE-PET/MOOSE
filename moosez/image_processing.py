@@ -25,6 +25,7 @@ import pandas as pd
 import scipy.ndimage as ndimage
 import nibabel
 import os
+from typing import Union, Tuple, List, Dict
 from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
 from moosez import models
 from moosez import system
@@ -100,12 +101,12 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model: models.Model, out_c
     stats_df.to_csv(out_csv)
 
 
-def limit_fov(image_array: np.array, segmentation_array: np.array, fov_label: list[int] | int, largest_component_only: bool = False):
+def limit_fov(image_array: np.array, segmentation_array: np.array, fov_label: Union[List[int], int], largest_component_only: bool = False):
 
     if largest_component_only:
         segmentation_array = largest_connected_component(segmentation_array, fov_label)
 
-    if type(fov_label) is list:
+    if isinstance(fov_label, list):
         z_indices = np.where((segmentation_array >= fov_label[0]) & (segmentation_array <= fov_label[1]))[0]
     else:
         z_indices = np.where(segmentation_array == fov_label)[0]
@@ -117,7 +118,7 @@ def limit_fov(image_array: np.array, segmentation_array: np.array, fov_label: li
     return limited_fov_array, {"z_min": z_min, "z_max": z_max, "original_shape": image_array.shape}
 
 
-def expand_segmentation_fov(limited_fov_segmentation_array: np.ndarray, original_fov_info: dict) -> np.ndarray:
+def expand_segmentation_fov(limited_fov_segmentation_array: np.ndarray, original_fov_info: Dict) -> np.ndarray:
     z_min = original_fov_info["z_min"]
     z_max = original_fov_info["z_max"]
     original_shape = original_fov_info["original_shape"]
@@ -179,13 +180,13 @@ def largest_connected_component(segmentation_array, intensities):
 
 class ImageChunker:
     @staticmethod
-    def __compute_interior_indices(axis_length: int, number_of_chunks: int) -> (list[int], list[int]):
+    def __compute_interior_indices(axis_length: int, number_of_chunks: int) -> Tuple[List[int], List[int]]:
         start = [int(round(k * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
         end = [int(round((k + 1) * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
         return start, end
 
     @staticmethod
-    def __chunk_array_with_overlap(array_shape: list[int] | tuple[int, ...], splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> list[dict]:
+    def __chunk_array_with_overlap(array_shape: Union[List[int], Tuple[int, ...]], splits_per_dimension: Union[List[int], Tuple[int, ...]], overlap_per_dimension: Union[List[int], Tuple[int, ...]]) -> List[Dict]:
         dims = array_shape
         num_dims = len(array_shape)
         starts_list = []
@@ -232,7 +233,7 @@ class ImageChunker:
         return chunk_info
 
     @staticmethod
-    def array_to_chunks(image_array: np.ndarray, splits_per_dimension: list[int] | tuple[int, ...], overlap_per_dimension: list[int] | tuple[int, ...]) -> (list[np.ndarray], list[dict]):
+    def array_to_chunks(image_array: np.ndarray, splits_per_dimension: Union[List[int], Tuple[int, ...]], overlap_per_dimension: Union[List[int], Tuple[int, ...]]) -> Tuple[List[np.ndarray], List[Dict]]:
         chunk_info = ImageChunker.__chunk_array_with_overlap(image_array.shape, splits_per_dimension, overlap_per_dimension)
         image_chunks = []
         positions = []
@@ -248,7 +249,7 @@ class ImageChunker:
         return image_chunks, positions
 
     @staticmethod
-    def chunks_to_array(image_chunks: list[np.ndarray], image_chunk_positions: dict, final_shape: list[int] | tuple[int, ...]) -> np.ndarray:
+    def chunks_to_array(image_chunks: List[np.ndarray], image_chunk_positions: Dict, final_shape: List[int] | Tuple[int, ...]) -> np.ndarray:
         final_arr = np.empty(final_shape, dtype=image_chunks[0].dtype)
         for image_chunk, image_chunk_position in zip(image_chunks, image_chunk_positions):
             interior_region = image_chunk[image_chunk_position['interior_slice']]
@@ -257,7 +258,7 @@ class ImageChunker:
         return final_arr
 
     @staticmethod
-    def determine_splits(image_array: np.ndarray) -> tuple:
+    def determine_splits(image_array: np.ndarray) -> Tuple:
         image_shape = image_array.shape
         splits = []
         for axis in image_shape:
@@ -305,8 +306,8 @@ class ImageResampler:
         return split
 
     @staticmethod
-    def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: tuple, interpolation_method: int,
-                                 output_spacing: tuple, output_size: tuple) -> da.array:
+    def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: Tuple, interpolation_method: int,
+                                 output_spacing: Tuple, output_size: Tuple) -> da.array:
         """
         Resamples a dask array chunk.
 
@@ -336,8 +337,8 @@ class ImageResampler:
 
     @staticmethod
     def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: str,
-                                      output_spacing: tuple = (1.5, 1.5, 1.5),
-                                      output_size: tuple = None) -> SimpleITK.Image:
+                                      output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
+                                      output_size: Union[Tuple, None] = None) -> SimpleITK.Image:
         """
         Resamples a sitk_image using Dask and SimpleITK.
 
@@ -365,7 +366,7 @@ class ImageResampler:
 
     @staticmethod
     def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
-                         output_image_path: str = None, is_label_image: bool = False) -> SimpleITK.Image:
+                         output_image_path: Union[str, None] = None, is_label_image: bool = False) -> SimpleITK.Image:
         """
         Reslices an image to the same space as another image.
 
@@ -396,8 +397,8 @@ class ImageResampler:
 
     @staticmethod
     def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
-                                            output_spacing: tuple = (1.5, 1.5, 1.5),
-                                            output_size: tuple = None) -> np.array:
+                                            output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
+                                            output_size: Union[Tuple[float, float, float], None] = None) -> np.array:
         if interpolation == 'nearest':
             interpolation_method = SimpleITK.sitkNearestNeighbor
         elif interpolation == 'linear':
@@ -436,13 +437,13 @@ class ImageResampler:
         return resampled_sitk_image
 
 
-def determine_orientation_code(image: nibabel.Nifti1Image) -> [tuple | list, str]:
+def determine_orientation_code(image: nibabel.Nifti1Image) -> Tuple[Union[Tuple, List], str]:
     affine = image.affine
     orthonormal_orientation = nibabel.orientations.aff2axcodes(affine)
     return orthonormal_orientation, ''.join(orthonormal_orientation)
 
 
-def confirm_orthonormality(image: nibabel.Nifti1Image) -> tuple[nibabel.Nifti1Image, bool]:
+def confirm_orthonormality(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Image, bool]:
     data = image.get_fdata()
     affine = image.affine
     header = image.header
@@ -473,7 +474,7 @@ def confirm_orthonormality(image: nibabel.Nifti1Image) -> tuple[nibabel.Nifti1Im
     return image, orthonormalized
 
 
-def confirm_orientation(image: nibabel.Nifti1Image) -> tuple[nibabel.Nifti1Image, bool]:
+def confirm_orientation(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Image, bool]:
     data = image.get_fdata()
     affine = image.affine
     header = image.header
@@ -520,7 +521,7 @@ def convert_to_sitk(image: nibabel.Nifti1Image) -> SimpleITK.Image:
     return sitk_image
 
 
-def standardize_image(image_path: str, output_manager: system.OutputManager, standardization_output_path: str | None) -> SimpleITK.Image:
+def standardize_image(image_path: str, output_manager: system.OutputManager, standardization_output_path: Union[str, None]) -> SimpleITK.Image:
     image = nibabel.load(image_path)
     _, original_orientation = determine_orientation_code(image)
     output_manager.log_update(f"   Image loaded. Orientation: {original_orientation}")

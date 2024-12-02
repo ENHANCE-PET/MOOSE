@@ -20,6 +20,7 @@ import dask
 import torch
 import numpy as np
 import SimpleITK
+from typing import Tuple, List, Dict, Iterator
 from moosez import models
 from moosez import image_processing
 from moosez import system
@@ -44,7 +45,7 @@ def initialize_predictor(model: models.Model, accelerator: str) -> nnUNetPredict
 
 
 @dask.delayed
-def process_case(preprocessor, chunk: np.ndarray, chunk_properties: dict, predictor: nnUNetPredictor, location: tuple) -> dict:
+def process_case(preprocessor, chunk: np.ndarray, chunk_properties: Dict, predictor: nnUNetPredictor, location: Tuple) -> Dict:
     data, seg = preprocessor.run_case_npy(chunk,
                                           None,
                                           chunk_properties,
@@ -59,7 +60,7 @@ def process_case(preprocessor, chunk: np.ndarray, chunk_properties: dict, predic
     return {'data': data_tensor, 'data_properties': chunk_properties, 'ofile': None, 'location': location}
 
 
-def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: dict, predictor: nnUNetPredictor) -> (iter, list):
+def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: Dict, predictor: nnUNetPredictor) -> Tuple[Iterator, List]:
     overlap_per_dimension = (0, 20, 20, 20)
     splits = image_processing.ImageChunker.determine_splits(image_array)
     chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, overlap_per_dimension)
