@@ -6,7 +6,6 @@ import os
 import sys
 import emoji
 import pyfiglet
-import re
 from halo import Halo
 from datetime import datetime
 from contextlib import contextmanager, redirect_stdout, redirect_stderr
@@ -110,30 +109,10 @@ class OutputManager:
         if self.verbose_log and self.logger:
             self.logger.info(text)
 
-    def __remove_emojis(self, text: Union[str, RenderableType]) -> str:
-        emoji_pattern = re.compile(
-            "["
-            u"\U0001F600-\U0001F64F"  # Emoticons
-            u"\U0001F300-\U0001F5FF"  # Symbols & Pictographs
-            u"\U0001F680-\U0001F6FF"  # Transport & Map Symbols
-            u"\U0001F700-\U0001F77F"  # Alchemical Symbols
-            u"\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
-            u"\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
-            u"\U0001F900-\U0001F9FF"  # Supplemental Symbols & Pictographs
-            u"\U0001FA00-\U0001FA6F"  # Chess Symbols
-            u"\U0001FA70-\U0001FAFF"  # Symbols & Pictographs Extended-A
-            u"\U00002700-\U000027BF"  # Dingbats
-            u"\U0001F1E6-\U0001F1FF"  # Flags
-            "]+", flags=re.UNICODE)
-        return emoji_pattern.sub(r'', text)
-
     def console_update(self, text: Union[str, RenderableType]):
         if isinstance(text, str):
             text = Text.from_ansi(text)
-        try:
-            self.console.print(text)
-        except UnicodeEncodeError as e:
-            self.console.print(self.__remove_emojis(text))
+        self.console.print(text)
 
     def spinner_update(self, text: str = None):
         if self.spinner.enabled:
