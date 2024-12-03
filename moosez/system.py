@@ -110,7 +110,7 @@ class OutputManager:
         if self.verbose_log and self.logger:
             self.logger.info(text)
 
-    def __remove_emojis(self, text: Union[str, RenderableType]) -> str:
+    def __remove_emojis(self, text: str) -> str:
         emoji_pattern = re.compile(
             "["
             u"\U0001F600-\U0001F64F"  # Emoticons
@@ -128,12 +128,15 @@ class OutputManager:
         return emoji_pattern.sub(r'', text)
 
     def console_update(self, text: Union[str, RenderableType]):
-        if isinstance(text, str):
-            text = Text.from_ansi(text)
         try:
-            self.console.print(text)
-        except UnicodeEncodeError as e:
-            self.console.print(self.__remove_emojis(text))
+            if isinstance(text, str):
+                self.console.print(Text.from_ansi(text))
+            else:
+                self.console.print(text)
+        except UnicodeEncodeError:
+            if isinstance(text, str):
+                clean_text = self.__remove_emojis(text)
+                self.console.print(Text.from_ansi(clean_text))
 
     def spinner_update(self, text: str = None):
         if self.spinner.enabled:
