@@ -524,24 +524,24 @@ def convert_to_sitk(image: nibabel.Nifti1Image) -> SimpleITK.Image:
 def standardize_image(image_path: str, output_manager: system.OutputManager, standardization_output_path: Union[str, None]) -> SimpleITK.Image:
     image = nibabel.load(image_path)
     _, original_orientation = determine_orientation_code(image)
-    output_manager.log_update(f"   Image loaded. Orientation: {original_orientation}")
+    output_manager.log_update(f" - Image loaded. Orientation: {original_orientation}")
 
     image, orthonormalized = confirm_orthonormality(image)
     if orthonormalized:
         _, orthonormal_orientation = determine_orientation_code(image)
-        output_manager.log_update(f"   Image orthonormalized. Orientation: {orthonormal_orientation}")
+        output_manager.log_update(f"   - Image orthonormalized. Orientation: {orthonormal_orientation}")
     image, reoriented = confirm_orientation(image)
     if reoriented:
         _, reoriented_orientation = determine_orientation_code(image)
-        output_manager.log_update(f"   Image reoriented. Orientation: {reoriented_orientation}")
+        output_manager.log_update(f"   - Image reoriented. Orientation: {reoriented_orientation}")
     sitk_image = convert_to_sitk(image)
-    output_manager.log_update(f"   Image converted to SimpleITK.")
+    output_manager.log_update(f" - Image converted to SimpleITK.")
 
     processing_steps = [orthonormalized, reoriented]
     prefixes = ["orthonormal", "reoriented"]
 
     if standardization_output_path is not None and any(processing_steps):
-        output_manager.log_update(f"   Writing standardized image.")
+        output_manager.log_update(f" - Writing standardized image.")
         prefix = "_".join([prefix for processing_step, prefix in zip(processing_steps, prefixes) if processing_step])
         output_path = os.path.join(standardization_output_path, f"{prefix}_{os.path.basename(image_path)}")
         SimpleITK.WriteImage(sitk_image, output_path)
