@@ -488,14 +488,28 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
             SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
             output_manager.log_update(f"     - Prediction complete for {model_workflow.target_model} within {round((time.time() - model_time_start)/ 60, 1)} min.")
 
-            # ----------------------------------
-            # EXTRACT VOLUME STATISTICS
-            # ----------------------------------
-            output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting CT volume statistics for {subject_name} ({model_workflow.target_model})...')
+            # -----------------------------------------------
+            # EXTRACT VOLUME STATISTICS AND HOUNSFIELD UNITS
+            # -----------------------------------------------
+            output_manager.spinner_update(
+                f'[{subject_index + 1}/{number_of_subjects}] Extracting CT volume statistics for {subject_name} ({model_workflow.target_model})...')
             output_manager.log_update(f'     - Extracting volume statistics for {model_workflow.target_model}')
-            out_csv = os.path.join(stats_dir, model_workflow.target_model.multilabel_prefix + subject_name + '_ct_volume.csv')
-            image_processing.get_shape_statistics(resampled_segmentation, model_workflow.target_model, out_csv)
-            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT volume extracted for {subject_name}! {constants.ANSI_RESET}')
+            out_vol_stats_csv = os.path.join(stats_dir,
+                                             model_workflow.target_model.multilabel_prefix + subject_name + '_ct_volume.csv')
+            image_processing.get_shape_statistics(resampled_segmentation, model_workflow.target_model,
+                                                  out_vol_stats_csv)
+            output_manager.spinner_update(
+                f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT volume extracted for {subject_name}! {constants.ANSI_RESET}')
+            time.sleep(1)
+            output_manager.spinner_update(
+            f'[{subject_index + 1}/{number_of_subjects}] Extracting CT hounsfield statistics for {subject_name} ({model_workflow.target_model})...')
+            output_manager.log_update(f'     - Extracting hounsfield statistics for {model_workflow.target_model}')
+            out_hu_stats_csv = os.path.join(stats_dir,
+                                        model_workflow.target_model.multilabel_prefix + subject_name + '_ct_hu_values.csv')
+            image_processing.get_intensity_statistics(image, resampled_segmentation, model_workflow.target_model,
+                                                  out_hu_stats_csv)
+            output_manager.spinner_update(
+            f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT hounsfield statistics extracted for {subject_name}! {constants.ANSI_RESET}')
             time.sleep(1)
 
             # ----------------------------------
