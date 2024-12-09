@@ -5,7 +5,7 @@ import site
 from moosez import file_utilities
 
 
-def add_custom_trainers_to_local_nnunetv2():
+def add_custom_trainers_to_local_nnunetv2() -> str:
     # Locate the site-packages directory
     site_packages = site.getsitepackages()[0]
 

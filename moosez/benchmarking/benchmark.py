@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 import os
 import numpy
 import threading
+from typing import Union, Tuple, List, Dict
 
 
 class PerformanceObserver:
-    def __init__(self, image: str | None = None, model: str | None = None, polling_rate: float = 0.1):
+    def __init__(self, image: Union[str, None] = None, model: Union[str, None] = None, polling_rate: float = 0.1):
         self.monitoring = False
         self.polling_rate = polling_rate
         self.monitoring_thread = None
@@ -48,7 +49,7 @@ class PerformanceObserver:
                 continue
         return memory_usage / (1024 * 1024)  # Convert to MB
 
-    def __monitor_memory_usage(self, interval):
+    def __monitor_memory_usage(self, interval: float):
         while self.monitoring:
             current_time = time.time() - self.monitoring_start_time
             current_memory_MB = self.__get_memory_usage_of_process_tree()
@@ -114,7 +115,7 @@ class PerformanceObserver:
         plt.savefig(os.path.join(path, f'performance_plot.png'))
         plt.close()
 
-    def get_peak_resources(self) -> list:
+    def get_peak_resources(self) -> List:
         image_name = os.path.basename(self.metadata_image)
         model_name = self.metadata_model
         if self.metadata_image_size is not None and isinstance(self.metadata_image_size, (list, tuple)):

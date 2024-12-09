@@ -2,6 +2,7 @@ import os
 import json
 import zipfile
 import requests
+from typing import Union, Tuple, List, Dict
 from moosez import system
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, FILE_NAME_DATASET_JSON,
                               FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
@@ -158,7 +159,7 @@ class Model:
 
         return expected_modalities, expected_prefixes
 
-    def __get_configuration_folders(self, output_manager: system.OutputManager) -> list[str]:
+    def __get_configuration_folders(self, output_manager: system.OutputManager) -> List[str]:
         items = os.listdir(self.directory)
         folders = [item for item in items if not item.startswith(".") and item.count("__") == 2 and os.path.isdir(os.path.join(self.directory, item))]
 
@@ -170,12 +171,12 @@ class Model:
 
         return folders
 
-    def __get_model_configuration(self) -> tuple[str, str, str]:
+    def __get_model_configuration(self) -> Tuple[str, str, str]:
         model_configuration_folder = os.path.basename(self.configuration_directory)
         trainer, planner, resolution_configuration = model_configuration_folder.split("__")
         return trainer, planner, resolution_configuration
 
-    def __get_model_identifier_segments(self) -> tuple[str, str, str]:
+    def __get_model_identifier_segments(self) -> Tuple[str, str, str]:
         segments = self.model_identifier.split('_')
 
         imaging_type = segments[0]
@@ -188,7 +189,7 @@ class Model:
 
         return imaging_type, modality, region
 
-    def __get_model_data(self) -> tuple[dict, dict]:
+    def __get_model_data(self) -> Tuple[Dict, Dict]:
         dataset_json_path = os.path.join(self.configuration_directory, FILE_NAME_DATASET_JSON)
         plans_json_path = os.path.join(self.configuration_directory, FILE_NAME_PLANS_JSON)
         try:
@@ -246,7 +247,7 @@ class Model:
         output_manager.log_update(f"    - {self.model_identifier} - setup complete.")
         output_manager.console_update(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")
 
-    def __get_organ_indices(self) -> dict[int, str]:
+    def __get_organ_indices(self) -> Dict[int, str]:
         labels = self.dataset.get('labels', {})
         return {int(value): key for key, value in labels.items() if value != "0"}
 
@@ -306,7 +307,7 @@ class Model:
 
 class ModelWorkflow:
     def __init__(self, model_identifier: str, output_manager: system.OutputManager):
-        self.workflow: list[Model] = []
+        self.workflow: List[Model] = []
         self.__construct_workflow(model_identifier, output_manager)
         if self.workflow:
             self.initial_desired_spacing = self.workflow[0].voxel_spacing
@@ -331,11 +332,11 @@ class ModelWorkflow:
         return " -> ".join([model.model_identifier for model in self.workflow])
 
 
-def construct_model_routine(model_identifiers: str | list[str], output_manager: system.OutputManager) -> dict[tuple, list[ModelWorkflow]]:
+def construct_model_routine(model_identifiers: Union[str, List[str]], output_manager: system.OutputManager) -> Dict[tuple, List[ModelWorkflow]]:
     if isinstance(model_identifiers, str):
         model_identifiers = [model_identifiers]
 
-    model_routine: dict = {}
+    model_routine: Dict = {}
     output_manager.log_update(' SETTING UP MODEL WORKFLOWS:')
     for model_identifier in model_identifiers:
         output_manager.log_update(' - Model name: ' + model_identifier)

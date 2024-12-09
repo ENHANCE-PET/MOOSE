@@ -2,11 +2,12 @@
 import os
 from pathlib import Path
 import requests
+from typing import Union
 from moosez import constants
 from moosez import system
 
 
-def download_enhance_data(download_directory: str | None, output_manager: system.OutputManager):
+def download_enhance_data(download_directory: Union[str, None], output_manager: system.OutputManager):
 
     output_manager.log_update(f"    - Downloading ENHANCE 1.6k data")
     if not download_directory:

@@ -30,6 +30,7 @@ import numpy
 import pandas as pd
 import multiprocessing as mp
 import concurrent.futures
+from typing import Union, Tuple, List, Dict
 from moosez import constants
 from moosez import download
 from moosez import file_utilities
@@ -300,8 +301,8 @@ def main():
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
 
 
-def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | SimpleITK.Image,
-          model_names: str | list[str], output_dir: str = None, accelerator: str = None) -> tuple[list[str] | list[SimpleITK.Image] | list[numpy.ndarray], list[models.Model]]:
+def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]], SimpleITK.Image],
+          model_names: Union[str, List[str]], output_dir: str = None, accelerator: str = None) -> Tuple[Union[List[str], List[SimpleITK.Image], List[numpy.ndarray]], List[models.Model]]:
     """
     Execute the MOOSE 3.0 image segmentation process.
 
@@ -403,8 +404,8 @@ def moose(input_data: str | tuple[numpy.ndarray, tuple[float, float, float]] | S
     return generated_segmentations, used_models
 
 
-def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_routine: dict, accelerator: str,
-                  output_manager: system.OutputManager | None, benchmark: bool = False):
+def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_routine: Dict, accelerator: str,
+                  output_manager: Union[system.OutputManager, None], benchmark: bool = False):
     # SETTING UP DIRECTORY STRUCTURE
     subject_name = os.path.basename(subject)
 
@@ -469,7 +470,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
 
                 existing_intensities = numpy.unique(segmentation_array)
                 if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
-                    output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Organ to crop from not in initial FOV...')
+                    output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: organ to crop from not in initial FOV. No segmentation result ({model_workflow.target_model}) for this subject.')
                     output_manager.log_update("     - Organ to crop from not in initial FOV.")
                     performance_observer.time_phase()
                     continue

@@ -23,14 +23,14 @@ import os
 import re
 import shutil
 import unicodedata
-
 import SimpleITK
 import dicom2nifti
 import pydicom
+from typing import Union, Dict
 from moosez import system
 
 
-def non_nifti_to_nifti(input_path: str, output_manager: system.OutputManager, output_directory: str = None) -> None:
+def non_nifti_to_nifti(input_path: str, output_manager: system.OutputManager, output_directory: Union[str, None] = None) -> None:
     """
     Converts any image format known to ITK to NIFTI
 
@@ -170,7 +170,7 @@ def is_dicom_file(filename: str) -> bool:
         return False
 
 
-def create_dicom_lookup(dicom_dir: str) -> dict:
+def create_dicom_lookup(dicom_dir: str) -> Dict:
     """
     Create a lookup dictionary from DICOM files.
 
@@ -211,7 +211,7 @@ def create_dicom_lookup(dicom_dir: str) -> dict:
     return dicom_info
 
 
-def rename_nifti_files(nifti_dir: str, dicom_info: dict) -> None:
+def rename_nifti_files(nifti_dir: str, dicom_info: Dict) -> None:
     """
     Rename NIfTI files based on a lookup dictionary.
 

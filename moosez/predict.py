@@ -20,6 +20,7 @@ import dask
 import torch
 import numpy as np
 import SimpleITK
+from typing import Tuple, List, Dict, Iterator
 from moosez import models
 from moosez import image_processing
 from moosez import system
@@ -44,7 +45,7 @@ def initialize_predictor(model: models.Model, accelerator: str) -> nnUNetPredict
 
 
 @dask.delayed
-def process_case(preprocessor, chunk: np.ndarray, chunk_properties: dict, predictor: nnUNetPredictor, location: tuple) -> dict:
+def process_case(preprocessor, chunk: np.ndarray, chunk_properties: Dict, predictor: nnUNetPredictor, location: Tuple) -> Dict:
     data, seg = preprocessor.run_case_npy(chunk,
                                           None,
                                           chunk_properties,
@@ -59,10 +60,15 @@ def process_case(preprocessor, chunk: np.ndarray, chunk_properties: dict, predic
     return {'data': data_tensor, 'data_properties': chunk_properties, 'ofile': None, 'location': location}
 
 
-def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: dict, predictor: nnUNetPredictor) -> (iter, list):
+def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: Dict, predictor: nnUNetPredictor, output_manager: system.OutputManager) -> Tuple[Iterator, List[Dict]]:
     overlap_per_dimension = (0, 20, 20, 20)
     splits = image_processing.ImageChunker.determine_splits(image_array)
     chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, overlap_per_dimension)
+
+    if len(chunks) == 1:
+        output_manager.log_update(f"     - Image below chunking threshold. Single chunk of size: {'x'.join(map(str, chunks[0].shape))}")
+    else:
+        output_manager.log_update(f"     - Image split into {len(chunks)} chunks of size: {'x'.join(map(str, chunks[0].shape))}")
 
     preprocessor = predictor.configuration_manager.preprocessor_class(verbose=predictor.verbose)
 
@@ -85,15 +91,13 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model,
         image_properties = {
             'spacing': model.voxel_spacing
         }
-        splits = image_processing.ImageChunker.determine_splits(image_array)
-        output_manager.log_update(f"     - Image chunked into {'x'.join(map(str, splits))} chunks")
 
-        iterator, chunk_locations = preprocessing_iterator_from_array(image_array, image_properties, predictor)
+        iterator, chunk_locations = preprocessing_iterator_from_array(image_array, image_properties, predictor, output_manager)
         segmentations = predictor.predict_from_data_iterator(iterator)
-        output_manager.log_update(f"     - Retrieved {len(segmentations)} segmentations")
+        output_manager.log_update(f"     - Retrieved {len(segmentations)} chunks")
         segmentations = [segmentation[None, ...] for segmentation in segmentations]
         combined_segmentations = image_processing.ImageChunker.chunks_to_array(segmentations, chunk_locations, image_array.shape)
-        output_manager.log_update(f"     - Combined them to {'x'.join(map(str, combined_segmentations.shape))} array")
+        output_manager.log_update(f"     - Combined them to an {'x'.join(map(str, combined_segmentations.shape))} array")
 
     return np.squeeze(combined_segmentations)
 

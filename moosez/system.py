@@ -13,6 +13,7 @@ from rich.console import Console, RenderableType
 from rich.table import Table
 from rich.text import Text
 from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
+from typing import Union, Tuple, List
 from moosez.constants import VERSION, ANSI_VIOLET, ANSI_RESET
 
 
@@ -70,7 +71,7 @@ class OutputManager:
         progress_bar = Progress(console=self.console)
         return progress_bar
 
-    def create_table(self, header: list[str], styles: list[str] | None = None) -> Table:
+    def create_table(self, header: List[str], styles: Union[List[str], None] = None) -> Table:
         table = Table()
         if styles is None:
             styles = [None] * len(header)
@@ -78,7 +79,7 @@ class OutputManager:
             table.add_column(header, style = style)
         return table
 
-    def configure_logging(self, log_file_directory: str | None):
+    def configure_logging(self, log_file_directory: Union[str, None]):
         if not self.verbose_log or self.logger:
             return
 
@@ -108,12 +109,12 @@ class OutputManager:
         if self.verbose_log and self.logger:
             self.logger.info(text)
 
-    def console_update(self, text: str | RenderableType):
+    def console_update(self, text: Union[str, RenderableType]):
         if isinstance(text, str):
             text = Text.from_ansi(text)
         self.console.print(text)
 
-    def spinner_update(self, text: str = None):
+    def spinner_update(self, text: str):
         if self.spinner.enabled:
             self.spinner.text = text
 
@@ -121,13 +122,17 @@ class OutputManager:
         if self.spinner.enabled:
             self.spinner.stop()
 
-    def spinner_start(self, text: str = None):
+    def spinner_start(self, text: str):
         if self.spinner.enabled:
             self.spinner.start(text)
 
-    def spinner_succeed(self, text: str = None):
+    def spinner_succeed(self, text: str):
         if self.spinner.enabled:
             self.spinner.succeed(text)
+
+    def spinner_warn(self, text: str):
+        if self.spinner.enabled:
+            self.spinner.warn(text)
 
     @contextmanager
     def manage_nnUNet_output(self):
@@ -181,7 +186,7 @@ class OutputManager:
         self.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
 
-def check_device(output_manager: OutputManager = OutputManager(False, False)) -> tuple[str, int | None]:
+def check_device(output_manager: OutputManager = OutputManager(False, False)) -> Tuple[str, Union[int, None]]:
     """
     This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
 

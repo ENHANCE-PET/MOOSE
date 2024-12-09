@@ -18,12 +18,13 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
+from typing import Tuple, List, Dict
 from moosez import constants
 from moosez import models
 from moosez import system
 
 
-def determine_model_expectations(model_routine: dict[tuple, list[models.ModelWorkflow]], output_manager: system.OutputManager) -> list:
+def determine_model_expectations(model_routine: Dict[Tuple, List[models.ModelWorkflow]], output_manager: system.OutputManager) -> List:
     """
     Display expected modality for the model.
 
@@ -31,7 +32,7 @@ def determine_model_expectations(model_routine: dict[tuple, list[models.ModelWor
     'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
 
     :param model_routine: The model routine
-    :type model_routine: dict[tuple, list[models.ModelWorkflow]]
+    :type model_routine: Dict[Tuple, List[models.ModelWorkflow]]
     :param output_manager: The output manager
     :type output_manager: system.OutputManager
     :return: A list of modalities.
@@ -75,7 +76,7 @@ def determine_model_expectations(model_routine: dict[tuple, list[models.ModelWor
     return required_modalities
 
 
-def select_moose_compliant_subjects(subject_paths: list[str], modality_tags: list[str], output_manager: system.OutputManager) -> list[str]:
+def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: List[str], output_manager: system.OutputManager) -> List[str]:
     """
     Selects the subjects that have the files that have names that are compliant with the moosez.
 
