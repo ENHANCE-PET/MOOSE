@@ -114,7 +114,7 @@ class OutputManager:
             text = Text.from_ansi(text)
         self.console.print(text)
 
-    def spinner_update(self, text: str = None):
+    def spinner_update(self, text: str):
         if self.spinner.enabled:
             self.spinner.text = text
 
@@ -122,13 +122,17 @@ class OutputManager:
         if self.spinner.enabled:
             self.spinner.stop()
 
-    def spinner_start(self, text: str = None):
+    def spinner_start(self, text: str):
         if self.spinner.enabled:
             self.spinner.start(text)
 
-    def spinner_succeed(self, text: str = None):
+    def spinner_succeed(self, text: str):
         if self.spinner.enabled:
             self.spinner.succeed(text)
+
+    def spinner_warn(self, text: str):
+        if self.spinner.enabled:
+            self.spinner.warn(text)
 
     @contextmanager
     def manage_nnUNet_output(self):

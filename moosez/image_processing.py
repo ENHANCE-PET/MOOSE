@@ -249,7 +249,7 @@ class ImageChunker:
         return image_chunks, positions
 
     @staticmethod
-    def chunks_to_array(image_chunks: List[np.ndarray], image_chunk_positions: Dict, final_shape: Union[List[int], Tuple[int, ...]]) -> np.ndarray:
+    def chunks_to_array(image_chunks: List[np.ndarray], image_chunk_positions: List[Dict], final_shape: Union[List[int], Tuple[int, ...]]) -> np.ndarray:
         final_arr = np.empty(final_shape, dtype=image_chunks[0].dtype)
         for image_chunk, image_chunk_position in zip(image_chunks, image_chunk_positions):
             interior_region = image_chunk[image_chunk_position['interior_slice']]

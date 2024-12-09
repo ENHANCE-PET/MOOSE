@@ -470,7 +470,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
 
                 existing_intensities = numpy.unique(segmentation_array)
                 if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
-                    output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Organ to crop from not in initial FOV...')
+                    output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] Organ to crop from not in initial FOV. No segmentation result for this subject.')
                     output_manager.log_update("     - Organ to crop from not in initial FOV.")
                     performance_observer.time_phase()
                     continue
