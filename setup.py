@@ -34,7 +34,7 @@ setup(
         'acvl-utils==0.2',
         'nnunetv2',
         'halo~=0.0.31',
-        'SimpleITK~=2.2.1',
+        'SimpleITK',
         'pydicom~=2.2.2',
         'argparse~=1.4.0',
         'numpy<2.0',
