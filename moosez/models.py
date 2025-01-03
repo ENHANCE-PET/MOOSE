@@ -2,6 +2,7 @@ import os
 import json
 import zipfile
 import requests
+import shutil
 from typing import Union, Tuple, List, Dict
 from moosez import system
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, FILE_NAME_DATASET_JSON,
