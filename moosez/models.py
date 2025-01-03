@@ -227,8 +227,8 @@ class Model:
             # If the existing folder's URL doesn't match the new URL, remove folder
             if old_url != self.url:
                 output_manager.console_update(
-                    f" Detected URL mismatch or missing version for '{self.model_identifier}'. "
-                    "Removing old model folder and redownloading..."
+                    f" Model version mismatch detected for '{self.model_identifier}'. Removing outdated model and downloading the latest model..."
+
                 )
                 shutil.rmtree(self.directory, ignore_errors=True)
             else:
@@ -246,7 +246,7 @@ class Model:
             os.makedirs(system.MODELS_DIRECTORY_PATH)
 
         if not self.url:
-            raise ValueError(f"No URL specified for model '{self.model_identifier}'.")
+            raise ValueError(f" No URL specified for model '{self.model_identifier}'.")
 
         output_manager.log_update(f"    - Downloading {self.model_identifier}")
         download_file_name = os.path.basename(self.url)
@@ -255,7 +255,7 @@ class Model:
         response = requests.get(self.url, stream=True)
         if response.status_code != 200:
             output_manager.log_update(f"    X Failed to download model from {self.url}")
-            raise Exception(f"Failed to download model from {self.url}")
+            raise Exception(f" Failed to download model from {self.url}")
 
         total_size = int(response.headers.get("Content-Length", 0))
         chunk_size = 1024 * 10
