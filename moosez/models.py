@@ -227,7 +227,7 @@ class Model:
             # If the existing folder's URL doesn't match the new URL, remove folder
             if old_url != self.url:
                 output_manager.console_update(
-                    f"Detected URL mismatch or missing version for '{self.model_identifier}'. "
+                    f" Detected URL mismatch or missing version for '{self.model_identifier}'. "
                     "Removing old model folder and redownloading..."
                 )
                 shutil.rmtree(self.directory, ignore_errors=True)
