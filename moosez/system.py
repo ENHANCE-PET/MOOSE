@@ -6,6 +6,7 @@ import os
 import sys
 import emoji
 import pyfiglet
+import importlib.metadata
 from halo import Halo
 from datetime import datetime
 from contextlib import contextmanager, redirect_stdout, redirect_stderr
@@ -149,8 +150,9 @@ class OutputManager:
 
         :return: None
         """
+        version = importlib.metadata.version("moosez")
         self.console_update(' ')
-        result = ANSI_VIOLET + pyfiglet.figlet_format(" MOOSE 3.0", font="smslant").rstrip() + ANSI_RESET
+        result = ANSI_VIOLET + pyfiglet.figlet_format(f" MOOSE {version}", font="smslant").rstrip() + ANSI_RESET
         text = ANSI_VIOLET + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of" \
                              " PET imaging together." + ANSI_RESET
         self.console_update(result)
