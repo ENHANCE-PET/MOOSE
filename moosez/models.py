@@ -124,6 +124,11 @@ MODEL_METADATA = {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_fat_31082023.zip",
         KEY_FOLDER_NAME: "Dataset777_Fat",
         KEY_LIMIT_FOV: None
+    },
+    "clin_ct_dental": {
+        KEY_URL: "https://model.s.mdforge.com/Dataset112_DentalSegmentator_v100_moose.zip",
+        KEY_FOLDER_NAME: "Dataset112_DentalSegmentator_v100",
+        KEY_LIMIT_FOV: None
     }
 }
 
