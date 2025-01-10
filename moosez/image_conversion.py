@@ -26,11 +26,13 @@ import unicodedata
 import SimpleITK
 import dicom2nifti
 import pydicom
+import multiprocessing as mp
+import concurrent.futures
 from typing import Union, Dict
 from moosez import system
 
 
-def non_nifti_to_nifti(input_path: str, output_manager: system.OutputManager, output_directory: Union[str, None] = None) -> None:
+def non_nifti_to_nifti(input_path: str, output_directory: Union[str, None] = None) -> None:
     """
     Converts any image format known to ITK to NIFTI
 
@@ -40,9 +42,6 @@ def non_nifti_to_nifti(input_path: str, output_manager: system.OutputManager, ou
         :param output_directory: Optional. The output directory to write the image to. If not specified, the
                                  output image will be written to the same directory as the input image.
         :type output_directory: str
-
-        :param output_manager: The OutputManager for handling console output
-        :type output_manager: system.OutputManager
         
         :return: None
         :rtype: None
@@ -57,7 +56,6 @@ def non_nifti_to_nifti(input_path: str, output_manager: system.OutputManager, ou
     """
 
     if not os.path.exists(input_path):
-        output_manager.console_update(f"Input path {input_path} does not exist.")
         return
 
     # Processing a directory
@@ -84,6 +82,20 @@ def non_nifti_to_nifti(input_path: str, output_manager: system.OutputManager, ou
     SimpleITK.WriteImage(output_image, output_image_path)
 
 
+def standardize_subject(parent_dir: str, subject: str):
+    subject_path = os.path.join(parent_dir, subject)
+    if os.path.isdir(subject_path):
+        images = os.listdir(subject_path)
+        for image in images:
+            image_path = os.path.join(subject_path, image)
+            path_is_valid = os.path.isdir(image_path) or os.path.isfile(image_path)
+            path_is_valid = path_is_valid and ("moosez" not in os.path.basename(image_path))
+            if path_is_valid:
+                non_nifti_to_nifti(image_path)
+    else:
+        return
+
+
 def standardize_to_nifti(parent_dir: str, output_manager: system.OutputManager) -> None:
     """
     Converts all non-NIfTI images in a parent directory and its subdirectories to NIfTI format.
@@ -102,19 +114,18 @@ def standardize_to_nifti(parent_dir: str, output_manager: system.OutputManager) 
     progress = output_manager.create_progress_bar()
     with progress:
         task = progress.add_task("[white] Processing subjects...", total=len(subjects))
-        for subject in subjects:
-            subject_path = os.path.join(parent_dir, subject)
-            if os.path.isdir(subject_path):
-                images = os.listdir(subject_path)
-                for image in images:
-                    image_path = os.path.join(subject_path, image)
-                    path_is_valid = os.path.isdir(image_path) | os.path.isfile(image_path)
-                    path_is_valid = path_is_valid & ("moosez" not in os.path.basename(image_path))
-                    if path_is_valid:
-                        non_nifti_to_nifti(image_path, output_manager)
-            else:
-                continue
-            progress.update(task, advance=1, description=f"[white] Processing {subject}...")
+
+        mp_context = mp.get_context('spawn')
+        max_workers = mp.cpu_count()//4 if mp.cpu_count() > 4 else 1
+        max_workers = max_workers if max_workers <= 32 else 32
+        output_manager.log_update(f"Number of workers: {max_workers}")
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers, mp_context=mp_context) as executor:
+            futures = []
+            for subject in subjects:
+                futures.append(executor.submit(standardize_subject, parent_dir, subject))
+
+            for _ in concurrent.futures.as_completed(futures):
+                progress.update(task, advance=1, description=f"[white] Processing {subject}...")
 
 
 def dcm2niix(input_path: str) -> str:
