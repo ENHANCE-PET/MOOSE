@@ -150,7 +150,7 @@ class Model:
 
         self.dataset, self.plans = self.__get_model_data()
         self.voxel_spacing = self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING)
-        self.voxel_spacing = tuple([self.voxel_spacing[i] for i in self.plans.get("transpose_forward")])
+        self.voxel_spacing = tuple([self.voxel_spacing[i] for i in self.plans.get("transpose_backward")])
       
         self.imaging_type, self.modality, self.region = self.__get_model_identifier_segments()
         self.multilabel_prefix = f"{self.imaging_type}_{self.modality}_{self.region}_"
