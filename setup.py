@@ -31,10 +31,11 @@ setup(
              ' preclinical-segmentation clinical-segmentation',
     packages=find_packages(),
     install_requires=[
+        'torch<2.6',
+        'SimpleITK',
         'acvl-utils==0.2',
         'nnunetv2',
         'halo~=0.0.31',
-        'SimpleITK',
         'pydicom~=2.2.2',
         'argparse~=1.4.0',
         'numpy<2.0',
