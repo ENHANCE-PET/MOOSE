@@ -41,7 +41,7 @@ MODEL_METADATA = {
         KEY_LIMIT_FOV: None
     },
     "clin_ct_peripheral_bones": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_05082024.zip",
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_peripheral_bones_22022025.zip",
         KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
         KEY_LIMIT_FOV: None
     },
