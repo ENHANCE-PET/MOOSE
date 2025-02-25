@@ -16,7 +16,7 @@ MODEL_METADATA = {
         KEY_LIMIT_FOV: None
     },
     "clin_ct_organs": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_05082024.zip",
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_25022025.zip",
         KEY_FOLDER_NAME: "Dataset123_Organs",
         KEY_LIMIT_FOV: None
     },
