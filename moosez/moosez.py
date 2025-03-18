@@ -357,8 +357,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names, output_manager)
 
-    status = add_custom_trainers_to_local_nnunetv2()
-    print(status)
+    add_custom_trainers_to_local_nnunetv2()
 
     if accelerator is None:
         accelerator, _ = system.check_device(output_manager)
