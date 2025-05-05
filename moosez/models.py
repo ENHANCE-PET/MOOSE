@@ -55,11 +55,6 @@ MODEL_METADATA = {
         KEY_FOLDER_NAME: "Dataset888_Cardiac",
         KEY_LIMIT_FOV: None
     },
-    "clin_ct_digestive": {
-        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_digestive_06102024.zip",
-        KEY_FOLDER_NAME: "Dataset999_Digestive",
-        KEY_LIMIT_FOV: None
-    },
     "preclin_ct_legs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_ct_legs_05122023.zip",
         KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles",
