@@ -1,4 +1,27 @@
+# Ignore all model files and training checkpoints
+models/
+**/models/
+**/nnunet_trained_models/
+**/*.pth
+**/*.ckpt
+
+# Ignore Python virtual environments
+.venv/
+env/
+venv/
+
+# Ignore Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.dylib
+*.egg-info/
 build/
-.idea/
-moosez.egg-info/
-.DS_Store
+dist/
+
+# Ignore large compiled libs accidentally tracked
+**/*.dylib
+**/*.so
+
+# Ignore log files
+*.log
