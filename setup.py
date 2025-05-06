@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='moosez',
-    version="3.0.15",
+    version="3.0.16",
     author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires',
     author_email='Lalith.shiyamsundar@meduniwien.ac.at',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
@@ -33,14 +33,11 @@ setup(
     install_requires=[
         'torch',
         'SimpleITK',
-        'acvl-utils==0.2',
         'nnunetv2',
         'halo~=0.0.31',
         'pydicom~=2.2.2',
         'argparse~=1.4.0',
         'numpy<2.0',
-        'mpire~=2.3.3',
-        'openpyxl~=3.0.9',
         'pyfiglet~=0.8.post1',
         'natsort~=8.1.0',
         'colorama~=0.4.6',

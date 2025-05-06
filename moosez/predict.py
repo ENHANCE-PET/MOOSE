@@ -46,18 +46,18 @@ def initialize_predictor(model: models.Model, accelerator: str) -> nnUNetPredict
 
 @dask.delayed
 def process_case(preprocessor, chunk: np.ndarray, chunk_properties: Dict, predictor: nnUNetPredictor, location: Tuple) -> Dict:
-    data, seg = preprocessor.run_case_npy(chunk,
-                                          None,
-                                          chunk_properties,
-                                          predictor.plans_manager,
-                                          predictor.configuration_manager,
-                                          predictor.dataset_json)
+    data, seg, prop = preprocessor.run_case_npy(chunk,
+                                                None,
+                                                chunk_properties,
+                                                predictor.plans_manager,
+                                                predictor.configuration_manager,
+                                                predictor.dataset_json)
 
     data_tensor = torch.from_numpy(data).contiguous()
     if predictor.device == "cuda":
         data_tensor = data_tensor.pin_memory()
 
-    return {'data': data_tensor, 'data_properties': chunk_properties, 'ofile': None, 'location': location}
+    return {'data': data_tensor, 'data_properties': prop, 'ofile': None, 'location': location}
 
 
 def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: Dict, predictor: nnUNetPredictor, output_manager: system.OutputManager) -> Tuple[Iterator, List[Dict]]:
