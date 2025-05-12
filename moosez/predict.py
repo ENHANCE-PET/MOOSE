@@ -64,17 +64,17 @@ def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties:
     overlap_per_dimension = (0, 20, 20, 20)
     splits = image_processing.ImageChunker.determine_splits(image_array)
     chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, overlap_per_dimension)
+    chunk_properties = [image_properties.copy() for _ in chunks]
 
-    if len(chunks) == 1:
-        output_manager.log_update(f"     - Image below chunking threshold. Single chunk of size: {'x'.join(map(str, chunks[0].shape))}")
-    else:
-        output_manager.log_update(f"     - Image split into {len(chunks)} chunks of size: {'x'.join(map(str, chunks[0].shape))}")
+    output_manager.log_update(f"     - Image split into {len(chunks)} chunks:")
+    for i, chunk in enumerate(chunks):
+        output_manager.log_update(f"       - {i + 1}: {'x'.join(map(str, chunk.shape))}")
 
     preprocessor = predictor.configuration_manager.preprocessor_class(verbose=predictor.verbose)
 
     delayed_tasks = []
-    for image_chunk, location in zip(chunks, locations):
-        delayed_task = dask.delayed(process_case)(preprocessor, image_chunk, image_properties, predictor, location)
+    for image_chunk, chunk_property, location in zip(chunks, chunk_properties, locations):
+        delayed_task = dask.delayed(process_case)(preprocessor, image_chunk, chunk_property, predictor, location)
         delayed_tasks.append(delayed_task)
 
     results = dask.compute(*delayed_tasks)
