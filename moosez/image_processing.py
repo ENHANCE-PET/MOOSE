@@ -25,6 +25,7 @@ import pandas as pd
 import scipy.ndimage as ndimage
 import nibabel
 import os
+import math
 from typing import Union, Tuple, List, Dict
 from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
 from moosez import models
@@ -181,9 +182,20 @@ def largest_connected_component(segmentation_array, intensities):
 class ImageChunker:
     @staticmethod
     def __compute_interior_indices(axis_length: int, number_of_chunks: int) -> Tuple[List[int], List[int]]:
-        start = [int(round(k * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
-        end = [int(round((k + 1) * axis_length / number_of_chunks)) for k in range(number_of_chunks)]
-        return start, end
+        chunk_base_size = axis_length // number_of_chunks
+        remaining_slices = axis_length % number_of_chunks
+
+        start_indices = []
+        end_indices = []
+        chunk_current_index = 0
+
+        for i in range(number_of_chunks):
+            chunk_size = chunk_base_size + (1 if i < remaining_slices else 0)
+            start_indices.append(chunk_current_index)
+            chunk_current_index += chunk_size
+            end_indices.append(chunk_current_index)
+
+        return start_indices, end_indices
 
     @staticmethod
     def __chunk_array_with_overlap(array_shape: Union[List[int], Tuple[int, ...]], splits_per_dimension: Union[List[int], Tuple[int, ...]], overlap_per_dimension: Union[List[int], Tuple[int, ...]]) -> List[Dict]:
@@ -263,12 +275,11 @@ class ImageChunker:
         splits = []
         for axis in image_shape:
             if axis == 1:
-                splits.append(1)
-                continue
-            split = round((axis // CHUNK_THRESHOLD_INFERRING) + 0.5)
-            if split == 0:
                 split = 1
+            else:
+                split = max(1, math.ceil(axis / CHUNK_THRESHOLD_INFERRING))
             splits.append(split)
+
         return tuple(splits)
 
 
