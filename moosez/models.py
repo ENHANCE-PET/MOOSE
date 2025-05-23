@@ -7,6 +7,7 @@ from typing import Union, Tuple, List, Dict
 from moosez import system
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, FILE_NAME_DATASET_JSON,
                               FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
+from moosez.mappings import SNOMED
 
 
 MODEL_METADATA = {
@@ -93,11 +94,6 @@ MODEL_METADATA = {
     "clin_ct_fast_organs": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_organs_6_02092024.zip",
         KEY_FOLDER_NAME: "Dataset145_Fast_organs",
-        KEY_LIMIT_FOV: None
-    },
-    "clin_pt_fdg_tumor": {
-        KEY_URL: None,
-        KEY_FOLDER_NAME: None,
         KEY_LIMIT_FOV: None
     },
     "clin_ct_body_composition": {
@@ -306,10 +302,18 @@ class Model:
             f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}"
         )
 
-
     def __get_organ_indices(self) -> Dict[int, str]:
         labels = self.dataset.get('labels', {})
         return {int(value): key for key, value in labels.items() if value != "0"}
+
+    def organ_indices_to_json(self, directory_path: str):
+        organ_indices_mappings = {}
+        for intensity, organ_name in self.organ_indices.items():
+            organ_indices_mappings[intensity] = {"name": organ_name,
+                                                 "SNOMED": SNOMED.moose_to_snomed[organ_name]}
+        file_path = os.path.join(directory_path, f"{self.multilabel_prefix}organ_indices.json")
+        with open(file_path, "w") as organ_indices_json_file:
+            json.dump({"organ_indices": organ_indices_mappings}, organ_indices_json_file, indent=4)
 
     def __get_number_training_data(self) -> str:
         nr_training_data = str(self.dataset.get('numTraining', "Not Available"))
