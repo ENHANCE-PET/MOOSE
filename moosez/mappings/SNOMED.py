@@ -68,44 +68,44 @@ moose_to_snomed = {
         "name": "Small intestinal structure" # checked
     },
     "autochthon_left": {
-        "ID": "24431003",
-        "name": "Erector spinae muscle structure"
+        "ID": "44947003", # checked, but might need reevaluation
+        "name": "Structure of erector spinae muscle" # checked, but might need reevaluation
     },
     "autochthon_right": {
-        "ID": "24431003",
-        "name": "Erector spinae muscle structure"
+        "ID": "44947003", # checked, but might need reevaluation
+        "name": "Structure of erector spinae muscle" # checked, but might need reevaluation
     },
     "gluteus_maximus_left": {
-        "ID": "17068006",
-        "name": "Gluteus maximus muscle structure"
+        "ID": "206007", # checked, but might need reevaluation
+        "name": "Structure of gluteus maximus muscle" # checked, but might need reevaluation
     },
     "gluteus_maximus_right": {
-        "ID": "17068006",
-        "name": "Gluteus maximus muscle structure"
+        "ID": "206007", # checked, but might need reevaluation
+        "name": "Structure of gluteus maximus muscle" # checked, but might need reevaluation
     },
     "gluteus_medius_left": {
-        "ID": "22458001",
-        "name": "Gluteus medius muscle structure"
+        "ID": "78333006", # checked, but might need reevaluation
+        "name": "Structure of gluteus medius muscle" # checked, but might need reevaluation
     },
     "gluteus_medius_right": {
-        "ID": "22458001",
-        "name": "Gluteus medius muscle structure"
+        "ID": "78333006", # checked, but might need reevaluation
+        "name": "Structure of gluteus medius muscle" # checked, but might need reevaluation
     },
     "gluteus_minimus_left": {
-        "ID": "68130003",
-        "name": "Gluteus minimus muscle structure"
+        "ID": "75297007", # checked, but might need reevaluation
+        "name": "Structure of gluteus minimus muscle" # checked, but might need reevaluation
     },
     "gluteus_minimus_right": {
-        "ID": "68130003",
-        "name": "Gluteus minimus muscle structure"
+        "ID": "75297007", # checked, but might need reevaluation
+        "name": "Structure of gluteus minimus muscle" # checked, but might need reevaluation
     },
     "iliopsoas_left": {
-        "ID": "13648007",
-        "name": "Iliopsoas muscle structure"
+        "ID": "68455001", # checked, but might need reevaluation
+        "name": "Structure of iliopsoas muscle" # checked, but might need reevaluation
     },
     "iliopsoas_right": {
-        "ID": "13648007",
-        "name": "Iliopsoas muscle structure"
+        "ID": "68455001", # checked, but might need reevaluation
+        "name": "Structure of iliopsoas muscle" # checked, but might need reevaluation
     },
     "adrenal_gland_left": {
         "ID": "12003004", # checked
@@ -184,12 +184,12 @@ moose_to_snomed = {
         "name": "Trachea structure" # checked
     },
     "carpal_left": {
-        "ID": "304301004",
-        "name": "Left carpal bone"
+        "ID": "719623009", # checked, but might need reevaluation
+        "name": "Bone structure of left carpus" # checked, but might need reevaluation
     },
     "carpal_right": {
-        "ID": "304300000",
-        "name": "Right carpal bone"
+        "ID": "719624003", # checked, but might need reevaluation
+        "name": "Bone structure of right carpus" # checked, but might need reevaluation
     },
     "clavicle_left": {
         "ID": "720617006", # checked
@@ -216,12 +216,12 @@ moose_to_snomed = {
         "name": "Entire right fibula" # checked
     },
     "fingers_left": {
-        "ID": "76803007",
-        "name": "Left finger structure"
+        "ID": "762870007", # checked, but might need reevaluation
+        "name": "Bone structure of phalanx of left hand" # checked, but might need reevaluation
     },
     "fingers_right": {
-        "ID": "76803008",
-        "name": "Right finger structure"
+        "ID": "762871006", # checked, but might need reevaluation
+        "name": "Bone structure of phalanx of right hand" # checked, but might need reevaluation
     },
     "humerus_left": {
         "ID": "719460003", # checked
@@ -232,20 +232,20 @@ moose_to_snomed = {
         "name": "Bone structure of right humerus" # checked
     },
     "metacarpal_left": {
-        "ID": "74670003",
-        "name": "Left metacarpal bone"
+        "ID": "762008002", # checked, but might need reevaluation
+        "name": "Structure of metacarpal bone of left hand" # checked, but might need reevaluation
     },
     "metacarpal_right": {
-        "ID": "74670004",
-        "name": "Right metacarpal bone"
+        "ID": "762009005", # checked, but might need reevaluation
+        "name": "Structure of metacarpal bone of right hand" # checked, but might need reevaluation
     },
     "metatarsal_left": {
-        "ID": "20790003",
-        "name": "Left metatarsal bone"
+        "ID": "726438004", # checked, but might need reevaluation
+        "name": "Structure of metatarsal bone of left foot" # checked, but might need reevaluation
     },
     "metatarsal_right": {
-        "ID": "20790004",
-        "name": "Right metatarsal bone"
+        "ID": "726439007", # checked, but might need reevaluation
+        "name": "Structure of metatarsal bone of right foot" # checked, but might need reevaluation
     },
     "patella_left": {
         "ID": "734208001", # checked
@@ -276,12 +276,12 @@ moose_to_snomed = {
         "name": "Entire bone of head" # checked
     },
     "tarsal_left": {
-        "ID": "773811008",
-        "name": "Left tarsal bone"
+        "ID": "108371006", # checked, but might need reevaluation
+        "name": "Bone structure of tarsus" # checked, but might need reevaluation
     },
     "tarsal_right": {
-        "ID": "773811009",
-        "name": "Right tarsal bone"
+        "ID": "108371006", # checked, but might need reevaluation
+        "name": "Bone structure of tarsus" # checked, but might need reevaluation
     },
     "tibia_left": {
         "ID": "719492002", # checked
@@ -292,12 +292,12 @@ moose_to_snomed = {
         "name": "Bone structure of right tibia" # checked
     },
     "toes_left": {
-        "ID": "771123005",
-        "name": "Left toe structure"
+        "ID": "720642002", # checked, but might need reevaluation
+        "name": "Bone structure of phalanx of left foot" # checked, but might need reevaluation
     },
     "toes_right": {
-        "ID": "771123006",
-        "name": "Right toe structure"
+        "ID": "720641009", # checked, but might need reevaluation
+        "name": "Bone structure of phalanx of right foot" # checked, but might need reevaluation
     },
     "ulna_left": {
         "ID": "719462006", # checked
@@ -536,7 +536,7 @@ moose_to_snomed = {
         "name": "Subcutaneous adipose tissue" # checked
     },
     "visceral_fat": {
-        "ID": "258158000",
-        "name": "Visceral adipose tissue structure"
+        "ID": "725273006", # checked, but might need reevaluation
+        "name": "Structure of adipose tissue of abdomen" # checked, but might need reevaluation
     }
 }
