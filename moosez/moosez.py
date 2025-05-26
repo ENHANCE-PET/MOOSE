@@ -546,6 +546,8 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
             segmentation_image_path = os.path.join(segmentations_dir, f"{model_workflow.target_model.multilabel_prefix}segmentation_{file_name}.nii.gz")
             output_manager.log_update(f'     - Writing segmentation for {model_workflow.target_model}')
             SimpleITK.WriteImage(resampled_segmentation, segmentation_image_path)
+            output_manager.log_update(f'     - Writing organ indices for {model_workflow.target_model}')
+            model_workflow.target_model.organ_indices_to_json(segmentations_dir)
             output_manager.log_update(f"     - Prediction complete for {model_workflow.target_model} within {round((time.time() - model_time_start)/ 60, 1)} min.")
 
             # -----------------------------------------------
