@@ -32,6 +32,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'torch',
+        'dynamic-network-architectures==0.3.1',
         'SimpleITK',
         'acvl-utils==0.2',
         'nnunetv2',
