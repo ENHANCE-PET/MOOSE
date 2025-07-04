@@ -111,24 +111,86 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 
 Voila! You're all set to explore with MOOSE 3.0.
 
-## For Macs powered by Apple Silicon (M series chips with MPS) 🍏
+## 🧠 Running MOOSE on Apple Silicon (M1/M2/M3 with MPS Backend)
 
-1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
+> Yes, it works. But you'll need to follow these steps carefully. Grab a ☕ or 🍺 — this may take a few minutes.
+
+1. Create and activate a virtual environment (We recommend Python 3.10 for stability)
+
    ```bash
-   python3.10 -m venv moose-env
+    python3.10 -m venv moose-env
+    source moose-env/bin/activate
    ```
 
-2. Activate your newly created environment.
+2. Install MOOSE and the MPS-compatible PyTorch fork
+
+   You’ll need a special PyTorch build tailored for Apple’s Metal backend (MPS), which doesn’t use CUDA.
+
    ```bash
-   source moose-env/bin/activate 
+    pip install moosez
+    pip uninstall torch # just to be sure.
+    git clone https://github.com/LalithShiyam/pytorch-mps.git
+    cd pytorch-mps
    ```
 
-3. Install MOOSE 3.0 and a special fork of PyTorch (MPS specific). You need to install the MPS specific branch for making MOOSE work with MPS
+4. Fix your CMake version (IMPORTANT ⚠️)
+
+   **Do not use CMake 4.x** — it will break the build due to compatibility issues with `protobuf`.
+
+   Check your version:
+
    ```bash
-   pip install moosez
-   pip install git+https://github.com/LalithShiyam/pytorch-mps.git
+    cmake --version
    ```
-Now you are ready to use MOOSE on Apple Silicon 🏎⚡️.
+
+   If it's **4.0 or higher**, downgrade to a compatible version (e.g., 3.29.2):
+
+   ```bash
+   pip uninstall cmake -y
+   pip install cmake==3.29.2
+   ```
+
+4. Build the custom PyTorch fork for MPS
+
+   This will build PyTorch without CUDA (which Apple Silicon doesn’t support anyway):
+  
+   ```bash
+   USE_CUDA=0 python setup.py develop --verbose 2>&1 | tee build.log
+   ```
+
+> ✅ This may take some time. If it completes without errors, you’re good to go.
+
+5. Patch `nnUNetTrainer.py` (one-time fix)
+
+   Due to differences in PyTorch exports, `nnUNet` may crash with:
+
+   ```
+   ImportError: cannot import name 'GradScaler' from 'torch'
+   ```
+
+To fix it:
+
+1. Open the following file inside your moose-env folder:
+
+   ```
+   ~/moose-env/lib/python3.10/site-packages/nnunetv2/training/nnUNetTrainer/nnUNetTrainer.py
+   ```
+
+2. Replace this line 43:
+
+   ```python
+   from torch import GradScaler
+   ```
+
+   with:
+
+   ```python
+   from torch.cuda.amp import GradScaler
+   ```
+✅ That’s it!
+
+Now you’re ready to use **MOOSE on Apple Silicon** with MPS acceleration. 🏎⚡
+If anything crashes, blame the silicon gods… or just open an issue. We're here to help.
 
 ## For Windows 🪟
 
