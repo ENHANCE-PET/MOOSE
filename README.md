@@ -128,7 +128,7 @@ Voila! You're all set to explore with MOOSE 3.0.
 
    ```bash
     pip install moosez
-    pip uninstall torch # just to be sure.
+    pip uninstall torch  # ensures clean install; avoids conflicts with Moose-installed version
     git clone https://github.com/LalithShiyam/pytorch-mps.git
     cd pytorch-mps
    ```
