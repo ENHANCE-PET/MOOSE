@@ -5,8 +5,8 @@ import requests
 import shutil
 from typing import Union, Tuple, List, Dict
 from moosez import system
-from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, FILE_NAME_DATASET_JSON,
-                              FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
+from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, DEFAULT_TRANSPOSE_IDENTITY,
+                              FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
 from moosez.mappings import SNOMED
 
 
@@ -147,7 +147,10 @@ class Model:
         self.trainer, self.planner, self.resolution_configuration = self.__get_model_configuration()
 
         self.dataset, self.plans = self.__get_model_data()
-        self.voxel_spacing = tuple(self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING))
+        self.transpose_forward = self.plans.get("transpose_forward", DEFAULT_TRANSPOSE_IDENTITY)
+        self.transpose_backward = self.plans.get("transpose_backward", DEFAULT_TRANSPOSE_IDENTITY)
+        self.voxel_spacing_t = tuple(self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING))
+        self.voxel_spacing = tuple([self.voxel_spacing_t[i] for i in self.transpose_backward])
         self.imaging_type, self.modality, self.region = self.__get_model_identifier_segments()
         self.multilabel_prefix = f"{self.imaging_type}_{self.modality}_{self.region}_"
 
@@ -229,19 +232,12 @@ class Model:
 
             # If the existing folder's URL doesn't match the new URL, remove folder
             if old_url != self.url:
-                output_manager.console_update(
-                    f" Model version mismatch detected for '{self.model_identifier}'. Removing outdated model and downloading the latest model..."
-
-                )
+                output_manager.console_update(f" Model version mismatch detected for '{self.model_identifier}'. Removing outdated model and downloading the latest model...")
                 shutil.rmtree(self.directory, ignore_errors=True)
             else:
                 # If the URL matches, we skip re-downloading
-                output_manager.log_update(
-                    f"    - A local instance of {self.model_identifier} has been detected."
-                )
-                output_manager.console_update(
-                    f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}"
-                )
+                output_manager.log_update(f"    - A local instance of {self.model_identifier} has been detected.")
+                output_manager.console_update(f"{ANSI_GREEN} A local instance of {self.model_identifier} has been detected. {ANSI_RESET}")
                 return
 
         # If folder doesn't exist or has been removed, proceed to download
@@ -272,9 +268,7 @@ class Model:
                         f.write(chunk)
                         progress.update(task, advance=chunk_size)
 
-        output_manager.log_update(
-            f"    - {self.model_identifier} ({self.folder_name}) downloaded."
-        )
+        output_manager.log_update(f"    - {self.model_identifier} ({self.folder_name}) downloaded.")
 
         # Extract
         progress = output_manager.create_file_progress_bar()
@@ -298,9 +292,7 @@ class Model:
             json.dump({"url": self.url}, vf)
 
         output_manager.log_update(f"    - {self.model_identifier} - setup complete.")
-        output_manager.console_update(
-            f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}"
-        )
+        output_manager.console_update(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")
 
     def __get_organ_indices(self) -> Dict[int, str]:
         labels = self.dataset.get('labels', {})
@@ -309,8 +301,12 @@ class Model:
     def organ_indices_to_json(self, directory_path: str):
         organ_indices_mappings = {}
         for intensity, organ_name in self.organ_indices.items():
-            organ_indices_mappings[intensity] = {"name": organ_name,
-                                                 "SNOMED": SNOMED.moose_to_snomed[organ_name]}
+            if organ_name in SNOMED.moose_to_snomed:
+                organ_indices_mappings[intensity] = {"name": organ_name,
+                                                     "SNOMED": SNOMED.moose_to_snomed[organ_name]}
+            else:
+                organ_indices_mappings[intensity] = {"name": organ_name,}
+
         file_path = os.path.join(directory_path, f"{self.multilabel_prefix}organ_indices.json")
         with open(file_path, "w") as organ_indices_json_file:
             json.dump({"organ_indices": organ_indices_mappings}, organ_indices_json_file, indent=4)
@@ -396,7 +392,7 @@ class ModelWorkflow:
         return " -> ".join([model.model_identifier for model in self.workflow])
 
 
-def construct_model_routine(model_identifiers: Union[str, List[str]], output_manager: system.OutputManager) -> Dict[tuple, List[ModelWorkflow]]:
+def construct_model_routine(model_identifiers: Union[str, List[str]], output_manager: system.OutputManager) -> Dict[Tuple[float, float, float], List[ModelWorkflow]]:
     if isinstance(model_identifiers, str):
         model_identifiers = [model_identifiers]
 

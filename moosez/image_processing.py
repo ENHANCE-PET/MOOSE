@@ -336,75 +336,15 @@ class ImageResampler:
         :rtype: da.array
         """
         sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
-        sitk_image_chunk.SetSpacing(input_spacing)
+        sitk_image_chunk.SetSpacing(reversed(input_spacing))
 
-        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
-                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
+        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, reversed(output_size), SimpleITK.Transform(),
+                                                  interpolation_method, sitk_image_chunk.GetOrigin(), reversed(output_spacing),
                                                   sitk_image_chunk.GetDirection(), 0.0,
                                                   sitk_image_chunk.GetPixelIDValue())
 
         resampled_array = SimpleITK.GetArrayFromImage(resampled_sitk_image)
         return resampled_array
-
-    @staticmethod
-    def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: str,
-                                      output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
-                                      output_size: Union[Tuple, None] = None) -> SimpleITK.Image:
-        """
-        Resamples a sitk_image using Dask and SimpleITK.
-
-        :param sitk_image: The SimpleITK image to be resampled.
-        :type sitk_image: sitk.Image
-        :param interpolation: nearest|linear|bspline.
-        :type interpolation: str
-        :param output_spacing: The desired output spacing of the resampled sitk_image.
-        :type output_spacing: tuple
-        :param output_size: The new size to use.
-        :type output_size: tuple
-        :return: The resampled sitk_image as SimpleITK.Image.
-        :rtype: sitk.Image
-        :raises ValueError: If the interpolation method is not supported.
-        """
-
-        resample_result = ImageResampler.resample_image_SimpleITK_DASK_array(sitk_image, interpolation, output_spacing, output_size)
-
-        resampled_image = SimpleITK.GetImageFromArray(resample_result)
-        resampled_image.SetSpacing(output_spacing)
-        resampled_image.SetOrigin(sitk_image.GetOrigin())
-        resampled_image.SetDirection(sitk_image.GetDirection())
-
-        return resampled_image
-
-    @staticmethod
-    def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
-                         output_image_path: Union[str, None] = None, is_label_image: bool = False) -> SimpleITK.Image:
-        """
-        Reslices an image to the same space as another image.
-
-        :param reference_image: The reference image.
-        :type reference_image: SimpleITK.Image
-        :param moving_image: The image to reslice to the reference image.
-        :type moving_image: SimpleITK.Image
-        :param output_image_path: Path to the resliced image. Default is None.
-        :type output_image_path: str
-        :param is_label_image: Determines if the image is a label image. Default is False.
-        :type is_label_image: bool
-        :return: The resliced image as SimpleITK.Image.
-        :rtype: SimpleITK.Image
-        """
-        resampler = SimpleITK.ResampleImageFilter()
-        resampler.SetReferenceImage(reference_image)
-
-        if is_label_image:
-            resampler.SetInterpolator(SimpleITK.sitkNearestNeighbor)
-        else:
-            resampler.SetInterpolator(SimpleITK.sitkLinear)
-
-        resampled_image = resampler.Execute(moving_image)
-        resampled_image = SimpleITK.Cast(resampled_image, SimpleITK.sitkInt32)
-        if output_image_path is not None:
-            SimpleITK.WriteImage(resampled_image, output_image_path)
-        return resampled_image
 
     @staticmethod
     def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
@@ -438,6 +378,64 @@ class ImageResampler:
                                dtype=np.float32)
 
         return result.compute()
+
+    @staticmethod
+    def resample_array_SimpleITK_DASK_array(image_array: np.ndarray, interpolation: str,
+                                            input_spacing: Tuple[float, float, float],
+                                            output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
+                                            output_size: Union[Tuple[float, float, float], None] = None) -> np.array:
+        if interpolation == 'nearest':
+            interpolation_method = SimpleITK.sitkNearestNeighbor
+        elif interpolation == 'linear':
+            interpolation_method = SimpleITK.sitkLinear
+        elif interpolation == 'bspline':
+            interpolation_method = SimpleITK.sitkBSpline
+        else:
+            raise ValueError('The interpolation method is not supported.')
+
+        input_size = image_array.shape
+        input_chunks = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size]
+        image_dask = da.from_array(image_array, chunks=input_chunks)
+
+        if output_size is not None:
+            output_spacing = [input_spacing[i] * (input_size[i] / output_size[i]) for i in range(len(input_size))]
+        output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_chunks))]
+
+        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
+                               output_spacing, output_chunks, chunks=output_chunks, meta=np.array(()), dtype=np.float32)
+
+        return result.compute()
+
+    @staticmethod
+    def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
+                         output_image_path: Union[str, None] = None, is_label_image: bool = False) -> SimpleITK.Image:
+        """
+        Reslices an image to the same space as another image.
+
+        :param reference_image: The reference image.
+        :type reference_image: SimpleITK.Image
+        :param moving_image: The image to reslice to the reference image.
+        :type moving_image: SimpleITK.Image
+        :param output_image_path: Path to the resliced image. Default is None.
+        :type output_image_path: str
+        :param is_label_image: Determines if the image is a label image. Default is False.
+        :type is_label_image: bool
+        :return: The resliced image as SimpleITK.Image.
+        :rtype: SimpleITK.Image
+        """
+        resampler = SimpleITK.ResampleImageFilter()
+        resampler.SetReferenceImage(reference_image)
+
+        if is_label_image:
+            resampler.SetInterpolator(SimpleITK.sitkNearestNeighbor)
+        else:
+            resampler.SetInterpolator(SimpleITK.sitkLinear)
+
+        resampled_image = resampler.Execute(moving_image)
+        resampled_image = SimpleITK.Cast(resampled_image, SimpleITK.sitkInt32)
+        if output_image_path is not None:
+            SimpleITK.WriteImage(resampled_image, output_image_path)
+        return resampled_image
 
     @staticmethod
     def resample_segmentation(reference_image: SimpleITK.Image, segmentation_image: SimpleITK.Image):

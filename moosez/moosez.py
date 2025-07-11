@@ -244,8 +244,8 @@ def main():
     output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
     output_manager.console_update(f' ')
 
-    custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     modalities = input_validation.determine_model_expectations(model_routine, output_manager)
+    custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
     accelerator, device_count = system.check_device(output_manager)
     if moose_instances is not None:
@@ -411,21 +411,22 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
 
     # Output manager and model routine setup
     output_manager = system.OutputManager(False, False)
+
+    add_custom_trainers_to_local_nnunetv2()
     model_path = system.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
     model_routine = models.construct_model_routine(model_names, output_manager)
 
-    add_custom_trainers_to_local_nnunetv2()
-
     if accelerator is None:
         accelerator, _ = system.check_device(output_manager)
 
+    image_array = SimpleITK.GetArrayFromImage(image)  # z,y,x
+    image_spacing = tuple(reversed(image.GetSpacing()))  # z,y,x
     # Perform segmentation
     generated_segmentations = []
     used_models = []
     for desired_spacing, model_workflows in model_routine.items():
-        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
-
+        resampled_array = image_processing.ImageResampler.resample_array_SimpleITK_DASK_array(image_array, 'bspline', image_spacing, desired_spacing)
         for model_workflow in model_workflows:
             segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, output_manager)
 
@@ -442,7 +443,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
                     image, segmentation_array, model_workflow, accelerator, output_manager)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-            segmentation.SetSpacing(desired_spacing)
+            segmentation.SetSpacing(tuple(reversed(desired_spacing)))
             segmentation.SetOrigin(image.GetOrigin())
             segmentation.SetDirection(image.GetDirection())
             resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
@@ -501,16 +502,18 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     performance_observer.record_phase("Loading Image")
     file_path = file_utilities.get_files(subject, 'CT_', ('.nii', '.nii.gz'))[0]
     image = image_processing.standardize_image(file_path, output_manager, moose_dir)
+    image_array = SimpleITK.GetArrayFromImage(image)
+    image_spacing = tuple(reversed(image.GetSpacing()))
     file_name = file_utilities.get_nifti_file_stem(file_path)
     pet_file = file_utilities.find_pet_file(subject)
     performance_observer.metadata_image_size = image.GetSize()
     performance_observer.time_phase()
 
     for desired_spacing, model_workflows in model_routine.items():
-        performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str,desired_spacing))}")
+        performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str, desired_spacing))}")
         resampling_time_start = time.time()
-        resampled_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
-        output_manager.log_update(f' - Resampling at {"x".join(map(str,desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
+        resampled_array = image_processing.ImageResampler.resample_array_SimpleITK_DASK_array(image_array, 'bspline', image_spacing, desired_spacing)
+        output_manager.log_update(f' - Resampling at {"x".join(map(str, desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
         performance_observer.time_phase()
 
         for model_workflow in model_workflows:
@@ -538,7 +541,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
                 segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager)
 
             segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-            segmentation.SetSpacing(desired_spacing)
+            segmentation.SetSpacing(tuple(reversed(desired_spacing)))
             segmentation.SetOrigin(image.GetOrigin())
             segmentation.SetDirection(image.GetDirection())
             resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
@@ -553,25 +556,18 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
             # -----------------------------------------------
             # EXTRACT VOLUME STATISTICS AND HOUNSFIELD UNITS
             # -----------------------------------------------
-            output_manager.spinner_update(
-                f'[{subject_index + 1}/{number_of_subjects}] Extracting CT volume statistics for {subject_name} ({model_workflow.target_model})...')
+            output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting CT volume statistics for {subject_name} ({model_workflow.target_model})...')
             output_manager.log_update(f'     - Extracting volume statistics for {model_workflow.target_model}')
-            out_vol_stats_csv = os.path.join(stats_dir,
-                                             model_workflow.target_model.multilabel_prefix + subject_name + '_ct_volume.csv')
-            image_processing.get_shape_statistics(resampled_segmentation, model_workflow.target_model,
-                                                  out_vol_stats_csv)
-            output_manager.spinner_update(
-                f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT volume extracted for {subject_name}! {constants.ANSI_RESET}')
+            out_vol_stats_csv = os.path.join(stats_dir, model_workflow.target_model.multilabel_prefix + subject_name + '_ct_volume.csv')
+            image_processing.get_shape_statistics(resampled_segmentation, model_workflow.target_model, out_vol_stats_csv)
+            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT volume extracted for {subject_name}! {constants.ANSI_RESET}')
             time.sleep(1)
-            output_manager.spinner_update(
-            f'[{subject_index + 1}/{number_of_subjects}] Extracting CT hounsfield statistics for {subject_name} ({model_workflow.target_model})...')
+
+            output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting CT hounsfield statistics for {subject_name} ({model_workflow.target_model})...')
             output_manager.log_update(f'     - Extracting hounsfield statistics for {model_workflow.target_model}')
-            out_hu_stats_csv = os.path.join(stats_dir,
-                                        model_workflow.target_model.multilabel_prefix + subject_name + '_ct_hu_values.csv')
-            image_processing.get_intensity_statistics(image, resampled_segmentation, model_workflow.target_model,
-                                                  out_hu_stats_csv)
-            output_manager.spinner_update(
-            f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT hounsfield statistics extracted for {subject_name}! {constants.ANSI_RESET}')
+            out_hu_stats_csv = os.path.join(stats_dir, model_workflow.target_model.multilabel_prefix + subject_name + '_ct_hu_values.csv')
+            image_processing.get_intensity_statistics(image, resampled_segmentation, model_workflow.target_model, out_hu_stats_csv)
+            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT hounsfield statistics extracted for {subject_name}! {constants.ANSI_RESET}')
             time.sleep(1)
 
             # ----------------------------------
