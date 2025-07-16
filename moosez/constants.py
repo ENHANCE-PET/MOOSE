@@ -8,7 +8,7 @@ This module contains the constants that are used in the moosez.
 .. versionadded:: 3.0.0
 """
 
-VERSION = "3.0.0"
+VERSION = "3.1.0"
 
 ALLOWED_MODALITIES = ['CT', 'PT', 'MR']
 
@@ -38,6 +38,7 @@ KEY_DESCRIPTION_MODALITY = "Modality"
 KEY_DESCRIPTION_IMAGING = "Imaging"
 DEFAULT_SPACING = (1.5, 1.5, 1.5)
 DEFAULT_TRANSPOSE_IDENTITY = [0, 1, 2]
+OVERLAP_PER_AXIS = (0, 20, 20, 20)
 FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
 

@@ -556,3 +556,26 @@ def standardize_image(image_path: str, output_manager: system.OutputManager, sta
         SimpleITK.WriteImage(sitk_image, output_path)
 
     return sitk_image
+
+
+
+def extract_labels_and_write(multilabel_image: SimpleITK.Image, model: models.Model, output_directory: str):
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    label_stats = SimpleITK.LabelStatisticsImageFilter()
+    label_stats.Execute(multilabel_image, multilabel_image)
+    unique_labels = label_stats.GetLabels()
+
+    for label in unique_labels:
+        if label == 0:
+            continue
+
+        if label not in model.organ_indices:
+            continue
+
+        label_mask = SimpleITK.BinaryThreshold(multilabel_image, lowerThreshold=label, upperThreshold=label, insideValue=1, outsideValue=0)
+
+        label_name = model.organ_indices[label]
+        file_path = os.path.join(output_directory, f"{label_name}.nii.gz")
+        SimpleITK.WriteImage(label_mask, file_path)

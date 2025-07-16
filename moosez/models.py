@@ -132,19 +132,19 @@ AVAILABLE_MODELS = MODEL_METADATA.keys()
 
 
 class Model:
-    def __init__(self, model_identifier: str, output_manager: system.OutputManager, override_directory: str = None):
+    def __init__(self, model_identifier: str, output_manager: system.OutputManager, base_directory: str = system.MODELS_DIRECTORY_PATH):
         self.model_identifier = model_identifier
         self.folder_name = MODEL_METADATA[self.model_identifier][KEY_FOLDER_NAME]
         self.url = MODEL_METADATA[self.model_identifier][KEY_URL]
         self.limit_fov = MODEL_METADATA[self.model_identifier][KEY_LIMIT_FOV]
-
-        base_model_dir = os.path.abspath(override_directory) if override_directory else system.MODELS_DIRECTORY_PATH
-        self.directory = os.path.join(base_model_dir, self.folder_name)
+        self.base_directory = base_directory
+        self.directory = os.path.join(self.base_directory, self.folder_name)
 
         self.__download(output_manager)
         self.configuration_folders = self.__get_configuration_folders(output_manager)
         self.configuration_directory = os.path.join(self.directory, self.configuration_folders[0])
         self.trainer, self.planner, self.resolution_configuration = self.__get_model_configuration()
+        self.folds = self.__get_model_folds()
 
         self.dataset, self.plans = self.__get_model_data()
         self.transpose_forward = self.plans.get("transpose_forward", DEFAULT_TRANSPOSE_IDENTITY)
@@ -182,6 +182,11 @@ class Model:
         model_configuration_folder = os.path.basename(self.configuration_directory)
         trainer, planner, resolution_configuration = model_configuration_folder.split("__")
         return trainer, planner, resolution_configuration
+
+    def __get_model_folds(self) -> Tuple[str, ...]:
+        folds_folders = [item for item in os.listdir(self.configuration_directory) if os.path.isdir(os.path.join(self.configuration_directory, item))]
+        folds = tuple([fold.replace("fold_", "") for fold in folds_folders])
+        return folds
 
     def __get_model_identifier_segments(self) -> Tuple[str, str, str]:
         segments = self.model_identifier.split('_')
@@ -241,15 +246,15 @@ class Model:
                 return
 
         # If folder doesn't exist or has been removed, proceed to download
-        if not os.path.exists(system.MODELS_DIRECTORY_PATH):
-            os.makedirs(system.MODELS_DIRECTORY_PATH)
+        if not os.path.exists(self.base_directory):
+            os.makedirs(self.base_directory)
 
         if not self.url:
             raise ValueError(f" No URL specified for model '{self.model_identifier}'.")
 
         output_manager.log_update(f"    - Downloading {self.model_identifier}")
         download_file_name = os.path.basename(self.url)
-        download_file_path = os.path.join(system.MODELS_DIRECTORY_PATH, download_file_name)
+        download_file_path = os.path.join(self.base_directory, download_file_name)
 
         response = requests.get(self.url, stream=True)
         if response.status_code != 200:
@@ -277,9 +282,7 @@ class Model:
                 total_size = sum(file.file_size for file in zip_ref.infolist())
                 task = progress.add_task(f"[white] Extracting {self.model_identifier}...", total=total_size)
                 for file in zip_ref.infolist():
-                    extract_root = os.path.dirname(self.directory)
-                    os.makedirs(extract_root, exist_ok=True)
-                    zip_ref.extract(file, extract_root)
+                    zip_ref.extract(file, self.base_directory)
                     progress.update(task, advance=file.file_size)
 
         output_manager.log_update(f"    - {self.model_identifier} extracted.")

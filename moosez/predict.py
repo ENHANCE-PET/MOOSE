@@ -24,6 +24,7 @@ from typing import Tuple, List, Dict, Iterator
 from moosez import models
 from moosez import image_processing
 from moosez import system
+from moosez import constants
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
 
@@ -40,7 +41,7 @@ def initialize_predictor(model: models.Model, accelerator: str) -> nnUNetPredict
     """
     device = torch.device(accelerator)
     predictor = nnUNetPredictor(allow_tqdm=False, device=device)
-    predictor.initialize_from_trained_model_folder(model.configuration_directory, use_folds=("all",))
+    predictor.initialize_from_trained_model_folder(model.configuration_directory, use_folds=model.folds)
     return predictor
 
 
@@ -54,16 +55,15 @@ def process_case(preprocessor, chunk: np.ndarray, chunk_properties: Dict, predic
                                                 predictor.dataset_json)
 
     data_tensor = torch.from_numpy(data).contiguous()
-    if predictor.device == "cuda":
+    if predictor.device.type == "cuda":
         data_tensor = data_tensor.pin_memory()
 
     return {'data': data_tensor, 'data_properties': prop, 'ofile': None, 'location': location}
 
 
 def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: Dict, predictor: nnUNetPredictor, output_manager: system.OutputManager) -> Tuple[Iterator, List[Dict]]:
-    overlap_per_dimension = (0, 20, 20, 20)
     splits = image_processing.ImageChunker.determine_splits(image_array)
-    chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, overlap_per_dimension)
+    chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, constants.OVERLAP_PER_AXIS)
     chunk_properties = [image_properties.copy() for _ in chunks]
 
     output_manager.log_update(f"     - Image split into {len(chunks)} chunks:")

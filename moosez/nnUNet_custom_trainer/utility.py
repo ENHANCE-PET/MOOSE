@@ -1,8 +1,7 @@
 import os
 import platform
 import site
-
-from moosez import file_utilities
+import shutil
 
 
 def add_custom_trainers_to_local_nnunetv2() -> str:
@@ -24,6 +23,6 @@ def add_custom_trainers_to_local_nnunetv2() -> str:
     if os.path.exists(target_file_path):
         return f'Custom trainer already installed: {target_file_path}.'
 
-    file_utilities.copy_file(source_file_path, target_file_path)
+    shutil.copy(source_file_path, target_file_path)
 
     return f"Custom trainer added to {target_file_path}"
