@@ -25,7 +25,7 @@ import numpy
 import pandas as pd
 import multiprocessing as mp
 import concurrent.futures
-from typing import Union, Tuple, List, Dict
+from typing import Union, Tuple, List, Iterator
 from moosez import constants
 from moosez import download
 from moosez import file_utilities
@@ -196,7 +196,7 @@ def main():
             if not models.Model.model_identifier_valid(model_name, output_manager):
                 output_manager.console_update(f"{constants.ANSI_RED} ✖ Invalid model: {model_name}{constants.ANSI_RESET}")
                 continue
-            models.Model(model_name, output_manager, override_directory=model_output_path)
+            models.Model(model_name, output_manager, base_directory=model_output_path)
 
         # Docker bind hint
         docker_bind = os.path.abspath(os.path.join(model_output_path, ".."))  # parent of nnunet_trained_models
@@ -229,7 +229,7 @@ def main():
     output_manager.console_update(f'')
     model_path = system.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
-    model_routine = models.construct_model_routine(model_names, output_manager)
+    model_workflows = models.construct_model_workflows(model_names, output_manager)
 
     # ----------------------------------
     # INPUT VALIDATION AND PREPARATION
@@ -242,7 +242,7 @@ def main():
     output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
     output_manager.console_update(f' ')
 
-    modalities = input_validation.determine_model_expectations(model_routine, output_manager)
+    modalities = input_validation.determine_model_expectations(model_workflows, output_manager)
     custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
     output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
     accelerator, device_count = system.check_device(output_manager)
@@ -310,7 +310,7 @@ def main():
         with concurrent.futures.ProcessPoolExecutor(max_workers=moose_instances, mp_context=mp_context) as executor:
             futures = []
             for i, (subject, accelerator) in enumerate(zip(moose_compliant_subjects, accelerator_assignments)):
-                futures.append(executor.submit(moose_subject, subject, i, num_subjects, model_routine,
+                futures.append(executor.submit(moose_subject, subject, i, num_subjects, model_workflows,
                                                accelerator, None, benchmark, single_labels))
 
             for future in concurrent.futures.as_completed(futures):
@@ -326,7 +326,7 @@ def main():
 
     else:
         for i, subject in enumerate(moose_compliant_subjects):
-            subject_performance = moose_subject(subject, i, num_subjects, model_routine,
+            subject_performance = moose_subject(subject, i, num_subjects, model_workflows,
                                                 accelerator, output_manager, benchmark, single_labels)
             if benchmark:
                 subject_performance_parameters.append(subject_performance)
@@ -413,7 +413,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     add_custom_trainers_to_local_nnunetv2()
     model_path = system.MODELS_DIRECTORY_PATH
     file_utilities.create_directory(model_path)
-    model_routine = models.construct_model_routine(model_names, output_manager)
+    model_workflows = models.construct_model_workflows(model_names, output_manager)
 
     if accelerator is None:
         accelerator, _ = system.check_device(output_manager)
@@ -424,7 +424,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     generated_segmentations = []
     used_models = []
 
-    for segmentation_image, model in run_workflows(image, model_routine, output_manager, performance_observer, accelerator, subjects_information):
+    for segmentation_image, model in run_workflows(image, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
         image_output = None
         if isinstance(input_data, str):  # Return file path if input was a file path
             if output_dir is None:
@@ -442,7 +442,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     return generated_segmentations, used_models
 
 
-def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_routine: Dict, accelerator: str,
+def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_workflows: List[models.ModelWorkflow], accelerator: str,
                   output_manager: Union[system.OutputManager, None], benchmark: bool = False, single_labels: bool = False):
     # SETTING UP DIRECTORY STRUCTURE
     subject_name = os.path.basename(subject)
@@ -453,10 +453,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     output_manager.log_update(' ')
     output_manager.log_update(f' SUBJECT: {subject_name}')
 
-    model_names = []
-    for workflows in model_routine.values():
-        for workflow in workflows:
-            model_names.append(workflow.target_model.model_identifier)
+    model_names = [model_workflow.target_model.model_identifier for model_workflow in model_workflows]
 
     performance_observer = PerformanceObserver(subject_name, ', '.join(model_names))
     subject_peak_performance = None
@@ -483,7 +480,8 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
 
     subjects_information = (subject, subject_index, number_of_subjects)
 
-    for segmentation_image, model in run_workflows(CT_image, model_routine, output_manager, performance_observer, accelerator, subjects_information):
+    for segmentation_image, model in run_workflows(CT_image, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
+        performance_observer.record_phase("Writing Images and Statistics")
         segmentation_image_path = os.path.join(segmentations_dir, f"{model.multilabel_prefix}segmentation_{CT_file_name}.nii.gz")
         output_manager.log_update(f'     - Writing segmentation for {model}')
         SimpleITK.WriteImage(segmentation_image, segmentation_image_path)
@@ -518,12 +516,12 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
         # EXTRACT PET ACTIVITY
         # ----------------------------------
         if PT_file_path is not None:
-            pet_image = SimpleITK.ReadImage(PT_file_path)
+            PT_image = SimpleITK.ReadImage(PT_file_path)
             output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting PET activity for {subject_name} ({model})...')
             output_manager.log_update(f'     - Extracting PET statistics for {model}')
-            resampled_multilabel_image = image_processing.ImageResampler.reslice_identity(pet_image, segmentation_image, is_label_image=True)
+            resampled_multilabel_image = image_processing.ImageResampler.reslice_identity(PT_image, segmentation_image, is_label_image=True)
             out_csv = os.path.join(stats_dir, model.multilabel_prefix + subject_name + '_pet_activity.csv')
-            image_processing.get_intensity_statistics(pet_image, resampled_multilabel_image, model, out_csv)
+            image_processing.get_intensity_statistics(PT_image, resampled_multilabel_image, model, out_csv)
             output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] PET activity extracted for {subject_name}! {constants.ANSI_RESET}')
             time.sleep(1)
 
@@ -546,51 +544,59 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     return subject_peak_performance
 
 
-def run_workflows(image: SimpleITK.Image, model_routine, output_manager, performance_observer, accelerator: str, subjects_information):
+def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]) -> Iterator[Tuple[SimpleITK.Image, models.Model]]:
     image_array = SimpleITK.GetArrayFromImage(image)
     image_array_spacing = image.GetSpacing()[::-1]
+
+    image_array_resampled = image_array
+    image_array_resampled_spacing = image_array_spacing
 
     performance_observer.metadata_image_size = image.GetSize()
     performance_observer.time_phase()
 
     subject_name, subject_index, number_of_subjects = subjects_information
 
-    for desired_spacing, model_workflows in model_routine.items():
-        performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str, desired_spacing))}")
-        resampling_time_start = time.time()
-        resampled_array = image_processing.ImageResampler.resample_array_SimpleITK_DASK_array(image_array, 'bspline', image_array_spacing, desired_spacing)
-        output_manager.log_update(f' - Resampling at {"x".join(map(str, desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
+    for model_workflow in model_workflows:
+        desired_spacing = model_workflow.initial_desired_spacing
+
+        if image_array_resampled_spacing != desired_spacing:
+            performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str, desired_spacing))}")
+            resampling_time_start = time.time()
+            image_array_resampled = image_processing.ImageResampler.resample_array_SimpleITK_DASK_array(image_array, 'bspline', image_array_spacing, desired_spacing)
+            image_array_resampled_spacing = desired_spacing
+            output_manager.log_update(f' - Resampling at {"x".join(map(str, desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
+            performance_observer.time_phase()
+
+        performance_observer.record_phase(f"Predicting: {model_workflow.target_model}")
+        model_time_start = time.time()
+        output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {model_workflow[0]}...')
+        output_manager.log_update(f'   - Model {model_workflow.target_model}')
+        segmentation_array = predict.predict_from_array_by_iterator(image_array_resampled, model_workflow[0], accelerator, output_manager)
+
+        if len(model_workflow) == 2:
+            inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
+            if isinstance(inference_fov_intensities, int):
+                inference_fov_intensities = [inference_fov_intensities]
+
+            existing_intensities = numpy.unique(segmentation_array)
+            if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
+                output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: organ to crop from not in initial FOV. No segmentation result ({model_workflow.target_model}) for this subject.')
+                output_manager.log_update("     - Organ to crop from not in initial FOV.")
+                performance_observer.time_phase()
+                continue
+
+            segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager)
+
+        output_manager.log_update(f"     - Prediction complete for {model_workflow.target_model} within {round((time.time() - model_time_start) / 60, 1)} min.")
         performance_observer.time_phase()
 
-        for model_workflow in model_workflows:
-            performance_observer.record_phase(f"Predicting: {model_workflow.target_model}")
-            model_time_start = time.time()
-            output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {model_workflow[0]}...')
-            output_manager.log_update(f'   - Model {model_workflow.target_model}')
-            segmentation_array = predict.predict_from_array_by_iterator(resampled_array, model_workflow[0], accelerator, output_manager)
+        segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+        segmentation.SetSpacing(desired_spacing[::-1])
+        segmentation.SetOrigin(image.GetOrigin())
+        segmentation.SetDirection(image.GetDirection())
+        resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
 
-            if len(model_workflow) == 2:
-                inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
-                if isinstance(inference_fov_intensities, int):
-                    inference_fov_intensities = [inference_fov_intensities]
-
-                existing_intensities = numpy.unique(segmentation_array)
-                if not all([intensity in existing_intensities for intensity in inference_fov_intensities]):
-                    output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: organ to crop from not in initial FOV. No segmentation result ({model_workflow.target_model}) for this subject.')
-                    output_manager.log_update("     - Organ to crop from not in initial FOV.")
-                    performance_observer.time_phase()
-                    continue
-
-                segmentation_array, desired_spacing = predict.cropped_fov_prediction_pipeline(image, segmentation_array, model_workflow, accelerator, output_manager)
-
-            output_manager.log_update(f"     - Prediction complete for {model_workflow.target_model} within {round((time.time() - model_time_start) / 60, 1)} min.")
-            segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-            segmentation.SetSpacing(tuple(reversed(desired_spacing)))
-            segmentation.SetOrigin(image.GetOrigin())
-            segmentation.SetDirection(image.GetDirection())
-            resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
-
-            yield resampled_segmentation, model_workflow.target_model
+        yield resampled_segmentation, model_workflow.target_model
 
 
 if __name__ == '__main__':

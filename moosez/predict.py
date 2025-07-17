@@ -70,7 +70,7 @@ def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties:
     for i, chunk in enumerate(chunks):
         output_manager.log_update(f"       - {i + 1}: {'x'.join(map(str, chunk.shape))}")
 
-    preprocessor = predictor.configuration_manager.preprocessor_class(verbose=predictor.verbose)
+    preprocessor = predictor.configuration_manager.preprocessor_class(verbose=True)
 
     delayed_tasks = []
     for image_chunk, chunk_property, location in zip(chunks, chunk_properties, locations):
@@ -102,13 +102,13 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model,
     return np.squeeze(combined_segmentations)
 
 
-def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.ModelWorkflow, accelerator, output_manager: system.OutputManager):
+def cropped_fov_prediction_pipeline(image: SimpleITK.Image, previous_segmentation: np.ndarray, workflow: models.ModelWorkflow, accelerator, output_manager: system.OutputManager):
     """
     Process segmentation by resampling, limiting FOV, and predicting.
 
     Parameters:
         image (SimpleITK.Image): The input image.
-        segmentation_array (np.array): The segmentation array to be processed.
+        previous_segmentation (np.array): The segmentation array to be processed.
         workflow (models.ModelWorkflow): List of routines where the second element contains model info.
         accelerator (any): The accelerator used for prediction.
         output_manager (output_manager: system.OutputManager): for console and logging.
@@ -123,7 +123,7 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.
     target_model_fov_information = target_model.limit_fov
 
     # Convert the segmentation array to SimpleITK image and set properties
-    to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+    to_crop_segmentation = SimpleITK.GetImageFromArray(previous_segmentation)
     to_crop_segmentation.SetOrigin(image.GetOrigin())
     to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
     to_crop_segmentation.SetDirection(image.GetDirection())
@@ -163,7 +163,7 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.
                                                                                    target_model_fov_information["largest_component_only"])
 
     # Expand the segmentation array to the original FOV
-    segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+    previous_segmentation = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
     # Return the segmentation array and spacing
-    return segmentation_array, desired_spacing
+    return previous_segmentation, desired_spacing

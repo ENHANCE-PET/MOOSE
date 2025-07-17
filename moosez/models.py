@@ -3,7 +3,7 @@ import json
 import zipfile
 import requests
 import shutil
-from typing import Union, Tuple, List, Dict
+from typing import Union, Tuple, List, Dict, Set
 from moosez import system
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, DEFAULT_TRANSPOSE_IDENTITY,
                               FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
@@ -124,6 +124,11 @@ MODEL_METADATA = {
     "clin_ct_dental": {
         KEY_URL: "https://model.s.mdforge.com/Dataset112_DentalSegmentator_v100_moose.zip",
         KEY_FOLDER_NAME: "Dataset112_DentalSegmentator_v100",
+        KEY_LIMIT_FOV: None
+    },
+    "clin_ct_spine":{
+        KEY_URL: None,
+        KEY_FOLDER_NAME: "Dataset000_SPINE",
         KEY_LIMIT_FOV: None
     }
 }
@@ -371,6 +376,8 @@ class Model:
 class ModelWorkflow:
     def __init__(self, model_identifier: str, output_manager: system.OutputManager):
         self.workflow: List[Model] = []
+        self.required_modalities: Set[str] = set()
+
         self.__construct_workflow(model_identifier, output_manager)
         if self.workflow:
             self.initial_desired_spacing = self.workflow[0].voxel_spacing
@@ -378,14 +385,15 @@ class ModelWorkflow:
 
     def __construct_workflow(self, model_identifier: str, output_manager: system.OutputManager):
         model = Model(model_identifier, output_manager)
+        self.required_modalities.add(model.modality)
         if model.limit_fov and isinstance(model.limit_fov, dict) and 'model_to_crop_from' in model.limit_fov:
             self.__construct_workflow(model.limit_fov["model_to_crop_from"], output_manager)
         self.workflow.append(model)
 
-    def __len__(self) -> len:
+    def __len__(self) -> int:
         return len(self.workflow)
 
-    def __getitem__(self, index) -> Model:
+    def __getitem__(self, index: int) -> Model:
         return self.workflow[index]
 
     def __iter__(self):
@@ -395,19 +403,17 @@ class ModelWorkflow:
         return " -> ".join([model.model_identifier for model in self.workflow])
 
 
-def construct_model_routine(model_identifiers: Union[str, List[str]], output_manager: system.OutputManager) -> Dict[Tuple[float, float, float], List[ModelWorkflow]]:
+def construct_model_workflows(model_identifiers: Union[str, List[str]], output_manager: system.OutputManager) -> List[ModelWorkflow]:
     if isinstance(model_identifiers, str):
         model_identifiers = [model_identifiers]
 
-    model_routine: Dict = {}
+    model_workflows: List[ModelWorkflow] = []
     output_manager.log_update(' SETTING UP MODEL WORKFLOWS:')
     for model_identifier in model_identifiers:
         output_manager.log_update(' - Model name: ' + model_identifier)
         model_workflow = ModelWorkflow(model_identifier, output_manager)
+        model_workflows.append(model_workflow)
 
-        if model_workflow.initial_desired_spacing in model_routine:
-            model_routine[model_workflow.initial_desired_spacing].append(model_workflow)
-        else:
-            model_routine[model_workflow.initial_desired_spacing] = [model_workflow]
+    model_workflows.sort(key=lambda model_workflow: model_workflow.initial_desired_spacing)
 
-    return model_routine
+    return model_workflows
