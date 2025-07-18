@@ -19,6 +19,7 @@ import os
 import argparse
 import time
 import SimpleITK
+import nibabel
 import colorama
 import emoji
 import numpy
@@ -475,8 +476,9 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     performance_observer.record_phase("Loading Image")
     CT_file_path = file_utilities.get_modality_file(subject, 'CT_')
     CT_file_name = file_utilities.get_nifti_file_stem(CT_file_path)
-    CT_image = image_processing.standardize_image(CT_file_path, output_manager, moose_dir)
-    PT_file_path = file_utilities.get_modality_file(subject, 'PT_')
+    CT_image = nibabel.load(CT_file_name)
+    CT_image_canonical = nibabel.as_closest_canonical(CT_image)
+    CT_array_npy, CT_spacing_npy = image_processing.get_npy_array_and_spacing(CT_image_canonical)
 
     subjects_information = (subject, subject_index, number_of_subjects)
 
@@ -515,6 +517,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
         # ----------------------------------
         # EXTRACT PET ACTIVITY
         # ----------------------------------
+        PT_file_path = file_utilities.get_modality_file(subject, 'PT_')
         if PT_file_path is not None:
             PT_image = SimpleITK.ReadImage(PT_file_path)
             output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting PET activity for {subject_name} ({model})...')
@@ -544,14 +547,11 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     return subject_peak_performance
 
 
-def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]) -> Iterator[Tuple[SimpleITK.Image, models.Model]]:
-    image_array = SimpleITK.GetArrayFromImage(image)
-    image_array_spacing = image.GetSpacing()[::-1]
-
+def run_workflows(image_array: SimpleITK.Image, image_array_spacing, model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]) -> Iterator[Tuple[SimpleITK.Image, models.Model]]:
     image_array_resampled = image_array
     image_array_resampled_spacing = image_array_spacing
 
-    performance_observer.metadata_image_size = image.GetSize()
+    performance_observer.metadata_image_size = image_array.shape
     performance_observer.time_phase()
 
     subject_name, subject_index, number_of_subjects = subjects_information
@@ -562,7 +562,7 @@ def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWork
         if image_array_resampled_spacing != desired_spacing:
             performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str, desired_spacing))}")
             resampling_time_start = time.time()
-            image_array_resampled = image_processing.ImageResampler.resample_array_SimpleITK_DASK_array(image_array, 'bspline', image_array_spacing, desired_spacing)
+            image_array_resampled = image_processing.ImageResampler.resample_image_array_SimpleITK_DASK_array(image_array, 'bspline', image_array_spacing, desired_spacing)
             image_array_resampled_spacing = desired_spacing
             output_manager.log_update(f' - Resampling at {"x".join(map(str, desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
             performance_observer.time_phase()
@@ -590,10 +590,7 @@ def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWork
         output_manager.log_update(f"     - Prediction complete for {model_workflow.target_model} within {round((time.time() - model_time_start) / 60, 1)} min.")
         performance_observer.time_phase()
 
-        segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-        segmentation.SetSpacing(desired_spacing[::-1])
-        segmentation.SetOrigin(image.GetOrigin())
-        segmentation.SetDirection(image.GetDirection())
+        segmentation = image_processing.SimpleITK_image_from_array(segmentation_array, desired_spacing[::-1], image.GetOrigin(), image.GetDirection())
         resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
 
         yield resampled_segmentation, model_workflow.target_model
