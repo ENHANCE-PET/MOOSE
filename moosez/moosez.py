@@ -389,7 +389,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     """
     # Load the image and set a default filename based on input type
     if isinstance(input_data, str):
-        image = SimpleITK.ReadImage(input_data)
+        image = image_processing.image_read(input_data)
         file_name = file_utilities.get_nifti_file_stem(input_data)
     elif isinstance(input_data, SimpleITK.Image):
         image = input_data
@@ -475,12 +475,14 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     performance_observer.record_phase("Loading Image")
     CT_file_path = file_utilities.get_modality_file(subject, 'CT_')
     CT_file_name = file_utilities.get_nifti_file_stem(CT_file_path)
-    CT_image = image_processing.standardize_image(CT_file_path, output_manager, moose_dir)
-    PT_file_path = file_utilities.get_modality_file(subject, 'PT_')
+    CT_image = image_processing.image_read(CT_file_path)
+    CT_image_orientation_code = image_processing.image_get_orientation_code(CT_image)
+    CT_image_RAS = image_processing.image_reorient(CT_image, "RAS")
 
     subjects_information = (subject, subject_index, number_of_subjects)
 
-    for segmentation_image, model in run_workflows(CT_image, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
+    for segmentation_image, model in run_workflows(CT_image_RAS, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
+        segmentation_image = image_processing.image_reorient(segmentation_image, CT_image_orientation_code)
         performance_observer.record_phase("Writing Images and Statistics")
         segmentation_image_path = os.path.join(segmentations_dir, f"{model.multilabel_prefix}segmentation_{CT_file_name}.nii.gz")
         output_manager.log_update(f'     - Writing segmentation for {model}')
@@ -515,6 +517,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
         # ----------------------------------
         # EXTRACT PET ACTIVITY
         # ----------------------------------
+        PT_file_path = file_utilities.get_modality_file(subject, 'PT_')
         if PT_file_path is not None:
             PT_image = SimpleITK.ReadImage(PT_file_path)
             output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting PET activity for {subject_name} ({model})...')
