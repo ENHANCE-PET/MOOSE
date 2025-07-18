@@ -29,6 +29,7 @@ import math
 from typing import Union, Tuple, List, Dict
 from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
 from moosez import models
+from moosez import system
 
 
 def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
@@ -379,10 +380,10 @@ class ImageResampler:
         return result.compute()
 
     @staticmethod
-    def resample_image_array_SimpleITK_DASK_array(image_array: np.ndarray, interpolation: str,
-                                                  input_spacing: Tuple[float, float, float],
-                                                  output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
-                                                  output_size: Union[Tuple[float, float, float], None] = None) -> np.array:
+    def resample_array_SimpleITK_DASK_array(image_array: np.ndarray, interpolation: str,
+                                            input_spacing: Tuple[float, float, float],
+                                            output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
+                                            output_size: Union[Tuple[float, float, float], None] = None) -> np.array:
         if interpolation == 'nearest':
             interpolation_method = SimpleITK.sitkNearestNeighbor
         elif interpolation == 'linear':
@@ -445,6 +446,119 @@ class ImageResampler:
         return resampled_sitk_image
 
 
+def determine_orientation_code(image: nibabel.Nifti1Image) -> Tuple[Union[Tuple, List], str]:
+    affine = image.affine
+    orthonormal_orientation = nibabel.orientations.aff2axcodes(affine)
+    return orthonormal_orientation, ''.join(orthonormal_orientation)
+
+
+def confirm_orthonormality(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Image, bool]:
+    data = image.get_fdata()
+    affine = image.affine
+    header = image.header
+
+    rotation_matrix = affine[:3, :3]
+    spacing = np.linalg.norm(rotation_matrix, axis=0)
+
+    ortho_rotation_matrix = rotation_matrix / spacing
+    is_orthonormal = np.allclose(ortho_rotation_matrix.T @ ortho_rotation_matrix, np.eye(3))
+
+    if not is_orthonormal:
+        orthonormalized = True
+        q, _ = np.linalg.qr(ortho_rotation_matrix)
+        ortho_rotation_matrix = q * spacing
+
+        orthonormal_affine = np.eye(4)
+        orthonormal_affine[:3, :3] = ortho_rotation_matrix
+        orthonormal_affine[:3, 3] = affine[:3, 3]
+
+        orthonormal_header = header.copy()
+        orthonormal_header.set_qform(orthonormal_affine)
+        orthonormal_header.set_sform(orthonormal_affine)
+
+        image = nibabel.Nifti1Image(data, orthonormal_affine, orthonormal_header)
+    else:
+        orthonormalized = False
+
+    return image, orthonormalized
+
+
+def confirm_orientation(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Image, bool]:
+    data = image.get_fdata()
+    affine = image.affine
+    header = image.header
+
+    original_orientation = nibabel.orientations.aff2axcodes(affine)
+
+    if original_orientation[0] == 'R':
+        reoriented = True
+
+        current_orientation = nibabel.orientations.axcodes2ornt(original_orientation)
+        target_orientation = nibabel.orientations.axcodes2ornt(('L', original_orientation[1], original_orientation[2]))
+
+        orientation_transform = nibabel.orientations.ornt_transform(current_orientation, target_orientation)
+        reoriented_data = nibabel.orientations.apply_orientation(data, orientation_transform)
+        reoriented_affine = nibabel.orientations.inv_ornt_aff(orientation_transform, data.shape).dot(affine)
+
+        reoriented_header = header.copy()
+        reoriented_header.set_qform(reoriented_affine)
+        reoriented_header.set_sform(reoriented_affine)
+
+        image = nibabel.Nifti1Image(reoriented_data, reoriented_affine, reoriented_header)
+    else:
+        reoriented = False
+
+    return image, reoriented
+
+
+def convert_to_sitk(image: nibabel.Nifti1Image) -> SimpleITK.Image:
+    data = image.get_fdata()
+    affine = image.affine
+    spacing = image.header.get_zooms()
+
+    image_data_swapped_axes = data.swapaxes(0, 2)
+    sitk_image = SimpleITK.GetImageFromArray(image_data_swapped_axes)
+
+    translation_vector = affine[:3, 3]
+    rotation_matrix = affine[:3, :3]
+    axis_flip_matrix = np.diag([-1, -1, 1])
+
+    sitk_image.SetSpacing([spacing.item() for spacing in spacing])
+    sitk_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))
+    sitk_image.SetDirection((np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(spacing)).flatten())
+
+    return sitk_image
+
+
+def standardize_image(image_path: str, output_manager: system.OutputManager, standardization_output_path: Union[str, None]) -> SimpleITK.Image:
+    image = nibabel.load(image_path)
+    _, original_orientation = determine_orientation_code(image)
+    output_manager.log_update(f" - Image loaded. Orientation: {original_orientation}")
+
+    image, orthonormalized = confirm_orthonormality(image)
+    if orthonormalized:
+        _, orthonormal_orientation = determine_orientation_code(image)
+        output_manager.log_update(f"   - Image orthonormalized. Orientation: {orthonormal_orientation}")
+    image, reoriented = confirm_orientation(image)
+    if reoriented:
+        _, reoriented_orientation = determine_orientation_code(image)
+        output_manager.log_update(f"   - Image reoriented. Orientation: {reoriented_orientation}")
+    sitk_image = convert_to_sitk(image)
+    output_manager.log_update(f" - Image converted to SimpleITK.")
+
+    processing_steps = [orthonormalized, reoriented]
+    prefixes = ["orthonormal", "reoriented"]
+
+    if standardization_output_path is not None and any(processing_steps):
+        output_manager.log_update(f" - Writing standardized image.")
+        prefix = "_".join([prefix for processing_step, prefix in zip(processing_steps, prefixes) if processing_step])
+        output_path = os.path.join(standardization_output_path, f"{prefix}_{os.path.basename(image_path)}")
+        SimpleITK.WriteImage(sitk_image, output_path)
+
+    return sitk_image
+
+
+
 def extract_labels_and_write(multilabel_image: SimpleITK.Image, model: models.Model, output_directory: str):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -465,43 +579,3 @@ def extract_labels_and_write(multilabel_image: SimpleITK.Image, model: models.Mo
         label_name = model.organ_indices[label]
         file_path = os.path.join(output_directory, f"{label_name}.nii.gz")
         SimpleITK.WriteImage(label_mask, file_path)
-
-
-# ---------
-
-def SimpleITK_image_from_array(array: np.ndarray,
-                               spacing: Tuple[float, float, float] = None, origin = None, direction = None) -> SimpleITK.Image:
-    image = SimpleITK.GetImageFromArray(array)
-    if spacing:
-        image.SetSpacing(spacing)
-    if direction:
-        image.SetOrigin(origin)
-    if origin:
-        image.SetDirection(direction)
-
-    return image
-
-def invert_array_and_spacing(array: np.ndarray, spacing: Tuple[float, float, float]) -> Tuple[np.ndarray, Tuple[float, float, float]]:
-    array_inverted = np.transpose(array, (2, 1, 0))
-    spacing_inverted = (spacing[2], spacing[1], spacing[0])
-    return array_inverted, spacing_inverted
-
-def get_npy_array_and_spacing(image: nibabel.Nifti1Image) -> Tuple[np.ndarray, Tuple[float, float, float]]:
-    array = image.get_fdata(dtype=np.float32)
-    spacing = tuple(nibabel.affines.voxel_sizes(image.affine))
-    return invert_array_and_spacing(array, spacing)
-
-
-def undo_canonical(image_original: nibabel.Nifti1Image, array_canonical: np.ndarray):
-    image_original_affine = image_original.affine
-    image_canonical_affine = nibabel.as_closest_canonical(image_original).affine
-
-    image_orientation = nibabel.orientations.io_orientation(image_original_affine)
-    image_canonical_orientation = nibabel.orientations.io_orientation(image_canonical_affine)
-    canonical_to_original_orientation = nibabel.orientations.ornt_transform(image_canonical_orientation, image_orientation)
-
-    array_canonical_undone = nibabel.orientations.apply_orientation(array_canonical, canonical_to_original_orientation)
-    header_canonical_undone = image_original.header.copy()
-    header_canonical_undone.set_zooms(nibabel.affines.voxel_sizes(image_original.affine))
-
-    return nibabel.Nifti1Image(array_canonical_undone, image_original_affine, header=header_canonical_undone)
