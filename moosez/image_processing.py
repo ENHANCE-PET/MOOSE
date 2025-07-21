@@ -214,6 +214,7 @@ def image_reorient(image: SimpleITK.Image, new_orientation_code) -> SimpleITK.Im
 
 
 def image_read(image_path: str) -> SimpleITK.Image:
+    SimpleITK.ProcessObject_SetGlobalWarningDisplay(False)
     try:
         image = SimpleITK.ReadImage(image_path)
     except RuntimeError:
@@ -224,6 +225,7 @@ def image_read(image_path: str) -> SimpleITK.Image:
             image_nibabel = nibabel.load(image_path)
             nibabel.save(nibabel.Nifti1Image(image_nibabel.get_fdata(), image_nibabel.get_qform()), file_tmp_path)
             image = SimpleITK.ReadImage(file_tmp_path)
+    SimpleITK.ProcessObject_SetGlobalWarningDisplay(True)
     return image
 
 
@@ -384,10 +386,10 @@ class ImageResampler:
         :rtype: da.array
         """
         sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
-        sitk_image_chunk.SetSpacing(reversed(input_spacing))
+        sitk_image_chunk.SetSpacing(input_spacing)
 
-        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, reversed(output_size), SimpleITK.Transform(),
-                                                  interpolation_method, sitk_image_chunk.GetOrigin(), reversed(output_spacing),
+        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
+                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
                                                   sitk_image_chunk.GetDirection(), 0.0,
                                                   sitk_image_chunk.GetPixelIDValue())
 
@@ -424,33 +426,6 @@ class ImageResampler:
         result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
                                output_spacing, output_chunks, chunks=output_chunks_reversed, meta=np.array(()),
                                dtype=np.float32)
-
-        return result.compute()
-
-    @staticmethod
-    def resample_array_SimpleITK_DASK_array(image_array: np.ndarray, interpolation: str,
-                                            input_spacing: Tuple[float, float, float],
-                                            output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
-                                            output_size: Union[Tuple[float, float, float], None] = None) -> np.array:
-        if interpolation == 'nearest':
-            interpolation_method = SimpleITK.sitkNearestNeighbor
-        elif interpolation == 'linear':
-            interpolation_method = SimpleITK.sitkLinear
-        elif interpolation == 'bspline':
-            interpolation_method = SimpleITK.sitkBSpline
-        else:
-            raise ValueError('The interpolation method is not supported.')
-
-        input_size = image_array.shape
-        input_chunks = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size]
-        image_dask = da.from_array(image_array, chunks=input_chunks)
-
-        if output_size is not None:
-            output_spacing = [input_spacing[i] * (input_size[i] / output_size[i]) for i in range(len(input_size))]
-        output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in range(len(input_chunks))]
-
-        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
-                               output_spacing, output_chunks, chunks=output_chunks, meta=np.array(()), dtype=np.float32)
 
         return result.compute()
 

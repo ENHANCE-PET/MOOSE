@@ -548,11 +548,8 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
 
 
 def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]) -> Iterator[Tuple[SimpleITK.Image, models.Model]]:
-    image_array = SimpleITK.GetArrayFromImage(image)
-    image_array_spacing = image.GetSpacing()[::-1]
-
-    image_array_resampled = image_array
-    image_array_resampled_spacing = image_array_spacing
+    current_image_array = SimpleITK.GetArrayFromImage(image)
+    current_image_array_spacing = image.GetSpacing()[::-1]
 
     performance_observer.metadata_image_size = image.GetSize()
     performance_observer.time_phase()
@@ -562,11 +559,11 @@ def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWork
     for model_workflow in model_workflows:
         desired_spacing = model_workflow.initial_desired_spacing
 
-        if image_array_resampled_spacing != desired_spacing:
+        if current_image_array_spacing != desired_spacing:
             performance_observer.record_phase(f"Resampling Image: {'x'.join(map(str, desired_spacing))}")
             resampling_time_start = time.time()
-            image_array_resampled = image_processing.ImageResampler.resample_array_SimpleITK_DASK_array(image_array, 'bspline', image_array_spacing, desired_spacing)
-            image_array_resampled_spacing = desired_spacing
+            current_image_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
+            current_image_array_spacing = desired_spacing
             output_manager.log_update(f' - Resampling at {"x".join(map(str, desired_spacing))} took: {round((time.time() - resampling_time_start), 2)}s')
             performance_observer.time_phase()
 
@@ -574,7 +571,7 @@ def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWork
         model_time_start = time.time()
         output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {model_workflow[0]}...')
         output_manager.log_update(f'   - Model {model_workflow.target_model}')
-        segmentation_array = predict.predict_from_array_by_iterator(image_array_resampled, model_workflow[0], accelerator, output_manager)
+        segmentation_array = predict.predict_from_array_by_iterator(current_image_array, model_workflow[0], accelerator, output_manager)
 
         if len(model_workflow) == 2:
             inference_fov_intensities = model_workflow[1].limit_fov["inference_fov_intensities"]
