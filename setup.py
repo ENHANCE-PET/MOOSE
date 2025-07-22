@@ -37,7 +37,7 @@ setup(
         'halo~=0.0.31',
         'pydicom~=2.2.2',
         'argparse',
-        'numpy<2.0',
+        'numpy',
         'pyfiglet~=0.8.post1',
         'natsort',
         'colorama~=0.4.6',
