@@ -479,7 +479,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     CT_image_orientation_code = image_processing.image_get_orientation_code(CT_image)
     CT_image_RAS = image_processing.image_reorient(CT_image, "RAS")
 
-    subjects_information = (subject, subject_index, number_of_subjects)
+    subjects_information = (subject_name, subject_index, number_of_subjects)
 
     for segmentation_image, model in run_workflows(CT_image_RAS, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
         segmentation_image = image_processing.image_reorient(segmentation_image, CT_image_orientation_code)
