@@ -70,6 +70,7 @@ Each model is designed to provide high-quality segmentation with MOOSE 3.0's opt
 
 ## Citations ❤️ 
 
+- Ferrara, D., Pires, M., Gutschmayer, S., et al. (2025). Sharing a whole-/total-body [18F]FDG-PET/CT dataset with CT-derived segmentations: An ENHANCE.PET initiative. PREPRINT (Version 1). Research Square. https://doi.org/10.21203/rs.3.rs-7169062/v1
 - Shiyam Sundar, L. K., Yu, J., Muzik, O., Kulterer, O., Fueger, B. J., Kifjak, D., Nakuz, T., Shin, H. M., Sima, A. K., Kitzmantl, D., Badawi, R. D., Nardo, L., Cherry, S. R., Spencer, B. A., Hacker, M., & Beyer, T. (2022). Fully-automated, semantic segmentation of whole-body <sup>18</sup>F-FDG PET/CT images based on data-centric artificial intelligence. *Journal of Nuclear Medicine*. https://doi.org/10.2967/jnumed.122.264063
 - Isensee, F., Jaeger, P.F., Kohl, S.A.A. et al. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods 18, 203–211 (2021). https://doi.org/10.1038/s41592-020-01008-z
 
