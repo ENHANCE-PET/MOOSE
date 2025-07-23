@@ -82,12 +82,11 @@ When utilizing this dataset, please reference:
 
 ---
 
-## 🌐 Access & Resources
+## 🌐 Access 
 
-* **Data Repository:** [AWS Storage](https://enhance-pet.s3.eu-central-1.amazonaws.com/enhance-pet-1_6k/enhance-pet-1_6k.zip)
-* **Segmentation Tool (MOOSE):** [GitHub](https://github.com/ENHANCE-PET/MOOSE)
-* **ENHANCE.PET Website:** [enhance.pet](https://enhance.pet)
-
+```python
+moosez -dtd -dd <path_to_dir_to_store_the_data>
+```
 ---
 
 **© ENHANCE.PET Initiative, 2025**
