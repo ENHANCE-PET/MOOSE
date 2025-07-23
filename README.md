@@ -267,7 +267,13 @@ MOOSE will run two instances at the same time, utilizing your compute power like
 
 And that's it! MOOSE 3.0 lets you process with ease and speed. ⚡✨
 
+### Download the MOOSE training data corpus (ENHANCE 1.6K) 🖥️📦
 
+We finally got permissions from our partners to open-source our training data, you can download (~250 GB) of our training data via `moosez` directly! And please cite our preprint if you use the dataset - we went through a lot of pain to do this.
+
+```bash
+moosez -dtd -dd <path_to_dir_where_you_want_to_store_the_data>
+```
 
 Need assistance along the way? Don't worry, we've got you covered. Simply type:
 
