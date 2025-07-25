@@ -55,6 +55,7 @@ This dataset is crafted to enable researchers to:
 
   * `CT-details.xlsx`: Acquisition parameters.
   * `PT-details.xlsx`: Demographic and PET acquisition details.
+* **Label json:** Download the label mapping json [here](https://enhance-pet.s3.eu-central-1.amazonaws.com/enhance-pet-1_6k/labels.json)
 
 ---
 
