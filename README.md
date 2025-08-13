@@ -267,14 +267,33 @@ MOOSE will run two instances at the same time, utilizing your compute power like
 
 And that's it! MOOSE 3.0 lets you process with ease and speed. ⚡✨
 
-### Download the MOOSE training data corpus (ENHANCE 1.6K) 🖥️📦
+---
 
-We finally got permissions from our partners to open-source our training data, you can download (~250 GB) of our training data via `moosez` directly! And please cite our preprint if you use the dataset - we went through a lot of pain to do this.
+### 📦 ENHANCE.PET MOOSE 1.6k Dataset on AWS Open Data
+
+We have finally done it!
+
+**An open, multi-center [18F]FDG-PET/CT dataset with 130 CT-derived anatomical segmentations per scan (~250 GB)**  
+Part of the [ENHANCE.PET initiative](https://enhance.pet/) and hosted under the AWS Open Data Sponsorship Program.
+
+| Estimated size | Primary access method | Support contact |
+|----------------|-----------------------|-----------------|
+| ~250 GB        | MOOSE CLI (see below) | Lalith.shiyam@med.uni-muenchen.de |
+
+### 📄 Documentation
+- [Dataset Organization](https://github.com/ENHANCE-PET/MOOSE/blob/main/DATA_CARD.md) — folder structure, file naming, metadata details, licensing per site
+- [AWS Tutorial with MOOSE CLI](https://github.com/ENHANCE-PET/MOOSE/blob/main/DATA_CARD.md) — how to download and explore data on AWS
+- [Labels.json mapping](https://github.com/ENHANCE-PET/MOOSE/blob/main/DATA_CARD.md) — intensity values for each anatomical label (in the downloaded folder)
+
+### 🚀 Quick Access (AWS Open Data)
+
+**Download via MOOSE CLI** (recommended):
 
 ```bash
-moosez -dtd -dd <path_to_dir_where_you_want_to_store_the_data>
-```
+moosez -dtd -dd /path/to/download/
 
+```
+---
 Need assistance along the way? Don't worry, we've got you covered. Simply type:
 
 ```bash
