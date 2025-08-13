@@ -14,10 +14,10 @@
 
 ## 1) Storage layout (AWS Open Data bucket)
 
-Top-level prefix (recommended): `enhance-pet-1_6k/`
+Top-level prefix : `enhance-pet-1-6k/`
 
 ```
-s3://<aws-open-data-bucket>/enhance-pet-1_6k/
+s3://<aws-open-data-bucket>/enhance-pet-1-6k/
   CT-details.xlsx
   PT-details.xlsx
   labels.json
