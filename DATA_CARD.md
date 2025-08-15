@@ -1,4 +1,21 @@
-# 🦌ENHANCE.PET MOOSE 1.6k — Dataset Organization & Access (AWS)
+# 🦌ENHANCE.PET MOOSE 1.6k — Dataset Organization & Access 
+
+### Acknowledgment
+
+
+<p align="center">
+  <a href="https://aws.amazon.com/what-is-cloud-computing/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://d0.awsstatic.com/logos/powered-by-aws-white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://d0.awsstatic.com/logos/powered-by-aws.png">
+      <img alt="Powered by AWS Cloud Computing" src="https://d0.awsstatic.com/logos/powered-by-aws.png">
+    </picture>
+  </a>
+</p>
+
+
+The ENHANCE.PET MOOSE 1.6k corpus is made available worldwide through the **AWS Open Data Sponsorship Program**.  
+We gratefully acknowledge Amazon Web Services for enabling open access to this dataset.
 
 ### **Scope**  
 
