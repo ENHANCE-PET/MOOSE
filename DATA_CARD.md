@@ -1,8 +1,6 @@
 # 🦌ENHANCE.PET MOOSE 1.6k — Dataset Organization & Access 
 
-## Acknowledgment
-
-
+----
 <a href="https://aws.amazon.com/opendata/open-data-sponsorship-program/">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://d0.awsstatic.com/logos/powered-by-aws-white.png">
@@ -14,6 +12,7 @@
 The ENHANCE.PET MOOSE 1.6k corpus is made available worldwide through the
 **[AWS Open Data Sponsorship Program](https://aws.amazon.com/opendata/open-data-sponsorship-program/)**. We gratefully acknowledge Amazon Web Services for enabling open access to this dataset.
 
+----
 ### **Scope**  
 
 - ENHANCE.PET 1.6k contains **1,597 whole-/total-body [^18F]FDG-PET/CT studies** with **130 CT-derived, expert-verified segmentations** per scan.  
