@@ -309,8 +309,10 @@ class Model:
     def organ_indices_to_json(self, directory_path: str):
         organ_indices_mappings = {}
         for intensity, organ_name in self.organ_indices.items():
-            organ_indices_mappings[intensity] = {"name": organ_name,
-                                                 "SNOMED": SNOMED.moose_to_snomed[organ_name]}
+            organ_indices_mappings[intensity] = {"name": organ_name}
+            if organ_name in SNOMED.moose_to_snomed:
+                organ_indices_mappings[intensity]["SNOMED"] = SNOMED.moose_to_snomed[organ_name]
+
         file_path = os.path.join(directory_path, f"{self.multilabel_prefix}organ_indices.json")
         with open(file_path, "w") as organ_indices_json_file:
             json.dump({"organ_indices": organ_indices_mappings}, organ_indices_json_file, indent=4)
