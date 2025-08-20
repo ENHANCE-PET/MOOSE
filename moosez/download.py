@@ -28,7 +28,7 @@ def download_enhance_data(download_directory: Union[str, None], output_manager: 
 
     progress = output_manager.create_file_progress_bar()
     with progress:
-        task = progress.add_task(f"[white] Downloading ENHANCE 1.6k data...", total=total_size)
+        task = progress.add_task(f"[white] Downloading ENHANCE 1.6k data (Powered by AWS) ", total=total_size)
         with open(download_file_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 if chunk:
