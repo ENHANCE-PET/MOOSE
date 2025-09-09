@@ -125,6 +125,16 @@ MODEL_METADATA = {
         KEY_URL: "https://model.s.mdforge.com/Dataset112_DentalSegmentator_v100_moose.zip",
         KEY_FOLDER_NAME: "Dataset112_DentalSegmentator_v100",
         KEY_LIMIT_FOV: None
+    },
+    "clin_ct_face": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_Faces_08092025.zip",
+        KEY_FOLDER_NAME: "Dataset007_Faces",
+        KEY_LIMIT_FOV: {
+            "model_to_crop_from": "clin_ct_body",
+            "inference_fov_intensities": [3, 3],
+            "label_intensity_to_crop_from": 3,
+            "largest_component_only": True
+        }
     }
 }
 
