@@ -486,31 +486,10 @@ def confirm_orthonormality(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Im
 
 
 def confirm_orientation(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Image, bool]:
-    data = image.get_fdata()
-    affine = image.affine
-    header = image.header
-
-    original_orientation = nibabel.orientations.aff2axcodes(affine)
-
-    if original_orientation[0] == 'R':
-        reoriented = True
-
-        current_orientation = nibabel.orientations.axcodes2ornt(original_orientation)
-        target_orientation = nibabel.orientations.axcodes2ornt(('L', original_orientation[1], original_orientation[2]))
-
-        orientation_transform = nibabel.orientations.ornt_transform(current_orientation, target_orientation)
-        reoriented_data = nibabel.orientations.apply_orientation(data, orientation_transform)
-        reoriented_affine = nibabel.orientations.inv_ornt_aff(orientation_transform, data.shape).dot(affine)
-
-        reoriented_header = header.copy()
-        reoriented_header.set_qform(reoriented_affine)
-        reoriented_header.set_sform(reoriented_affine)
-
-        image = nibabel.Nifti1Image(reoriented_data, reoriented_affine, reoriented_header)
-    else:
-        reoriented = False
-
-    return image, reoriented
+    # Reorient to closest canonical (RAS) orientation
+    canonical_img = nibabel.as_closest_canonical(image)
+    reoriented = not np.array_equal(image.affine, canonical_img.affine)
+    return canonical_img, reoriented
 
 
 def convert_to_sitk(image: nibabel.Nifti1Image) -> SimpleITK.Image:
