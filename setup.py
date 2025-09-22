@@ -13,7 +13,7 @@ setup(
                      ' as PET, CT, and MR. mooseZ provides fast and accurate segmentation results, making it a '
                      'reliable tool for medical imaging applications.',
     url='https://github.com/ENHANCE-PET/MOOSE',
-    license='Apache 2.0',
+    license='Apache-2.0',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
