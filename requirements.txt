@@ -3,8 +3,7 @@ SimpleITK
 nnunetv2>=2.6.0
 halo
 pydicom
-argparse
-numpy<2.0
+numpy
 pyfiglet
 natsort
 colorama
