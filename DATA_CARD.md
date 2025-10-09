@@ -30,7 +30,7 @@ The ENHANCE.PET MOOSE 1.6k corpus is made available worldwide through the
 Top-level prefix : `enhance-pet-1-6k/`
 
 ```
-s3://<aws-open-data-bucket>/enhance-pet-1-6k/
+s3://enhance-pet-1-6k/
   CT-details.xlsx
   PT-details.xlsx
   labels.json
@@ -187,7 +187,7 @@ This dataset is **distributed via the MOOSE CLI** to simplify discovery and down
 
 ---
 
-## 8) Expected counts & integrity checks
+## 9) Expected counts & integrity checks
 
 - **CT volumes:** 1,597 files  
 - **PT volumes:** 1,597 files  
@@ -196,13 +196,13 @@ This dataset is **distributed via the MOOSE CLI** to simplify discovery and down
 
 ---
 
-## 9) Known caveats
+## 10) Known caveats
 
 - Segmentations are **derived from CT**; in cases with notable **patient motion**, PET↔CT misalignment may be present.  
 - Some very small or thin structures can be more challenging (e.g., small vessels, digits), which should be considered during downstream QA.
 
 ---
 
-## 10) Contact
+## 11) Contact
 
 For questions, issues, or requests: **Lalith Kumar Shiyam Sundar** — `Lalith.shiyam@med.uni-muenchen.de`
