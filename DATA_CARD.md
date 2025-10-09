@@ -181,7 +181,8 @@ Licensing is **per originating site**, recorded in the `Data-Source` column of b
 This dataset can be accessed (viewed and downloaded) using the `aws cli`.
 
 1. **[Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)**
-2. Access the Open Data on AWS without signing up
+2. **[See the basic commands](https://docs.aws.amazon.com/cli/latest/reference/s3/)**
+3. Access the Open Data on AWS without signing up
 ```bash
     # list the content of the directory
     aws s3 ls --no-sign-request s3://enhance-pet-1-6k/imaging-data/images/CT/
