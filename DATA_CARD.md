@@ -174,7 +174,22 @@ Licensing is **per originating site**, recorded in the `Data-Source` column of b
 
 ---
 
-## 7) Access on AWS via MOOSE CLI
+---
+
+## 7) Access to AWS via AWS CLI
+
+This dataset can be accessed (viewed and downloaded) using the `aws cli`.
+
+1. **[Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)**
+2. Access the Open Data on AWS without signing up
+```bash
+    # list the content of the directory
+    aws s3 ls --no-sign-request s3://enhance-pet-1-6k/imaging-data/images/CT/
+```
+
+---
+
+## 8) Access on AWS via MOOSE CLI
 
 This dataset is **distributed via the MOOSE CLI** to simplify discovery and download.
 
