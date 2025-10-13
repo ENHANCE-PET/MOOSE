@@ -43,7 +43,8 @@ FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
 
 
-ENHANCE_URL = "https://enhance-pet.s3.eu-central-1.amazonaws.com/enhance-pet-1_6k/ENHANCE-PET-1_6k.zip"
+ENHANCE_URL = "https://enhance-pet-1-6k.s3.us-west-2.amazonaws.com/ENHANCE-PET-1_6k.zip"
+
 
 USAGE_MESSAGE = """
 Usage:

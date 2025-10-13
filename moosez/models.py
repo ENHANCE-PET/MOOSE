@@ -116,6 +116,16 @@ MODEL_METADATA = {
         KEY_FOLDER_NAME: "Dataset112_DentalSegmentator_v100",
         KEY_LIMIT_FOV: None
     },
+    "clin_ct_face": {
+        KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/clin_ct_Faces_08092025.zip",
+        KEY_FOLDER_NAME: "Dataset007_Faces",
+        KEY_LIMIT_FOV: {
+            "model_to_crop_from": "clin_ct_body",
+            "inference_fov_intensities": [3, 3],
+            "label_intensity_to_crop_from": 3,
+            "largest_component_only": True
+        }
+    },
     "preclin_mr_all": {
         KEY_URL: "https://enhance-pet.s3.eu-central-1.amazonaws.com/moose/preclin_mr_all_05122023.zip",
         KEY_FOLDER_NAME: "Dataset234_minimoose",
@@ -304,11 +314,9 @@ class Model:
     def organ_indices_to_json(self, directory_path: str):
         organ_indices_mappings = {}
         for intensity, organ_name in self.organ_indices.items():
+            organ_indices_mappings[intensity] = {"name": organ_name}
             if organ_name in SNOMED.moose_to_snomed:
-                organ_indices_mappings[intensity] = {"name": organ_name,
-                                                     "SNOMED": SNOMED.moose_to_snomed[organ_name]}
-            else:
-                organ_indices_mappings[intensity] = {"name": organ_name,}
+                organ_indices_mappings[intensity]["SNOMED"] = SNOMED.moose_to_snomed[organ_name]
 
         file_path = os.path.join(directory_path, f"{self.multilabel_prefix}organ_indices.json")
         with open(file_path, "w") as organ_indices_json_file:

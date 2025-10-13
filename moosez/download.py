@@ -4,12 +4,15 @@ import requests
 from typing import Union
 from moosez import constants
 from moosez import system
+from moosez import file_utilities
 
 
 def download_enhance_data(download_directory: Union[str, None], output_manager: system.OutputManager):
     output_manager.log_update(f"    - Downloading ENHANCE 1.6k data")
     if not download_directory:
         download_directory = get_default_download_folder()
+
+    file_utilities.create_directory(download_directory)
 
     download_file_name = os.path.basename(constants.ENHANCE_URL)
     download_file_path = os.path.join(download_directory, download_file_name)
@@ -23,7 +26,7 @@ def download_enhance_data(download_directory: Union[str, None], output_manager: 
 
     progress = output_manager.create_file_progress_bar()
     with progress:
-        task = progress.add_task(f"[white] Downloading ENHANCE 1.6k data...", total=total_size)
+        task = progress.add_task(f"[white] Downloading ENHANCE 1.6k data (Powered by AWS) ", total=total_size)
         with open(download_file_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 if chunk:

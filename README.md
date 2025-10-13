@@ -4,8 +4,9 @@
 
 
 [![Documentation Status](https://img.shields.io/readthedocs/moosez/latest.svg?style=flat-square&logo=read-the-docs&color=CC00FF)](https://moosez.rtfd.io/en/latest/?badge=latest) [![PyPI version](https://img.shields.io/pypi/v/moosez?color=FF1493&style=flat-square&logo=pypi)](https://pypi.org/project/moosez/)
-[![Code License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square&logo=apache&color=blue)](https://www.apache.org/licenses/LICENSE-2.0) [![Model License: CC BY 4.0](https://img.shields.io/badge/Model%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) [![Discord](https://img.shields.io/badge/Discord-Chat-blue.svg?style=flat-square&logo=discord&color=0000FF)](https://discord.gg/9uTHYhWCA5) [![Monthly Downloads](https://img.shields.io/pypi/dm/moosez?label=Downloads%20(Monthly)&color=9400D3&style=flat-square&logo=python)](https://pypi.org/project/moosez/) [![Daily Downloads](https://img.shields.io/pypi/dd/moosez?label=Downloads%20(Daily)&color=9400D3&style=flat-square&logo=python)](https://pypi.org/project/moosez/)
+[![Code License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square&logo=apache&color=blue)](https://www.apache.org/licenses/LICENSE-2.0) [![Model License: CC BY 4.0](https://img.shields.io/badge/Model%20License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) [![Discord](https://img.shields.io/badge/Discord-Chat-blue.svg?style=flat-square&logo=discord&color=0000FF)](https://discord.gg/9uTHYhWCA5) 
 [![Commercial Version](https://img.shields.io/badge/Commercial%20Version-Contact%20Zenta-orange?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTIiIGhlaWdodD0iOTIiIHZpZXdCb3g9IjAgMCA5MiA5MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDUuODk2NiIgY3k9IjcuOTEyOTYiIHI9IjYuMjkxNzEiIHRyYW5zZm9ybT0icm90YXRlKDkwIDQ1Ljg5NjYgNy45MTI5NikiIGZpbGw9IiNFNkU0REUiIHN0cm9rZT0iI0U2RTRERSIgc3Ryb2tlLXdpZHRoPSIzLjI0MjUxIi8+CjxjaXJjbGUgY3g9IjgzLjg3ODEiIGN5PSIyNi45MDQyIiByPSI2LjI5MTcxIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCA4My44NzgxIDI2LjkwNDIpIiBmaWxsPSIjRTZFNERFIiBzdHJva2U9IiNFNkU0REUiIHN0cm9rZS13aWR0aD0iMy4yNDI1MSIvPgo8Y2lyY2xlIGN4PSI3LjkxMzIxIiBjeT0iMjYuOTA0MiIgcj0iNi4yOTE3MSIgdHJhbnNmb3JtPSJyb3RhdGUoOTAgNy45MTMyMSAyNi45MDQyKSIgZmlsbD0iI0U2RTRERSIgc3Ryb2tlPSIjRTZFNERFIiBzdHJva2Utd2lkdGg9IjMuMjQyNTEiLz4KPGNpcmNsZSBjeD0iNy45MTMyMSIgY3k9IjQ1Ljg5NjQiIHI9IjYuMjkxNzEiIHRyYW5zZm9ybT0icm90YXRlKDkwIDcuOTEzMjEgNDUuODk2NCkiIGZpbGw9IiNFNkU0REUiIHN0cm9rZT0iI0U2RTRERSIgc3Ryb2tlLXdpZHRoPSIzLjI0MjUxIi8+CjxjaXJjbGUgY3g9IjY0Ljg4NjgiIGN5PSI4My44Nzg4IiByPSI2LjI5MTcxIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCA2NC44ODY4IDgzLjg3ODgpIiBmaWxsPSIjRTZFNERFIiBzdHJva2U9IiNFNkU0REUiIHN0cm9rZS13aWR0aD0iMy4yNDI1MSIvPgo8Y2lyY2xlIGN4PSIyNi45MDQ0IiBjeT0iODMuODc4OCIgcj0iNi4yOTE3MSIgdHJhbnNmb3JtPSJyb3RhdGUoOTAgMjYuOTA0NCA4My44Nzg4KSIgZmlsbD0iI0U2RTRERSIgc3Ryb2tlPSIjRTZFNERFIiBzdHJva2Utd2lkdGg9IjMuMjQyNTEiLz4KPGNpcmNsZSBjeD0iNy45MTMyMSIgY3k9IjY0Ljg4NzYiIHI9IjYuMjkxNzEiIHRyYW5zZm9ybT0icm90YXRlKDkwIDcuOTEzMjEgNjQuODg3NikiIGZpbGw9IiNFNkU0REUiIHN0cm9rZT0iI0U2RTRERSIgc3Ryb2tlLXdpZHRoPSIzLjI0MjUxIi8+CjxyZWN0IHg9IjkwLjE2OTgiIHk9IjM5LjYwNDciIHdpZHRoPSIzMS41NzQ1IiBoZWlnaHQ9IjEyLjU4MzQiIHJ4PSI2LjI5MTcxIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCA5MC4xNjk4IDM5LjYwNDcpIiBmaWxsPSIjRTZFNERFIiBzdHJva2U9IiNFNkU0REUiIHN0cm9rZS13aWR0aD0iMy4yNDI1MSIvPgo8cmVjdCB4PSI3MS4xNzg1IiB5PSIxLjYyMTI2IiB3aWR0aD0iMzEuNTc0NSIgaGVpZ2h0PSIxMi41ODM0IiByeD0iNi4yOTE3MSIgdHJhbnNmb3JtPSJyb3RhdGUoOTAgNzEuMTc4NSAxLjYyMTI2KSIgZmlsbD0iI0U2RTRERSIgc3Ryb2tlPSIjRTZFNERFIiBzdHJva2Utd2lkdGg9IjMuMjQyNTEiLz4KPHJlY3QgeD0iNTIuMTg4MyIgeT0iNTguNTk1OSIgd2lkdGg9IjMxLjU3NDUiIGhlaWdodD0iMTIuNTgzNCIgcng9IjYuMjkxNzEiIHRyYW5zZm9ybT0icm90YXRlKDkwIDUyLjE4ODMgNTguNTk1OSkiIGZpbGw9IiNFNkU0REUiIHN0cm9rZT0iI0U2RTRERSIgc3Ryb2tlLXdpZHRoPSIzLjI0MjUxIi8+CjxyZWN0IHg9IjMzLjE5NjEiIHk9IjIyLjE5NTUiIHdpZHRoPSIzMS41NzQ1IiBoZWlnaHQ9IjEyLjU4MzQiIHJ4PSI2LjI5MTcxIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCAzMy4xOTYxIDIyLjE5NTUpIiBmaWxsPSIjRTZFNERFIiBzdHJva2U9IiNFNkU0REUiIHN0cm9rZS13aWR0aD0iMy4yNDI1MSIvPgo8cmVjdCB4PSIzMy4xOTYxIiB5PSIxLjYyMTI2IiB3aWR0aD0iMzEuNTc0NSIgaGVpZ2h0PSIxMi41ODM0IiByeD0iNi4yOTE3MSIgdHJhbnNmb3JtPSJyb3RhdGUoOTAgMzMuMTk2MSAxLjYyMTI2KSIgZmlsbD0iI0U2RTRERSIgc3Ryb2tlPSIjRTZFNERFIiBzdHJva2Utd2lkdGg9IjMuMjQyNTEiLz4KPHJlY3QgeD0iMTQuMjA0OSIgeT0iMzkuNjA0NyIgd2lkdGg9IjMxLjU3NDUiIGhlaWdodD0iMTIuNTgzNCIgcng9IjYuMjkxNzEiIHRyYW5zZm9ybT0icm90YXRlKDkwIDE0LjIwNDkgMzkuNjA0NykiIGZpbGw9IiNFNkU0REUiIHN0cm9rZT0iI0U2RTRERSIgc3Ryb2tlLXdpZHRoPSIzLjI0MjUxIi8+Cjwvc3ZnPgo=)](mailto:lalith@zenta.solutions)
+
 
 Welcome to the new and improved MOOSE (v3.0), where speed and efficiency aren't just buzzwords—they're a way of life. 
 
@@ -70,6 +71,7 @@ Each model is designed to provide high-quality segmentation with MOOSE 3.0's opt
 
 ## Citations ❤️ 
 
+- Ferrara, D., Pires, M., Gutschmayer, S., et al. (2025). Sharing a whole-/total-body [18F]FDG-PET/CT dataset with CT-derived segmentations: An ENHANCE.PET initiative. PREPRINT (Version 1). Research Square. https://doi.org/10.21203/rs.3.rs-7169062/v1
 - Shiyam Sundar, L. K., Yu, J., Muzik, O., Kulterer, O., Fueger, B. J., Kifjak, D., Nakuz, T., Shin, H. M., Sima, A. K., Kitzmantl, D., Badawi, R. D., Nardo, L., Cherry, S. R., Spencer, B. A., Hacker, M., & Beyer, T. (2022). Fully-automated, semantic segmentation of whole-body <sup>18</sup>F-FDG PET/CT images based on data-centric artificial intelligence. *Journal of Nuclear Medicine*. https://doi.org/10.2967/jnumed.122.264063
 - Isensee, F., Jaeger, P.F., Kohl, S.A.A. et al. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods 18, 203–211 (2021). https://doi.org/10.1038/s41592-020-01008-z
 
@@ -266,8 +268,32 @@ MOOSE will run two instances at the same time, utilizing your compute power like
 
 And that's it! MOOSE 3.0 lets you process with ease and speed. ⚡✨
 
+---
+### 📦 ENHANCE.PET MOOSE 1.6k Dataset FTW
 
+We have finally done it and thanks a ton to AWS Open Data Sponsorship Program!
 
+**An open, multi-center [18F]FDG-PET/CT dataset with 130 CT-derived anatomical segmentations per scan (~250 GB)**  
+Part of the [ENHANCE.PET initiative](https://enhance.pet/) and hosted under the AWS Open Data Sponsorship Program.
+
+| Estimated size | Primary access method | Support contact |
+|----------------|-----------------------|-----------------|
+| ~250 GB        | MOOSE CLI (see below) | Lalith.shiyam@med.uni-muenchen.de |
+
+### 📄 Documentation
+- [Dataset Organization](https://github.com/ENHANCE-PET/MOOSE/blob/main/DATA_CARD.md) — folder structure, file naming, metadata details, licensing per site
+- [AWS Tutorial with MOOSE CLI](https://github.com/ENHANCE-PET/MOOSE/blob/main/DATA_CARD.md) — how to download and explore data on AWS
+- [Labels.json mapping](https://github.com/ENHANCE-PET/MOOSE/blob/main/DATA_CARD.md) — intensity values for each anatomical label (in the downloaded folder)
+
+### 🚀 Quick Access
+
+**Download via MOOSE CLI** (recommended):
+
+```bash
+moosez -dtd -dd /path/to/download/
+
+```
+---
 Need assistance along the way? Don't worry, we've got you covered. Simply type:
 
 ```bash
