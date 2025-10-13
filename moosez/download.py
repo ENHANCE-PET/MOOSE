@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 import requests
@@ -9,7 +8,6 @@ from moosez import file_utilities
 
 
 def download_enhance_data(download_directory: Union[str, None], output_manager: system.OutputManager):
-
     output_manager.log_update(f"    - Downloading ENHANCE 1.6k data")
     if not download_directory:
         download_directory = get_default_download_folder()

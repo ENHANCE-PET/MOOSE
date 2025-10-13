@@ -26,10 +26,10 @@ import scipy.ndimage as ndimage
 import nibabel
 import os
 import math
+import tempfile
 from typing import Union, Tuple, List, Dict
 from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
 from moosez import models
-from moosez import system
 
 
 def get_intensity_statistics(image: SimpleITK.Image, mask_image: SimpleITK.Image, model: models.Model, out_csv: str) -> None:
@@ -177,6 +177,56 @@ def largest_connected_component(segmentation_array, intensities):
         largest_components_multilabel[largest_component] = intensity
 
     return largest_components_multilabel
+
+
+def extract_labels_and_write(multilabel_image: SimpleITK.Image, model: models.Model, output_directory: str):
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    label_stats = SimpleITK.LabelStatisticsImageFilter()
+    label_stats.Execute(multilabel_image, multilabel_image)
+    unique_labels = label_stats.GetLabels()
+
+    for label in unique_labels:
+        if label == 0:
+            continue
+
+        if label not in model.organ_indices:
+            continue
+
+        label_mask = SimpleITK.BinaryThreshold(multilabel_image, lowerThreshold=label, upperThreshold=label, insideValue=1, outsideValue=0)
+
+        label_name = model.organ_indices[label]
+        file_path = os.path.join(output_directory, f"{label_name}.nii.gz")
+        SimpleITK.WriteImage(label_mask, file_path)
+
+
+def image_get_orientation_code(image: SimpleITK.Image) -> str:
+    image_orientation_code = SimpleITK.DICOMOrientImageFilter_GetOrientationFromDirectionCosines(image.GetDirection())
+    return image_orientation_code
+
+
+def image_reorient(image: SimpleITK.Image, new_orientation_code) -> SimpleITK.Image:
+    image_orientation_code = image_get_orientation_code(image)
+    if image_orientation_code != new_orientation_code:
+        return SimpleITK.DICOMOrient(image, new_orientation_code)
+    return image
+
+
+def image_read(image_path: str) -> SimpleITK.Image:
+    SimpleITK.ProcessObject_SetGlobalWarningDisplay(False)
+    try:
+        image = SimpleITK.ReadImage(image_path)
+    except RuntimeError:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_tmp_path = os.path.join(tmpdir, "non_orthonormal.nii.gz")
+            print(image_path)
+            print(file_tmp_path)
+            image_nibabel = nibabel.load(image_path)
+            nibabel.save(nibabel.Nifti1Image(image_nibabel.get_fdata(), image_nibabel.get_qform()), file_tmp_path)
+            image = SimpleITK.ReadImage(file_tmp_path)
+    SimpleITK.ProcessObject_SetGlobalWarningDisplay(True)
+    return image
 
 
 class ImageChunker:
@@ -347,66 +397,6 @@ class ImageResampler:
         return resampled_array
 
     @staticmethod
-    def resample_image_SimpleITK_DASK(sitk_image: SimpleITK.Image, interpolation: str,
-                                      output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
-                                      output_size: Union[Tuple, None] = None) -> SimpleITK.Image:
-        """
-        Resamples a sitk_image using Dask and SimpleITK.
-
-        :param sitk_image: The SimpleITK image to be resampled.
-        :type sitk_image: sitk.Image
-        :param interpolation: nearest|linear|bspline.
-        :type interpolation: str
-        :param output_spacing: The desired output spacing of the resampled sitk_image.
-        :type output_spacing: tuple
-        :param output_size: The new size to use.
-        :type output_size: tuple
-        :return: The resampled sitk_image as SimpleITK.Image.
-        :rtype: sitk.Image
-        :raises ValueError: If the interpolation method is not supported.
-        """
-
-        resample_result = ImageResampler.resample_image_SimpleITK_DASK_array(sitk_image, interpolation, output_spacing, output_size)
-
-        resampled_image = SimpleITK.GetImageFromArray(resample_result)
-        resampled_image.SetSpacing(output_spacing)
-        resampled_image.SetOrigin(sitk_image.GetOrigin())
-        resampled_image.SetDirection(sitk_image.GetDirection())
-
-        return resampled_image
-
-    @staticmethod
-    def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
-                         output_image_path: Union[str, None] = None, is_label_image: bool = False) -> SimpleITK.Image:
-        """
-        Reslices an image to the same space as another image.
-
-        :param reference_image: The reference image.
-        :type reference_image: SimpleITK.Image
-        :param moving_image: The image to reslice to the reference image.
-        :type moving_image: SimpleITK.Image
-        :param output_image_path: Path to the resliced image. Default is None.
-        :type output_image_path: str
-        :param is_label_image: Determines if the image is a label image. Default is False.
-        :type is_label_image: bool
-        :return: The resliced image as SimpleITK.Image.
-        :rtype: SimpleITK.Image
-        """
-        resampler = SimpleITK.ResampleImageFilter()
-        resampler.SetReferenceImage(reference_image)
-
-        if is_label_image:
-            resampler.SetInterpolator(SimpleITK.sitkNearestNeighbor)
-        else:
-            resampler.SetInterpolator(SimpleITK.sitkLinear)
-
-        resampled_image = resampler.Execute(moving_image)
-        resampled_image = SimpleITK.Cast(resampled_image, SimpleITK.sitkInt32)
-        if output_image_path is not None:
-            SimpleITK.WriteImage(resampled_image, output_image_path)
-        return resampled_image
-
-    @staticmethod
     def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
                                             output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
                                             output_size: Union[Tuple[float, float, float], None] = None) -> np.array:
@@ -440,121 +430,40 @@ class ImageResampler:
         return result.compute()
 
     @staticmethod
+    def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
+                         output_image_path: Union[str, None] = None, is_label_image: bool = False) -> SimpleITK.Image:
+        """
+        Reslices an image to the same space as another image.
+
+        :param reference_image: The reference image.
+        :type reference_image: SimpleITK.Image
+        :param moving_image: The image to reslice to the reference image.
+        :type moving_image: SimpleITK.Image
+        :param output_image_path: Path to the resliced image. Default is None.
+        :type output_image_path: str
+        :param is_label_image: Determines if the image is a label image. Default is False.
+        :type is_label_image: bool
+        :return: The resliced image as SimpleITK.Image.
+        :rtype: SimpleITK.Image
+        """
+        resampler = SimpleITK.ResampleImageFilter()
+        resampler.SetReferenceImage(reference_image)
+
+        if is_label_image:
+            resampler.SetInterpolator(SimpleITK.sitkNearestNeighbor)
+        else:
+            resampler.SetInterpolator(SimpleITK.sitkLinear)
+
+        resampled_image = resampler.Execute(moving_image)
+        resampled_image = SimpleITK.Cast(resampled_image, SimpleITK.sitkInt32)
+        if output_image_path is not None:
+            SimpleITK.WriteImage(resampled_image, output_image_path)
+        return resampled_image
+
+    @staticmethod
     def resample_segmentation(reference_image: SimpleITK.Image, segmentation_image: SimpleITK.Image):
         resampled_sitk_image = SimpleITK.Resample(segmentation_image, reference_image.GetSize(), SimpleITK.Transform(),
                                                   SimpleITK.sitkNearestNeighbor, reference_image.GetOrigin(),
                                                   reference_image.GetSpacing(), reference_image.GetDirection(), 0.0,
                                                   segmentation_image.GetPixelIDValue())
         return resampled_sitk_image
-
-
-def determine_orientation_code(image: nibabel.Nifti1Image) -> Tuple[Union[Tuple, List], str]:
-    affine = image.affine
-    orthonormal_orientation = nibabel.orientations.aff2axcodes(affine)
-    return orthonormal_orientation, ''.join(orthonormal_orientation)
-
-
-def confirm_orthonormality(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Image, bool]:
-    data = image.get_fdata()
-    affine = image.affine
-    header = image.header
-
-    rotation_matrix = affine[:3, :3]
-    spacing = np.linalg.norm(rotation_matrix, axis=0)
-
-    ortho_rotation_matrix = rotation_matrix / spacing
-    is_orthonormal = np.allclose(ortho_rotation_matrix.T @ ortho_rotation_matrix, np.eye(3))
-
-    if not is_orthonormal:
-        orthonormalized = True
-        q, _ = np.linalg.qr(ortho_rotation_matrix)
-        ortho_rotation_matrix = q * spacing
-
-        orthonormal_affine = np.eye(4)
-        orthonormal_affine[:3, :3] = ortho_rotation_matrix
-        orthonormal_affine[:3, 3] = affine[:3, 3]
-
-        orthonormal_header = header.copy()
-        orthonormal_header.set_qform(orthonormal_affine)
-        orthonormal_header.set_sform(orthonormal_affine)
-
-        image = nibabel.Nifti1Image(data, orthonormal_affine, orthonormal_header)
-    else:
-        orthonormalized = False
-
-    return image, orthonormalized
-
-
-def confirm_orientation(image: nibabel.Nifti1Image) -> Tuple[nibabel.Nifti1Image, bool]:
-    data = image.get_fdata()
-    affine = image.affine
-    header = image.header
-
-    original_orientation = nibabel.orientations.aff2axcodes(affine)
-
-    if original_orientation[0] == 'R':
-        reoriented = True
-
-        current_orientation = nibabel.orientations.axcodes2ornt(original_orientation)
-        target_orientation = nibabel.orientations.axcodes2ornt(('L', original_orientation[1], original_orientation[2]))
-
-        orientation_transform = nibabel.orientations.ornt_transform(current_orientation, target_orientation)
-        reoriented_data = nibabel.orientations.apply_orientation(data, orientation_transform)
-        reoriented_affine = nibabel.orientations.inv_ornt_aff(orientation_transform, data.shape).dot(affine)
-
-        reoriented_header = header.copy()
-        reoriented_header.set_qform(reoriented_affine)
-        reoriented_header.set_sform(reoriented_affine)
-
-        image = nibabel.Nifti1Image(reoriented_data, reoriented_affine, reoriented_header)
-    else:
-        reoriented = False
-
-    return image, reoriented
-
-
-def convert_to_sitk(image: nibabel.Nifti1Image) -> SimpleITK.Image:
-    data = image.get_fdata()
-    affine = image.affine
-    spacing = image.header.get_zooms()
-
-    image_data_swapped_axes = data.swapaxes(0, 2)
-    sitk_image = SimpleITK.GetImageFromArray(image_data_swapped_axes)
-
-    translation_vector = affine[:3, 3]
-    rotation_matrix = affine[:3, :3]
-    axis_flip_matrix = np.diag([-1, -1, 1])
-
-    sitk_image.SetSpacing([spacing.item() for spacing in spacing])
-    sitk_image.SetOrigin(np.dot(axis_flip_matrix, translation_vector))
-    sitk_image.SetDirection((np.dot(axis_flip_matrix, rotation_matrix) / np.absolute(spacing)).flatten())
-
-    return sitk_image
-
-
-def standardize_image(image_path: str, output_manager: system.OutputManager, standardization_output_path: Union[str, None]) -> SimpleITK.Image:
-    image = nibabel.load(image_path)
-    _, original_orientation = determine_orientation_code(image)
-    output_manager.log_update(f" - Image loaded. Orientation: {original_orientation}")
-
-    image, orthonormalized = confirm_orthonormality(image)
-    if orthonormalized:
-        _, orthonormal_orientation = determine_orientation_code(image)
-        output_manager.log_update(f"   - Image orthonormalized. Orientation: {orthonormal_orientation}")
-    image, reoriented = confirm_orientation(image)
-    if reoriented:
-        _, reoriented_orientation = determine_orientation_code(image)
-        output_manager.log_update(f"   - Image reoriented. Orientation: {reoriented_orientation}")
-    sitk_image = convert_to_sitk(image)
-    output_manager.log_update(f" - Image converted to SimpleITK.")
-
-    processing_steps = [orthonormalized, reoriented]
-    prefixes = ["orthonormal", "reoriented"]
-
-    if standardization_output_path is not None and any(processing_steps):
-        output_manager.log_update(f" - Writing standardized image.")
-        prefix = "_".join([prefix for processing_step, prefix in zip(processing_steps, prefixes) if processing_step])
-        output_path = os.path.join(standardization_output_path, f"{prefix}_{os.path.basename(image_path)}")
-        SimpleITK.WriteImage(sitk_image, output_path)
-
-    return sitk_image

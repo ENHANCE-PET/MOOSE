@@ -24,7 +24,7 @@ from moosez import models
 from moosez import system
 
 
-def determine_model_expectations(model_routine: Dict[Tuple, List[models.ModelWorkflow]], output_manager: system.OutputManager) -> List:
+def determine_model_expectations(model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager) -> List:
     """
     Display expected modality for the model.
 
@@ -46,20 +46,17 @@ def determine_model_expectations(model_routine: Dict[Tuple, List[models.ModelWor
     styles = [None, "cyan", None, None, None, None, None]
     table = output_manager.create_table(header, styles)
 
-    model_nr = 0
-    for model_workflows in model_routine.values():
-        for model_workflow in model_workflows:
-            model_nr += 1
-            modalities, prefixes = model_workflow.target_model.get_expectation()
-            required_modalities = required_modalities + modalities
-            required_prefixes = required_prefixes + prefixes
+    for model_nr, model_workflow in enumerate(model_workflows):
+        modalities, prefixes = model_workflow.target_model.get_expectation()
+        required_modalities = required_modalities + modalities
+        required_prefixes = required_prefixes + prefixes
 
-            model_identifier = model_workflow.target_model.model_identifier
-            modality = model_workflow.target_model.modality
-            imaging = f"{model_workflow.target_model.imaging_type}ical".capitalize()
-            regions = str(model_workflow.target_model.organ_indices)
-            nr_training_data = model_workflow.target_model.nr_training_data
-            table.add_row(str(model_nr), model_identifier, regions, imaging, modality, ', '.join(prefixes), nr_training_data)
+        model_identifier = model_workflow.target_model.model_identifier
+        modality = model_workflow.target_model.modality
+        imaging = f"{model_workflow.target_model.imaging_type}ical".capitalize()
+        regions = str(model_workflow.target_model.organ_indices)
+        nr_training_data = model_workflow.target_model.nr_training_data
+        table.add_row(str(model_nr + 1), model_identifier, regions, imaging, modality, ', '.join(prefixes), nr_training_data)
 
     output_manager.console_update(table)
 

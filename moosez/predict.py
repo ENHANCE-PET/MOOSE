@@ -24,6 +24,7 @@ from typing import Tuple, List, Dict, Iterator
 from moosez import models
 from moosez import image_processing
 from moosez import system
+from moosez import constants
 from nnunetv2.inference.predict_from_raw_data import nnUNetPredictor
 
 
@@ -40,7 +41,7 @@ def initialize_predictor(model: models.Model, accelerator: str) -> nnUNetPredict
     """
     device = torch.device(accelerator)
     predictor = nnUNetPredictor(allow_tqdm=False, device=device)
-    predictor.initialize_from_trained_model_folder(model.configuration_directory, use_folds=("all",))
+    predictor.initialize_from_trained_model_folder(model.configuration_directory, use_folds=model.folds)
     return predictor
 
 
@@ -54,23 +55,22 @@ def process_case(preprocessor, chunk: np.ndarray, chunk_properties: Dict, predic
                                                 predictor.dataset_json)
 
     data_tensor = torch.from_numpy(data).contiguous()
-    if predictor.device == "cuda":
+    if predictor.device.type == "cuda":
         data_tensor = data_tensor.pin_memory()
 
     return {'data': data_tensor, 'data_properties': prop, 'ofile': None, 'location': location}
 
 
 def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties: Dict, predictor: nnUNetPredictor, output_manager: system.OutputManager) -> Tuple[Iterator, List[Dict]]:
-    overlap_per_dimension = (0, 20, 20, 20)
     splits = image_processing.ImageChunker.determine_splits(image_array)
-    chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, overlap_per_dimension)
+    chunks, locations = image_processing.ImageChunker.array_to_chunks(image_array, splits, constants.OVERLAP_PER_AXIS)
     chunk_properties = [image_properties.copy() for _ in chunks]
 
     output_manager.log_update(f"     - Image split into {len(chunks)} chunks:")
     for i, chunk in enumerate(chunks):
         output_manager.log_update(f"       - {i + 1}: {'x'.join(map(str, chunk.shape))}")
 
-    preprocessor = predictor.configuration_manager.preprocessor_class(verbose=predictor.verbose)
+    preprocessor = predictor.configuration_manager.preprocessor_class(verbose=True)
 
     delayed_tasks = []
     for image_chunk, chunk_property, location in zip(chunks, chunk_properties, locations):
@@ -102,13 +102,13 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model,
     return np.squeeze(combined_segmentations)
 
 
-def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.ModelWorkflow, accelerator, output_manager: system.OutputManager):
+def cropped_fov_prediction_pipeline(image: SimpleITK.Image, previous_segmentation: np.ndarray, workflow: models.ModelWorkflow, accelerator, output_manager: system.OutputManager):
     """
     Process segmentation by resampling, limiting FOV, and predicting.
 
     Parameters:
         image (SimpleITK.Image): The input image.
-        segmentation_array (np.array): The segmentation array to be processed.
+        previous_segmentation (np.array): The segmentation array to be processed.
         workflow (models.ModelWorkflow): List of routines where the second element contains model info.
         accelerator (any): The accelerator used for prediction.
         output_manager (output_manager: system.OutputManager): for console and logging.
@@ -123,7 +123,7 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.
     target_model_fov_information = target_model.limit_fov
 
     # Convert the segmentation array to SimpleITK image and set properties
-    to_crop_segmentation = SimpleITK.GetImageFromArray(segmentation_array)
+    to_crop_segmentation = SimpleITK.GetImageFromArray(previous_segmentation)
     to_crop_segmentation.SetOrigin(image.GetOrigin())
     to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
     to_crop_segmentation.SetDirection(image.GetDirection())
@@ -163,7 +163,7 @@ def cropped_fov_prediction_pipeline(image, segmentation_array, workflow: models.
                                                                                    target_model_fov_information["largest_component_only"])
 
     # Expand the segmentation array to the original FOV
-    segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
+    previous_segmentation = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
 
     # Return the segmentation array and spacing
-    return segmentation_array, desired_spacing
+    return previous_segmentation, desired_spacing

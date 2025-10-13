@@ -8,7 +8,7 @@ This module contains the constants that are used in the moosez.
 .. versionadded:: 3.0.0
 """
 
-VERSION = "3.0.0"
+VERSION = "3.1.0"
 
 ALLOWED_MODALITIES = ['CT', 'PT', 'MR']
 
@@ -28,11 +28,6 @@ INTERPOLATION = 'bspline'
 CHUNK_THRESHOLD_RESAMPLING = 150
 CHUNK_THRESHOLD_INFERRING = 350
 
-# DISPLAY PARAMETERS
-MIP_ROTATION_STEP = 40
-DISPLAY_VOXEL_SPACING = (3, 3, 3)
-FRAME_DURATION = 0.4
-
 # MODELS
 KEY_FOLDER_NAME = "folder_name"
 KEY_URL = "url"
@@ -42,6 +37,8 @@ KEY_DESCRIPTION_TEXT = "Tissue of Interest"
 KEY_DESCRIPTION_MODALITY = "Modality"
 KEY_DESCRIPTION_IMAGING = "Imaging"
 DEFAULT_SPACING = (1.5, 1.5, 1.5)
+DEFAULT_TRANSPOSE_IDENTITY = [0, 1, 2]
+OVERLAP_PER_AXIS = (0, 20, 20, 20)
 FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
 
@@ -83,10 +80,6 @@ This module contains the following constants:
 
 - `INTERPOLATION`: A constant that stores the interpolation method used by the moosez algorithm.
 - `CHUNK_THRESHOLD`: A constant that stores the chunk threshold used by the moosez algorithm.
-
-- `MIP_ROTATION_STEP`: A constant that stores the MIP rotation step used by the moosez algorithm.
-- `DISPLAY_VOXEL_SPACING`: A constant that stores the display voxel spacing used by the moosez algorithm.
-- `FRAME_DURATION`: A constant that stores the frame duration used by the moosez algorithm.
 
 This module is imported by other modules in the moosez package and the constants are used throughout the package 
 to provide fixed values that are used repeatedly.
