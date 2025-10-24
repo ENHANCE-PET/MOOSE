@@ -47,6 +47,9 @@ class OutputManager:
         self.logger = None
         self.nnunet_log_filename = os.devnull
 
+        # On Windows, the console encoding may not be UTF-8, which can cause issues with certain characters
+        self.sanitize_console_encoding = self.console.encoding.lower() not in ['utf-8', 'utf8']
+
     def create_file_progress_bar(self):
         progress_bar = Progress(TextColumn("[bold blue]{task.description}"), BarColumn(bar_width=None),
                                 "[progress.percentage]{task.percentage:>3.0f}%", "•", FileSizeColumn(),
@@ -98,6 +101,11 @@ class OutputManager:
     def console_update(self, text: Union[str, RenderableType]):
         if isinstance(text, str):
             text = Text.from_ansi(text)
+
+        if self.sanitize_console_encoding and isinstance(text, Text):
+            # Ensure the text can be represented in the console by robust encoding and decoding (ignoring invalid characters)
+            text = Text(text.plain.encode(self.console.encoding, "ignore").decode(self.console.encoding))
+
         self.console.print(text)
 
     def spinner_update(self, text: str):
