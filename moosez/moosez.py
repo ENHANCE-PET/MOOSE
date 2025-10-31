@@ -389,7 +389,9 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     """
     # Load the image and set a default filename based on input type
     if isinstance(input_data, str):
-        image = image_processing.image_read(input_data)
+        image_raw = image_processing.image_read(input_data)
+        image_raw_orientation_code = image_processing.image_get_orientation_code(image_raw)
+        image = image_processing.image_reorient(image_raw, "RAS")
         file_name = file_utilities.get_nifti_file_stem(input_data)
     elif isinstance(input_data, SimpleITK.Image):
         image = input_data
@@ -403,11 +405,9 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
         raise ValueError("Invalid input format. `input_data` must be either a file path (str), "
                          "a SimpleITK.Image, or a tuple (numpy array, spacing).")
 
-    # Ensure model_names is a list for consistency
     if isinstance(model_names, str):
         model_names = [model_names]
 
-    # Output manager and model routine setup
     output_manager = system.OutputManager(False, False)
 
     add_custom_trainers_to_local_nnunetv2()
@@ -426,14 +426,15 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
 
     for segmentation_image, model in run_workflows(image, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
         image_output = None
-        if isinstance(input_data, str):  # Return file path if input was a file path
+        if isinstance(input_data, str):
             if output_dir is None:
                 output_dir = os.path.dirname(input_data)
             image_output = os.path.join(output_dir, f"{model.multilabel_prefix}segmentation_{file_name}.nii.gz")
+            segmentation_image = image_processing.image_reorient(segmentation_image, image_raw_orientation_code)
             SimpleITK.WriteImage(segmentation_image, image_output)
-        elif isinstance(input_data, SimpleITK.Image):  # Return SimpleITK.Image if input was SimpleITK.Image
+        elif isinstance(input_data, SimpleITK.Image):
             image_output = segmentation_image
-        elif isinstance(input_data, tuple):  # Return numpy array if input was numpy array
+        elif isinstance(input_data, tuple):
             image_output = SimpleITK.GetArrayFromImage(segmentation_image)
 
         generated_segmentations.append(image_output)
