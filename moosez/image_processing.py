@@ -220,8 +220,6 @@ def image_read(image_path: str) -> SimpleITK.Image:
     except RuntimeError:
         with tempfile.TemporaryDirectory() as tmpdir:
             file_tmp_path = os.path.join(tmpdir, "non_orthonormal.nii.gz")
-            print(image_path)
-            print(file_tmp_path)
             image_nibabel = nibabel.load(image_path)
             nibabel.save(nibabel.Nifti1Image(image_nibabel.get_fdata(), image_nibabel.get_qform()), file_tmp_path)
             image = SimpleITK.ReadImage(file_tmp_path)
