@@ -5,7 +5,7 @@ setup(
     name='moosez',
     version="3.1.2",
     author='Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires',
-    author_email='Lalith.shiyamsundar@meduniwien.ac.at',
+    author_email='Lalith.shiyam@med.uni-muenchen.de',
     description='An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks',
     python_requires='>=3.10',
     long_description='mooseZ is an AI-inference engine based on nnUNet, designed for 3D clinical and preclinical'
