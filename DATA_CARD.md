@@ -30,7 +30,7 @@ The ENHANCE.PET MOOSE 1.6k corpus is made available worldwide through the
 Top-level prefix : `enhance-pet-1-6k/`
 
 ```
-s3://<aws-open-data-bucket>/enhance-pet-1-6k/
+s3://enhance-pet-1-6k/
   CT-details.xlsx
   PT-details.xlsx
   labels.json
@@ -174,7 +174,23 @@ Licensing is **per originating site**, recorded in the `Data-Source` column of b
 
 ---
 
-## 7) Access on AWS via MOOSE CLI
+---
+
+## 7) Access to AWS via AWS CLI
+
+This dataset can be accessed (viewed and downloaded) using the `aws cli`.
+
+1. **[Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)**
+2. **[See the basic commands](https://docs.aws.amazon.com/cli/latest/reference/s3/)**
+3. Access the Open Data on AWS without signing up
+```bash
+    # list the content of the directory
+    aws s3 ls --no-sign-request s3://enhance-pet-1-6k/imaging-data/images/CT/
+```
+
+---
+
+## 8) Access on AWS via MOOSE CLI
 
 This dataset is **distributed via the MOOSE CLI** to simplify discovery and download.
 
@@ -187,7 +203,7 @@ This dataset is **distributed via the MOOSE CLI** to simplify discovery and down
 
 ---
 
-## 8) Expected counts & integrity checks
+## 9) Expected counts & integrity checks
 
 - **CT volumes:** 1,597 files  
 - **PT volumes:** 1,597 files  
@@ -196,13 +212,13 @@ This dataset is **distributed via the MOOSE CLI** to simplify discovery and down
 
 ---
 
-## 9) Known caveats
+## 10) Known caveats
 
 - Segmentations are **derived from CT**; in cases with notable **patient motion**, PET↔CT misalignment may be present.  
 - Some very small or thin structures can be more challenging (e.g., small vessels, digits), which should be considered during downstream QA.
 
 ---
 
-## 10) Contact
+## 11) Contact
 
 For questions, issues, or requests: **Lalith Kumar Shiyam Sundar** — `Lalith.shiyam@med.uni-muenchen.de`
