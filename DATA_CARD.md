@@ -144,6 +144,118 @@ Seven segmentation groups are provided. Below are **representative excerpts** fr
 }
 ```
 
+### 3.4 Peripheral Bones (`clin_ct_peripheral_bones`)
+```json
+  {
+    "1": "carpal_left",
+    "2": "carpal_right",
+    "3": "clavicle_left",
+    "4": "clavicle_right",
+    "5": "femur_left",
+    "6": "femur_right",
+    "7": "fibula_left",
+    "8": "fibula_right",
+    "9": "fingers_left",
+    "10": "fingers_right",
+    "11": "humerus_left",
+    "12": "humerus_right",
+    "13": "metacarpal_left",
+    "14": "metacarpal_right",
+    "15": "metatarsal_left",
+    "16": "metatarsal_right",
+    "17": "patella_left",
+    "18": "patella_right",
+    "19": "radius_left",
+    "20": "radius_right",
+    "21": "scapula_left",
+    "22": "scapula_right",
+    "24": "tarsal_left",
+    "25": "tarsal_right",
+    "26": "tibia_left",
+    "27": "tibia_right",
+    "28": "toes_left",
+    "29": "toes_right",
+    "30": "ulna_left",
+    "31": "ulna_right"
+  }
+```
+
+### 3.5 Ribs (`clin_ct_ribs`)
+```json
+{
+    "1": "rib_left_1",
+    "2": "rib_left_2",
+    "3": "rib_left_3",
+    "4": "rib_left_4",
+    "5": "rib_left_5",
+    "6": "rib_left_6",
+    "7": "rib_left_7",
+    "8": "rib_left_8",
+    "9": "rib_left_9",
+    "10": "rib_left_10",
+    "11": "rib_left_11",
+    "12": "rib_left_12",
+    "13": "rib_left_13",
+    "14": "rib_right_1",
+    "15": "rib_right_2",
+    "16": "rib_right_3",
+    "17": "rib_right_4",
+    "18": "rib_right_5",
+    "19": "rib_right_6",
+    "20": "rib_right_7",
+    "21": "rib_right_8",
+    "22": "rib_right_9",
+    "23": "rib_right_10",
+    "24": "rib_right_11",
+    "25": "rib_right_12",
+    "26": "rib_right_13",
+    "27": "sternum"
+  }
+```
+
+### 3.6 Vertabrae (`clin_ct_vertebrae`)
+```json
+{
+    "1": "vertebra_C1",
+    "2": "vertebra_C2",
+    "3": "vertebra_C3",
+    "4": "vertebra_C4",
+    "5": "vertebra_C5",
+    "6": "vertebra_C6",
+    "7": "vertebra_C7",
+    "8": "vertebra_T1",
+    "9": "vertebra_T2",
+    "10": "vertebra_T3",
+    "11": "vertebra_T4",
+    "12": "vertebra_T5",
+    "13": "vertebra_T6",
+    "14": "vertebra_T7",
+    "15": "vertebra_T8",
+    "16": "vertebra_T9",
+    "17": "vertebra_T10",
+    "18": "vertebra_T11",
+    "19": "vertebra_T12",
+    "20": "vertebra_L1",
+    "21": "vertebra_L2",
+    "22": "vertebra_L3",
+    "23": "vertebra_L4",
+    "24": "vertebra_L5",
+    "25": "vertebra_L6",
+    "26": "hip_left",
+    "27": "hip_right",
+    "28": "sacrum"
+  }
+```
+
+### 3.7 Body Composition (`clin_ct_body_composition`)
+```json
+{
+    "1": "skeletal_muscle",
+    "2": "subcutaneous_fat",
+    "3": "visceral_fat"
+  }
+```
+
 ---
 
 ## 4) Naming conventions
