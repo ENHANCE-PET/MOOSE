@@ -172,9 +172,7 @@ def main():
     # ----------------------------------
 
     if args.model_download:
-        output_manager.console_update(
-            f'\n{constants.ANSI_VIOLET} {emoji.emojize(":package:")} INITIATING MODEL(S) DOWNLOAD: {constants.ANSI_RESET}\n')
-
+        output_manager.console_update(f'\n{constants.ANSI_VIOLET} {emoji.emojize(":package:")} INITIATING MODEL(S) DOWNLOAD: {constants.ANSI_RESET}\n')
         output_manager.console_update("")
 
         # Check whether user provided a custom path
@@ -182,15 +180,13 @@ def main():
         custom_root = os.path.abspath(args.model_download_directory or system.MODELS_DIRECTORY_PATH)
 
         # Avoid double nesting if already models/nnunet_trained_models
-        if os.path.basename(custom_root) == "nnunet_trained_models" and os.path.basename(
-                os.path.dirname(custom_root)) == "models":
+        if os.path.basename(custom_root) == "nnunet_trained_models" and os.path.basename(os.path.dirname(custom_root)) == "models":
             model_output_path = custom_root
         else:
             model_output_path = os.path.join(custom_root, "models", "nnunet_trained_models")
 
         if using_default_path:
-            output_manager.console_update(
-                f' {emoji.emojize(":warning:")} No model output path specified. Using default: {constants.ANSI_ORANGE} {model_output_path}{constants.ANSI_RESET}')
+            output_manager.console_update(f' {emoji.emojize(":warning:")} No model output path specified. Using default: {constants.ANSI_ORANGE} {model_output_path}{constants.ANSI_RESET}')
 
         for model_name in args.model_download:
             if not models.Model.model_identifier_valid(model_name, output_manager):
@@ -217,7 +213,7 @@ def main():
 
     output_manager.configure_logging(parent_folder)
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
-    output_manager.log_update(f'                                     STARTING MOOSE-Z v{constants.VERSION}                                       ')
+    output_manager.log_update(f'                                     STARTING MOOSE-Z v{system.MOOSE_VERSION}                                       ')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
 
     # ----------------------------------
@@ -349,11 +345,11 @@ def main():
     output_manager.log_update(f'  - Time (per model):   {round(time_per_model, 2)}min')
     if benchmark:
         df = pd.DataFrame(subject_performance_parameters, columns=['Image', 'Model', 'Image Size', 'Runtime [s]', 'Peak Memory [GB]'])
-        csv_file_path = os.path.join(parent_folder, f'moosez-v{constants.VERSION}_peak_performance_parameters.csv')
+        csv_file_path = os.path.join(parent_folder, f'moosez-v{system.MOOSE_VERSION}_peak_performance_parameters.csv')
         df.to_csv(csv_file_path, index=False)
         output_manager.log_update(f'  - Resource utilization written to {csv_file_path}')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
-    output_manager.log_update(f'                                     FINISHED MOOSE-Z v{constants.VERSION}                                       ')
+    output_manager.log_update(f'                                     FINISHED MOOSE-Z v{system.MOOSE_VERSION}                                       ')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
 
 
@@ -445,8 +441,10 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
 
 def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_workflows: List[models.ModelWorkflow], accelerator: str,
                   output_manager: Union[system.OutputManager, None], benchmark: bool = False, single_labels: bool = False):
-    # SETTING UP DIRECTORY STRUCTURE
     subject_name = os.path.basename(subject)
+    moose_information = system.get_system_information()
+    moose_information["single_labels"] = single_labels
+    moose_information["models"] = {}
 
     if output_manager is None:
         output_manager = system.OutputManager(False, False)
@@ -483,10 +481,12 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     subjects_information = (subject_name, subject_index, number_of_subjects)
 
     for segmentation_image, model in run_workflows(CT_image_RAS, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
+        model_information = {"model_directory": model.directory}
         segmentation_image = image_processing.image_reorient(segmentation_image, CT_image_orientation_code)
         performance_observer.record_phase("Writing Images and Statistics")
         segmentation_image_path = os.path.join(segmentations_dir, f"{model.multilabel_prefix}segmentation_{CT_file_name}.nii.gz")
         output_manager.log_update(f'     - Writing segmentation for {model}')
+        model_information["segmentation_file"] = segmentation_image_path
         SimpleITK.WriteImage(segmentation_image, segmentation_image_path)
         output_manager.log_update(f'     - Writing organ indices for {model}')
         model.organ_indices_to_json(segmentations_dir)
@@ -506,6 +506,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
         out_vol_stats_csv = os.path.join(stats_dir, model.multilabel_prefix + subject_name + '_ct_volume.csv')
         image_processing.get_shape_statistics(segmentation_image, model, out_vol_stats_csv)
         output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT volume extracted for {subject_name}! {constants.ANSI_RESET}')
+        model_information["VOL_stats_file"] = out_vol_stats_csv
         time.sleep(1)
 
         output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting CT hounsfield statistics for {subject_name} ({model})...')
@@ -513,6 +514,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
         out_hu_stats_csv = os.path.join(stats_dir, model.multilabel_prefix + subject_name + '_ct_hu_values.csv')
         image_processing.get_intensity_statistics(CT_image, segmentation_image, model, out_hu_stats_csv)
         output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT hounsfield statistics extracted for {subject_name}! {constants.ANSI_RESET}')
+        model_information["HU_stats_file"] = out_hu_stats_csv
         time.sleep(1)
 
         # ----------------------------------
@@ -527,10 +529,13 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
             out_csv = os.path.join(stats_dir, model.multilabel_prefix + subject_name + '_pet_activity.csv')
             image_processing.get_intensity_statistics(PT_image, resampled_multilabel_image, model, out_csv)
             output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] PET activity extracted for {subject_name}! {constants.ANSI_RESET}')
+            model_information["PET_stats_file"] = out_csv
             time.sleep(1)
 
         performance_observer.time_phase()
+        moose_information["models"][model.model_identifier] = model_information
 
+    system.write_information_json(moose_information, moose_dir)
     end_time = time.time()
     elapsed_time = end_time - start_time
     output_manager.spinner_update(f' {constants.ANSI_GREEN}[{subject_index + 1}/{number_of_subjects}] Prediction done for {subject_name} using {len(model_names)} models: '

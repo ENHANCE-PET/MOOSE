@@ -8,8 +8,6 @@ This module contains the constants that are used in the moosez.
 .. versionadded:: 3.0.0
 """
 
-VERSION = "3.1.0"
-
 ALLOWED_MODALITIES = ['CT', 'PT', 'MR']
 
 # COLOR CODES
