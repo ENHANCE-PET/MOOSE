@@ -12,67 +12,67 @@ from moosez.mappings import SNOMED
 
 MODEL_METADATA = {
     "clin_ct_body": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_body_27112023.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_body_27112023.zip",
         KEY_FOLDER_NAME: "Dataset001_body",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_lungs": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_lungs_24062023.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_lungs_24062023.zip",
         KEY_FOLDER_NAME: "Dataset333_HMS3dlungs",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_organs": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_organs_ras_07052025.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_organs_ras_07052025.zip",
         KEY_FOLDER_NAME: "Dataset123_Organs",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_ribs": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_ribs_ras_08052025.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_ribs_ras_08052025.zip",
         KEY_FOLDER_NAME: "Dataset444_Ribs",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_muscles": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_muscles_ras_21052025.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_muscles_ras_21052025.zip",
         KEY_FOLDER_NAME: "Dataset555_Muscles",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_peripheral_bones": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_peripheral_bones_ras_07052025.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_peripheral_bones_ras_07052025.zip",
         KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_vertebrae": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_vertebrae_ras_21052025.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_vertebrae_ras_21052025.zip",
         KEY_FOLDER_NAME: "Dataset111_Vertebrae",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_cardiac": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_cardiac_ras_21052025.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_cardiac_ras_21052025.zip",
         KEY_FOLDER_NAME: "Dataset888_Cardiac",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_digestive": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_digestive_06102024.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_digestive_06102024.zip",
         KEY_FOLDER_NAME: "Dataset999_Digestive",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_ALPACA": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_ALPACA.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_ALPACA.zip",
         KEY_FOLDER_NAME: "Dataset080_Alpaca",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_PUMA": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_PUMA_1k_23052024.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_PUMA_1k_23052024.zip",
         KEY_FOLDER_NAME: "Dataset002_PUMA",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_PUMA4": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_PUMA4_06032024.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_PUMA4_06032024.zip",
         KEY_FOLDER_NAME: "Dataset003_PUMA4",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_body_composition": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_body_composition_05092024.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_body_composition_05092024.zip",
         KEY_FOLDER_NAME: "Dataset778_Body_composition",
         KEY_LIMIT_FOV: {
             "model_to_crop_from": "clin_ct_fast_vertebrae",
@@ -82,32 +82,32 @@ MODEL_METADATA = {
         }
     },
     "clin_ct_fast_organs": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_organs_6_02092024.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_organs_6_02092024.zip",
         KEY_FOLDER_NAME: "Dataset145_Fast_organs",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_fast_vertebrae": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_vertebrae3_10092024.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_vertebrae3_10092024.zip",
         KEY_FOLDER_NAME: "Dataset112_FastVertebrae",
         KEY_LIMIT_FOV: None
         },
     "clin_ct_fast_cardiac": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_cardiac3_10092024.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_cardiac3_10092024.zip",
         KEY_FOLDER_NAME: "Dataset890_FastCardiac",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_all_bones_v1": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_all_bones_25102023.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_all_bones_25102023.zip",
         KEY_FOLDER_NAME: "Dataset600_Original_bones",
         KEY_LIMIT_FOV: None
     },
     "clin_pt_fdg_brain_v1": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_fdg_pt_brain_v1_17112023.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_fdg_pt_brain_v1_17112023.zip",
         KEY_FOLDER_NAME: "Dataset100_Brain_v1",
         KEY_LIMIT_FOV: None
     },
     "clin_ct_fat_old": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_fat_31082023.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_fat_31082023.zip",
         KEY_FOLDER_NAME: "Dataset777_Fat",
         KEY_LIMIT_FOV: None
     },
@@ -117,7 +117,7 @@ MODEL_METADATA = {
         KEY_LIMIT_FOV: None
     },
     "clin_ct_face": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/clin_ct_Faces_08092025.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_Faces_08092025.zip",
         KEY_FOLDER_NAME: "Dataset007_Faces",
         KEY_LIMIT_FOV: {
             "model_to_crop_from": "clin_ct_body",
@@ -127,12 +127,12 @@ MODEL_METADATA = {
         }
     },
     "preclin_mr_all": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/preclin_mr_all_05122023.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_mr_all_05122023.zip",
         KEY_FOLDER_NAME: "Dataset234_minimoose",
         KEY_LIMIT_FOV: None
     },
     "preclin_ct_legs": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v3.1.3/preclin_ct_legs_05122023.zip",
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_ct_legs_05122023.zip",
         KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles",
         KEY_LIMIT_FOV: None
     }
