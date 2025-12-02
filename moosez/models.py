@@ -230,7 +230,6 @@ class Model:
         Download and extract the model if it does not exist locally
         or if the existing folder has a different URL recorded.
         """
-        print(self.url)
         # If folder already exists, check if we should remove it
         if os.path.exists(self.directory):
             # Attempt to load the previously saved URL from version file
