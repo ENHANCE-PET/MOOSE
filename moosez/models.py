@@ -138,7 +138,7 @@ MODEL_METADATA = {
     },
     "clin_pt_fdg_face": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.5/clin_pt_face_12012026.zip",
-        KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles",
+        KEY_FOLDER_NAME: "Dataset183_PETface",
         KEY_LIMIT_FOV: None
     }
 }
