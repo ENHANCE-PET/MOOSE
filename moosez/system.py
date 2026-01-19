@@ -5,6 +5,8 @@ import torch
 import os
 import emoji
 import pyfiglet
+import platform
+import json
 import importlib.metadata
 from halo import Halo
 from datetime import datetime
@@ -14,8 +16,8 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
 from rich.progress import Progress, TextColumn, BarColumn, FileSizeColumn, TransferSpeedColumn, TimeRemainingColumn
-from typing import Union, Tuple, List
-from moosez.constants import VERSION, ANSI_VIOLET, ANSI_RESET
+from typing import Union, Tuple, List, Dict, Optional
+from moosez.constants import ANSI_VIOLET, ANSI_RESET
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -77,9 +79,9 @@ class OutputManager:
 
         timestamp = datetime.now().strftime('%H-%M-%d-%m-%Y')
 
-        self.nnunet_log_filename = os.path.join(log_file_directory, f'moosez-v{VERSION}_nnUNet_{timestamp}.log')
+        self.nnunet_log_filename = os.path.join(log_file_directory, f'moosez-v{MOOSE_VERSION}_nnUNet_{timestamp}.log')
 
-        self.logger = logging.getLogger(f'moosez-v{VERSION}')
+        self.logger = logging.getLogger(f'moosez-v{MOOSE_VERSION}')
         self.logger.setLevel(logging.INFO)
         self.logger.propagate = False
 
@@ -87,7 +89,7 @@ class OutputManager:
             log_format = '%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
             formatter = logging.Formatter(log_format)
 
-            log_filename = os.path.join(log_file_directory, f'moosez-v{VERSION}_{timestamp}.log')
+            log_filename = os.path.join(log_file_directory, f'moosez-v{MOOSE_VERSION}_{timestamp}.log')
             file_handler = logging.FileHandler(log_filename, mode='w')
             file_handler.setLevel(logging.INFO)
             file_handler.setFormatter(formatter)
@@ -150,9 +152,8 @@ class OutputManager:
 
         :return: None
         """
-        version = importlib.metadata.version("moosez")
         self.console_update(' ')
-        result = ANSI_VIOLET + pyfiglet.figlet_format(f" MOOSE {version}", font="smslant").rstrip() + ANSI_RESET
+        result = ANSI_VIOLET + pyfiglet.figlet_format(f" MOOSE {MOOSE_VERSION}", font="smslant").rstrip() + ANSI_RESET
         text = ANSI_VIOLET + " A part of the ENHANCE community. Join us at www.enhance.pet to build the future of" \
                              " PET imaging together." + ANSI_RESET
         self.console_update(result)
@@ -206,32 +207,68 @@ class OutputManager:
 
         self.console.print(Panel(docker_msg, title="🐳 INFO FOR DOCKER USERS", border_style="violet", padding=(1, 2)))
 
-def check_device(output_manager: OutputManager = OutputManager(False, False)) -> Tuple[str, Union[int, None]]:
-    """
-    This function checks the available device for running predictions, considering CUDA and MPS (for Apple Silicon).
 
-    Returns:
-        str: The device to run predictions on, either "cpu", "cuda", or "mps".
+def check_device(output_manager: Optional[OutputManager] = None) -> Tuple[str, Union[int, None]]:
     """
-    # Check for CUDA
-    if torch.cuda.is_available():
-        device_count = torch.cuda.device_count()
-        output_manager.console_update(f" CUDA is available with {device_count} GPU(s). Predictions will be run on GPU.")
-        return "cuda", device_count
-    # Check for MPS (Apple Silicon) Here for the future but not compatible right now
-    elif torch.backends.mps.is_available():
+    This function checks the available device for running predictions, considering CUDA, MPS (for Apple Silicon) or CPU as fallback.
+    """
+    if output_manager is None:
+        output_manager = OutputManager(False, False)
+
+    accelerator_information = get_accelerator_information()
+    accelerator = accelerator_information["accelerator"]
+
+    if accelerator == "cuda":
+        output_manager.console_update(f" CUDA is available with {accelerator_information['device_count']} GPU(s). Predictions will be run on GPU.")
+        return "cuda", accelerator_information["device_count"]
+
+    if accelerator == "mps":
         output_manager.console_update(" Apple MPS backend is available. Predictions will be run on Apple Silicon GPU.")
         return "mps", None
-    elif not torch.backends.mps.is_built():
-        output_manager.console_update(" MPS not available because the current PyTorch install was not built with MPS enabled.")
-        return "cpu", None
+
+    output_manager.console_update(" CUDA/MPS not available. Predictions will be run on CPU.")
+    return "cpu", None
+
+
+def get_accelerator_information() -> Dict:
+    if torch.cuda.is_available():
+        return {"accelerator": "cuda",
+                "cuda_version": torch.version.cuda,
+                "device_count": torch.cuda.device_count(),
+                "device_name": ", ".join([torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())])}
+    elif torch.backends.mps.is_available():
+        return {"accelerator": "mps"}
     else:
-        output_manager.console_update(" CUDA/MPS not available. Predictions will be run on CPU.")
-        return "cpu", None
+        return {"accelerator": "cpu"}
+
+
+def get_system_information() -> Dict:
+    metadata = {"tool_name": "moosez",
+                "tool_version": MOOSE_VERSION,
+                "timestamp_start": datetime.now().strftime('%d.%m.%Y %H:%M'),
+                "python_version": platform.python_version(),
+                "os": platform.system(),"platform": platform.platform(),
+                "architecture": platform.machine()}
+    metadata.update(get_accelerator_information())
+
+    return metadata
+
+
+def write_information_json(metadata: Dict, metadata_file_directory: str) -> None:
+    metadata["timestamp_stop"] = datetime.now().strftime('%d.%m.%Y %H:%M')
+
+    os.makedirs(metadata_file_directory, exist_ok=True)
+    metadata_file_path = os.path.join(metadata_file_directory, "MOOSE_information.json")
+    with open(metadata_file_path, "w") as f:
+        json.dump(metadata, f, indent=4)
 
 
 os.environ["nnUNet_raw"] = ""
 os.environ["nnUNet_preprocessed"] = ""
 os.environ["nnUNet_results"] = ""
+try:
+    MOOSE_VERSION = importlib.metadata.version("moosez")
+except importlib.metadata.PackageNotFoundError:
+    MOOSE_VERSION = "0.0.0"
 MOOSE_ROOT_PATH: str = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIRECTORY_PATH: str = os.path.join(MOOSE_ROOT_PATH, 'models', 'nnunet_trained_models')
