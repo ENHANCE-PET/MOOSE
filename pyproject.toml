@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moosez"
+version = "3.1.5"
+description = "An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+
+authors = [
+  { name = "Lalith Kumar Shiyam Sundar", email = "Lalith.shiyam@med.uni-muenchen.de" },
+  { name = "Sebastian Gutschmayer", email = "sebastian.gutschmayer@meduniwien.ac.at"  },
+  { name = "Manuel Pires", email = "manuel.pires@meduniwien.ac.at"  },
+]
+
+keywords = [
+  "moosez", "model-zoo", "nnUNet", "medical-imaging",
+  "tumor-segmentation", "organ-segmentation", "bone-segmentation",
+  "lung-segmentation", "muscle-segmentation", "fat-segmentation",
+  "vessel-segmentation", "vertebral-segmentation", "rib-segmentation",
+  "preclinical-segmentation", "clinical-segmentation",
+]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Healthcare Industry",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+
+dependencies = [
+  "torch",
+  "SimpleITK",
+  "nnunetv2>=2.6.0",
+  "halo",
+  "pydicom",
+  "numpy",
+  "pyfiglet",
+  "natsort",
+  "colorama",
+  "dask",
+  "rich",
+  "pandas",
+  "dicom2nifti",
+  "emoji",
+  "matplotlib",
+  "psutil",
+  "nibabel"
+]
+
+[project.scripts]
+moosez = "moosez.moosez:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["moosez*"]
