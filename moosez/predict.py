@@ -88,9 +88,7 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model,
 
     with output_manager.manage_nnUNet_output():
         predictor = initialize_predictor(model, accelerator)
-        image_properties = {
-            'spacing': model.voxel_spacing
-        }
+        image_properties = {'spacing': model.voxel_spacing}
 
         iterator, chunk_locations = preprocessing_iterator_from_array(image_array, image_properties, predictor, output_manager)
         segmentations = predictor.predict_from_data_iterator(iterator)
@@ -144,11 +142,6 @@ def cropped_fov_prediction_pipeline(image: SimpleITK.Image, previous_segmentatio
     # Limit FOV based on model information
     limited_fov_image_array, original_fov_info = image_processing.limit_fov(to_crop_image_array, resampled_to_crop_segmentation_array,
                                                                             target_model_fov_information["inference_fov_intensities"])
-
-    to_write_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
-    to_write_image.SetOrigin(image.GetOrigin())
-    to_write_image.SetSpacing(desired_spacing)
-    to_write_image.SetDirection(image.GetDirection())
 
     # Predict the limited FOV segmentation
     limited_fov_segmentation_array = predict_from_array_by_iterator(limited_fov_image_array, target_model,
