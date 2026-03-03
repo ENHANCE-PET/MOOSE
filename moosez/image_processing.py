@@ -206,7 +206,7 @@ def image_get_orientation_code(image: SimpleITK.Image) -> str:
     return image_orientation_code
 
 
-def image_reorient(image: SimpleITK.Image, new_orientation_code) -> SimpleITK.Image:
+def image_reorient(image: SimpleITK.Image, new_orientation_code: str) -> SimpleITK.Image:
     image_orientation_code = image_get_orientation_code(image)
     if image_orientation_code != new_orientation_code:
         return SimpleITK.DICOMOrient(image, new_orientation_code)
@@ -225,6 +225,11 @@ def image_read(image_path: str) -> SimpleITK.Image:
             image = SimpleITK.ReadImage(file_tmp_path)
     SimpleITK.ProcessObject_SetGlobalWarningDisplay(True)
     return image
+
+
+def reverse_axes(axes: tuple) -> tuple:
+    axes_reversed = reversed(axes)
+    return tuple(axes_reversed)
 
 
 class ImageChunker:
@@ -365,29 +370,29 @@ class ImageResampler:
         return split
 
     @staticmethod
-    def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing: Tuple, interpolation_method: int,
-                                 output_spacing: Tuple, output_size: Tuple) -> da.array:
+    def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing_xyz: Tuple, interpolation_method: int,
+                                 output_spacing_xyz: Tuple, output_size_xyz: Tuple) -> da.array:
         """
         Resamples a dask array chunk.
 
         :param image_chunk: The chunk (part of an image) to be resampled.
         :type image_chunk: da.array
-        :param input_spacing: The original spacing of the chunk (part of an image).
-        :type input_spacing: tuple
+        :param input_spacing_xyz: The original spacing of the chunk (part of an image).
+        :type input_spacing_xyz: tuple
         :param interpolation_method: SimpleITK interpolation type.
         :type interpolation_method: int
-        :param output_spacing: Spacing of the newly resampled chunk.
-        :type output_spacing: tuple
-        :param output_size: Size of the newly resampled chunk.
-        :type output_size: tuple
+        :param output_spacing_xyz: Spacing of the newly resampled chunk.
+        :type output_spacing_xyz: tuple
+        :param output_size_xyz: Size of the newly resampled chunk.
+        :type output_size_xyz: tuple
         :return: The resampled chunk (part of an image).
         :rtype: da.array
         """
         sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
-        sitk_image_chunk.SetSpacing(input_spacing)
+        sitk_image_chunk.SetSpacing(input_spacing_xyz)
 
-        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size, SimpleITK.Transform(),
-                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing,
+        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size_xyz, SimpleITK.Transform(),
+                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing_xyz,
                                                   sitk_image_chunk.GetDirection(), 0.0,
                                                   sitk_image_chunk.GetPixelIDValue())
 
@@ -396,8 +401,8 @@ class ImageResampler:
 
     @staticmethod
     def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
-                                            output_spacing: Tuple[float, float, float] = (1.5, 1.5, 1.5),
-                                            output_size: Union[Tuple[float, float, float], None] = None) -> np.array:
+                                            output_spacing_zyx: Tuple[float, float, float] = (1.5, 1.5, 1.5),
+                                            output_size_zyx: Union[Tuple[float, float, float], None] = None) -> np.array:
         if interpolation == 'nearest':
             interpolation_method = SimpleITK.sitkNearestNeighbor
         elif interpolation == 'linear':
@@ -407,23 +412,24 @@ class ImageResampler:
         else:
             raise ValueError('The interpolation method is not supported.')
 
-        input_spacing = sitk_image.GetSpacing()
-        input_size = sitk_image.GetSize()
-        input_chunks = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size]
-        input_chunks_reversed = list(reversed(input_chunks))
+        input_spacing_xyz = sitk_image.GetSpacing()
+        input_spacing_zyx = reverse_axes(input_spacing_xyz)
+        input_size_xyz = sitk_image.GetSize()
+        input_size_zyx = reverse_axes(input_size_xyz)
+        input_chunks_xyz = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size_xyz]
+        input_chunks_zyx = reverse_axes(input_chunks_xyz)
 
-        image_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_reversed)
+        array_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_zyx)
 
-        if output_size is not None:
-            output_spacing = [input_spacing[i] * (input_size[i] / output_size[i]) for i in range(len(input_size))]
+        if output_size_zyx is not None:
+            output_spacing_zyx = [input_spacing_zyx[i] * (input_size_zyx[i] / output_size_zyx[i]) for i in range(len(input_spacing_zyx))]
 
-        output_chunks = [round(input_chunks[i] * (input_spacing[i] / output_spacing[i])) for i in
-                         range(len(input_chunks))]
-        output_chunks_reversed = list(reversed(output_chunks))
+        output_spacing_xyz = reverse_axes(output_spacing_zyx)
+        output_chunks_xyz = [round(input_chunks_xyz[i] * (input_spacing_xyz[i] / output_spacing_xyz[i])) for i in range(len(input_chunks_xyz))]
+        output_chunks_zyx = reverse_axes(output_chunks_xyz)
 
-        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, image_dask, input_spacing, interpolation_method,
-                               output_spacing, output_chunks, chunks=output_chunks_reversed, meta=np.array(()),
-                               dtype=np.float32)
+        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, array_dask, input_spacing_xyz, interpolation_method,
+                               output_spacing_xyz, output_chunks_xyz, chunks=output_chunks_zyx, meta=np.array(()), dtype=np.float32)
 
         return result.compute()
 
