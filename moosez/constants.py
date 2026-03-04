@@ -41,7 +41,21 @@ FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
 
 
-ENHANCE_URL = "https://enhance-pet-1-6k.s3.us-west-2.amazonaws.com/ENHANCE-PET-1_6k.zip"
+ENHANCE_URLS = {
+    "CT_details.xlsx": "https://download.scidb.cn/download?fileId=66dc051cacd26e61ffb057a26eb0fc22&path=/V2/ENHANCE-PET_1.6k/CT-details.xlsx&fileName=CT-details.xlsx",
+    "PT_details.xlsx": "https://download.scidb.cn/download?fileId=baa3944cedd7483ec7ca3a131b93336e&path=/V2/ENHANCE-PET_1.6k/PT-details.xlsx&fileName=PT-details.xlsx",
+    "labels.json": "https://download.scidb.cn/download?fileId=f22b5214da66fde206716ce4cb6beec9&path=/V2/ENHANCE-PET_1.6k/labels.json&fileName=labels.json",
+    "body_composition_labels.zip": "https://download.scidb.cn/download?fileId=f37bc4ada0c4b727e54712c7903a5000&path=/V2/ENHANCE-PET_1.6k/imaging-data/ground-truth/Body-Composition.zip&fileName=Body-Composition.zip",
+    "cardiac_labels.zip": "https://download.scidb.cn/download?fileId=a3ab7f1fa36f1916a7257229f360c53c&path=/V2/ENHANCE-PET_1.6k/imaging-data/ground-truth/Cardiac.zip&fileName=Cardiac.zip",
+    "muscle_labels.zip": "https://download.scidb.cn/download?fileId=3349b8894c918b484350e159a4d9aa87&path=/V2/ENHANCE-PET_1.6k/imaging-data/ground-truth/Muscles.zip&fileName=Muscles.zip",
+    "organs_labels.zip": "https://download.scidb.cn/download?fileId=01370960ad902c33cb77dd86f9a6cd30&path=/V2/ENHANCE-PET_1.6k/imaging-data/ground-truth/Organs.zip&fileName=Organs.zip",
+    "peripheral_bones_labels.zip": "https://download.scidb.cn/download?fileId=8bbfada7664c40646c1fdd5b79acc76d&path=/V2/ENHANCE-PET_1.6k/imaging-data/ground-truth/Peripheral-Bones.zip&fileName=Peripheral-Bones.zip",
+    "ribs_labels.zip": "https://download.scidb.cn/download?fileId=7742aa18a9bdc9bcfcc5bd58935c11f3&path=/V2/ENHANCE-PET_1.6k/imaging-data/ground-truth/Ribs.zip&fileName=Ribs.zip",
+    "vertebrae_labels.zip": "https://download.scidb.cn/download?fileId=6094a2cc1db705c1fbd93f6ed93f3225&path=/V2/ENHANCE-PET_1.6k/imaging-data/ground-truth/Vertebrae.zip&fileName=Vertebrae.zip",
+    "PT_images.zip": "https://download.scidb.cn/download?fileId=5050349884db27c7962d3eab3f97311a&path=/V2/ENHANCE-PET_1.6k/imaging-data/images/PT_0001-1683.zip&fileName=PT_0001-1683.zip",
+    "CT_images_0001-1000.zip": "https://download.scidb.cn/download?fileId=3d15b56ca4bce7de7ff5cd5dfbad8c11&path=/V2/ENHANCE-PET_1.6k/imaging-data/images/CT_0001-1000.zip&fileName=CT_0001-1000.zip",
+    "CT_images_1000-1683.zip": "https://download.scidb.cn/download?fileId=02c276fd440cc5f104a6b655cc3ac6f0&path=/V2/ENHANCE-PET_1.6k/imaging-data/images/CT_1001-1683.zip&fileName=CT_1001-1683.zip"
+}
 
 
 USAGE_MESSAGE = """
