@@ -83,7 +83,7 @@ def preprocessing_iterator_from_array(image_array: np.ndarray, image_properties:
     return iterator, locations
 
 
-def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model, accelerator: str, output_manager: system.OutputManager):
+def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model, accelerator: str, output_manager: system.OutputManager) -> np.ndarray:
     image_array = image_array[None, ...]
 
     with output_manager.manage_nnUNet_output():
