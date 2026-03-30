@@ -140,7 +140,12 @@ MODEL_METADATA = {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.5/clin_pt_face_12012026.zip",
         KEY_FOLDER_NAME: "Dataset183_PETface",
         KEY_LIMIT_FOV: None
-    }
+    },
+    "clin_ct_FVM": {
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.6/clin_ct_FVM.zip",
+        KEY_FOLDER_NAME: "Dataset501_FVM",
+        KEY_LIMIT_FOV: None
+    } 
 }
 
 AVAILABLE_MODELS = MODEL_METADATA.keys()
