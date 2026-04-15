@@ -18,25 +18,25 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-from typing import Tuple, List, Dict
+from typing import List
 from moosez import constants
-from moosez import models
+from moosez import workflows
 from moosez import system
 
 
-def determine_model_expectations(model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager) -> List:
+def determine_model_expectations(model_workflows: List[workflows.Workflow], output_manager: system.OutputManager) -> List[str]:
     """
     Display expected modality for the model.
 
     This function displays the expected modality for the given model name. It also checks for a special case where
     'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
 
-    :param model_routine: The model routine
-    :type model_routine: Dict[Tuple, List[models.ModelWorkflow]]
+    :param model_workflows: The model routine
+    :type model_workflows: List[workflows.Workflow]
     :param output_manager: The output manager
     :type output_manager: system.OutputManager
     :return: A list of modalities.
-    :rtype: list
+    :rtype: List
     """
     required_modalities = []
     required_prefixes = []

@@ -22,7 +22,6 @@ import itertools
 import dask.array as da
 import numpy as np
 import pandas as pd
-import scipy.ndimage as ndimage
 import nibabel
 import os
 import math
@@ -102,83 +101,6 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model: models.Model, out_c
     stats_df.to_csv(out_csv)
 
 
-def limit_fov(image_array: np.array, segmentation_array: np.array, fov_label: Union[List[int], int], largest_component_only: bool = False):
-
-    if largest_component_only:
-        segmentation_array = largest_connected_component(segmentation_array, fov_label)
-
-    if isinstance(fov_label, list):
-        z_indices = np.where((segmentation_array >= fov_label[0]) & (segmentation_array <= fov_label[1]))[0]
-    else:
-        z_indices = np.where(segmentation_array == fov_label)[0]
-    z_min, z_max = np.min(z_indices), np.max(z_indices)
-
-    # Crop the CT data along the z-axis
-    limited_fov_array = image_array[z_min:z_max + 1, :, :]
-
-    return limited_fov_array, {"z_min": z_min, "z_max": z_max, "original_shape": image_array.shape}
-
-
-def expand_segmentation_fov(limited_fov_segmentation_array: np.ndarray, original_fov_info: Dict) -> np.ndarray:
-    z_min = original_fov_info["z_min"]
-    z_max = original_fov_info["z_max"]
-    original_shape = original_fov_info["original_shape"]
-    # Initialize an array of zeros with the shape of the original CT
-    filled_segmentation_array = np.zeros(original_shape, np.uint8)
-    # Place the cropped segmentation back into its original position
-    filled_segmentation_array[z_min:z_max + 1, :, :] = limited_fov_segmentation_array
-
-    return filled_segmentation_array
-
-
-def largest_connected_component(segmentation_array, intensities):
-    """
-    Extracts the largest connected component for one or more specific intensities from a multilabel segmentation array
-    and returns a new multilabel array where the largest components retain their original intensity.
-
-    Parameters:
-    - segmentation_array: 3D or 2D numpy array with multiple labels.
-    - intensities: A single intensity or a list of intensities for which the largest component(s) should be extracted.
-
-    Returns:
-    - largest_components_multilabel: A multilabel array of the same shape as `segmentation_array`, where the largest
-      connected component(s) of the specified intensity or intensities retain their original intensity, and all other
-      areas are 0.
-    """
-
-    # Ensure intensities is a list (even if only one intensity is provided)
-    if not isinstance(intensities, (list, tuple, np.ndarray)):
-        intensities = [intensities]
-
-    # Initialize an array to store the largest connected components
-    largest_components_multilabel = np.zeros_like(segmentation_array, dtype=segmentation_array.dtype)
-
-    # Loop over each intensity
-    for intensity in intensities:
-        # Create a binary mask for the current intensity
-        binary_mask = segmentation_array == intensity
-
-        # Label connected components in the binary mask
-        labeled_array, num_features = ndimage.label(binary_mask)
-
-        # Find the sizes of each connected component
-        component_sizes = np.bincount(labeled_array.ravel())
-
-        # Ignore the background (component 0)
-        component_sizes[0] = 0
-
-        # Find the largest connected component for this intensity
-        largest_component_label = component_sizes.argmax()
-
-        # Create a mask for the largest connected component of this intensity
-        largest_component = labeled_array == largest_component_label
-
-        # Assign the original intensity value to the largest connected component
-        largest_components_multilabel[largest_component] = intensity
-
-    return largest_components_multilabel
-
-
 def extract_labels_and_write(multilabel_image: SimpleITK.Image, model: models.Model, output_directory: str):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
@@ -227,7 +149,7 @@ def image_read(image_path: str) -> SimpleITK.Image:
     return image
 
 
-def reverse_axes(axes: tuple) -> tuple:
+def reverse_axes(axes: tuple | list) -> tuple:
     axes_reversed = reversed(axes)
     return tuple(axes_reversed)
 
@@ -370,8 +292,8 @@ class ImageResampler:
         return split
 
     @staticmethod
-    def resample_chunk_SimpleITK(image_chunk: da.array, input_spacing_xyz: Tuple, interpolation_method: int,
-                                 output_spacing_xyz: Tuple, output_size_xyz: Tuple) -> da.array:
+    def resample_chunk_SimpleITK(image_chunk: np.ndarray, input_spacing_xyz: Tuple, interpolation_method: int,
+                                 output_spacing_xyz: Tuple, output_size_xyz: Tuple) -> np.ndarray:
         """
         Resamples a dask array chunk.
 
@@ -402,7 +324,7 @@ class ImageResampler:
     @staticmethod
     def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
                                             output_spacing_zyx: Tuple[float, float, float] = (1.5, 1.5, 1.5),
-                                            output_size_zyx: Union[Tuple[float, float, float], None] = None) -> np.array:
+                                            output_size_zyx: Union[Tuple[float, float, float], None] = None) -> np.ndarray:
         if interpolation == 'nearest':
             interpolation_method = SimpleITK.sitkNearestNeighbor
         elif interpolation == 'linear':
