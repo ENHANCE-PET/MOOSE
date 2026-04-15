@@ -19,7 +19,6 @@
 import dask
 import torch
 import numpy as np
-import SimpleITK
 from typing import Tuple, List, Dict, Iterator
 from moosez import models
 from moosez import image_processing
@@ -98,65 +97,3 @@ def predict_from_array_by_iterator(image_array: np.ndarray, model: models.Model,
         output_manager.log_update(f"     - Combined them to an {'x'.join(map(str, combined_segmentations.shape))} array")
 
     return np.squeeze(combined_segmentations)
-
-
-def cropped_fov_prediction_pipeline(image: SimpleITK.Image, previous_segmentation: np.ndarray, workflow: models.ModelWorkflow, accelerator, output_manager: system.OutputManager):
-    """
-    Process segmentation by resampling, limiting FOV, and predicting.
-
-    Parameters:
-        image (SimpleITK.Image): The input image.
-        previous_segmentation (np.array): The segmentation array to be processed.
-        workflow (models.ModelWorkflow): List of routines where the second element contains model info.
-        accelerator (any): The accelerator used for prediction.
-        output_manager (output_manager: system.OutputManager): for console and logging.
-
-    Returns:
-        model (str): The model name used in the process.
-        segmentation_array (np.array): The final processed segmentation array.
-    """
-    # Get the second model from the routine
-    model_to_crop_from = workflow[0]
-    target_model = workflow[1]
-    target_model_fov_information = target_model.limit_fov
-
-    # Convert the segmentation array to SimpleITK image and set properties
-    to_crop_segmentation = SimpleITK.GetImageFromArray(previous_segmentation)
-    to_crop_segmentation.SetOrigin(image.GetOrigin())
-    to_crop_segmentation.SetSpacing(image_processing.reverse_axes(model_to_crop_from.voxel_spacing))
-    to_crop_segmentation.SetDirection(image.GetDirection())
-
-    # Resample the image using the desired spacing
-    desired_spacing = target_model.voxel_spacing
-    to_crop_image_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
-    to_crop_image = SimpleITK.GetImageFromArray(to_crop_image_array)
-    to_crop_image.SetOrigin(image.GetOrigin())
-    to_crop_image.SetSpacing(image_processing.reverse_axes(desired_spacing))
-    to_crop_image.SetDirection(image.GetDirection())
-
-    # Resample the segmentation
-    resampled_to_crop_segmentation = image_processing.ImageResampler.resample_segmentation(to_crop_image, to_crop_segmentation)
-    del to_crop_segmentation
-    resampled_to_crop_segmentation_array = SimpleITK.GetArrayFromImage(resampled_to_crop_segmentation)
-
-    # Limit FOV based on model information
-    limited_fov_image_array, original_fov_info = image_processing.limit_fov(to_crop_image_array, resampled_to_crop_segmentation_array,
-                                                                            target_model_fov_information["inference_fov_intensities"])
-
-    # Predict the limited FOV segmentation
-    limited_fov_segmentation_array = predict_from_array_by_iterator(limited_fov_image_array, target_model,
-                                                                            accelerator, output_manager)
-
-    # Expand the segmentation to the original FOV
-    expanded_segmentation_array = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-
-    # Limit the FOV again based on label intensities and largest component condition
-    limited_fov_segmentation_array, original_fov_info = image_processing.limit_fov(expanded_segmentation_array, resampled_to_crop_segmentation_array,
-                                                                                   target_model_fov_information["label_intensity_to_crop_from"],
-                                                                                   target_model_fov_information["largest_component_only"])
-
-    # Expand the segmentation array to the original FOV
-    previous_segmentation = image_processing.expand_segmentation_fov(limited_fov_segmentation_array, original_fov_info)
-
-    # Return the segmentation array and spacing
-    return previous_segmentation, desired_spacing
