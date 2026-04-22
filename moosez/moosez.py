@@ -472,7 +472,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     output_manager.log_update(' ')
 
     performance_observer.record_phase("Loading Image")
-    CT_file_path = file_utilities.get_modality_file(subject, 'CT_')
+    CT_file_path = file_utilities.get_modality_NIFTI_files(subject, 'CT_')[0]
     CT_file_name = file_utilities.get_nifti_file_stem(CT_file_path)
     CT_image = image_processing.image_read(CT_file_path)
     CT_image_orientation_code = image_processing.image_get_orientation_code(CT_image)
@@ -520,8 +520,9 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
         # ----------------------------------
         # EXTRACT PET ACTIVITY
         # ----------------------------------
-        PT_file_path = file_utilities.get_modality_file(subject, 'PT_')
-        if PT_file_path is not None:
+        PT_files = file_utilities.get_modality_NIFTI_files(subject, 'PT_')
+        if PT_files:
+            PT_file_path = PT_files[0]
             PT_image = SimpleITK.ReadImage(PT_file_path)
             output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting PET activity for {subject_name} ({model})...')
             output_manager.log_update(f'     - Extracting PET statistics for {model}')
