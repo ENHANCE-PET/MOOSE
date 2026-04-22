@@ -417,10 +417,11 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     subjects_information = ("temp", 0, 1)
     performance_observer = PerformanceObserver("temp", ', '.join(model_names))
 
+    images = {workflow.input_modality: image for workflow in model_workflows}
     generated_segmentations = []
     used_models = []
 
-    for segmentation_image, model in workflows.run_all(image, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
+    for segmentation_image, model in workflows.run_all(images, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
         image_output = None
         if isinstance(input_data, str):
             if output_dir is None:
@@ -471,20 +472,42 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
     output_manager.log_update(' RUNNING PREDICTION:')
     output_manager.log_update(' ')
 
-    performance_observer.record_phase("Loading Image")
-    CT_file_path = file_utilities.get_modality_NIFTI_files(subject, 'CT_')[0]
-    CT_file_name = file_utilities.get_nifti_file_stem(CT_file_path)
-    CT_image = image_processing.image_read(CT_file_path)
-    CT_image_orientation_code = image_processing.image_get_orientation_code(CT_image)
-    CT_image_RAS = image_processing.image_reorient(CT_image, "RAS")
+    performance_observer.record_phase("Loading Images")
+
+    subject_available_images = {}
+    subject_available_images_raw = {}
+    subject_orientation_codes = {}
+    subject_file_stems = {}
+
+    required_prefixes = set()
+    for model_workflow in model_workflows:
+        required_prefixes.add(model_workflow.input_modality)
+
+    for prefix in required_prefixes:
+        modality_files = file_utilities.get_modality_NIFTI_files(subject, prefix)
+        if modality_files:
+            raw_image = image_processing.image_read(modality_files[0])
+            subject_orientation_codes[prefix] = image_processing.image_get_orientation_code(raw_image)
+            subject_available_images_raw[prefix] = raw_image
+            subject_available_images[prefix] = image_processing.image_reorient(raw_image, "RAS")
+            subject_file_stems[prefix] = file_utilities.get_nifti_file_stem(modality_files[0])
+
+    if not subject_available_images:
+        output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: no matching modality images found. Skipping subject.')
+        output_manager.log_update(f"     - No matching modality images found for {subject_name}. Skipping.")
+        return subject_peak_performance
 
     subjects_information = (subject_name, subject_index, number_of_subjects)
 
-    for segmentation_image, model in workflows.run_all(CT_image_RAS, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
+    for segmentation_image, model in workflows.run_all(subject_available_images, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
+        input_prefix = model.modality_full + "_"
+        segmentation_image = image_processing.image_reorient(segmentation_image, subject_orientation_codes[input_prefix])
+
         model_information = {"model_directory": model.directory}
-        segmentation_image = image_processing.image_reorient(segmentation_image, CT_image_orientation_code)
         performance_observer.record_phase("Writing Images and Statistics")
-        segmentation_image_path = os.path.join(segmentations_dir, f"{model.multilabel_prefix}segmentation_{CT_file_name}.nii.gz")
+
+        seg_file_name = subject_file_stems[input_prefix]
+        segmentation_image_path = os.path.join(segmentations_dir, f"{model.multilabel_prefix}segmentation_{seg_file_name}.nii.gz")
         output_manager.log_update(f'     - Writing segmentation for {model}')
         model_information["segmentation_file"] = segmentation_image_path
         SimpleITK.WriteImage(segmentation_image, segmentation_image_path)
@@ -499,38 +522,33 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
             output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] labels extracted and written {subject_name}! {constants.ANSI_RESET}')
 
         # -----------------------------------------------
-        # EXTRACT VOLUME STATISTICS AND HOUNSFIELD UNITS
+        # VOLUME STATISTICS
         # -----------------------------------------------
-        output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting CT volume statistics for {subject_name} ({model})...')
+        output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting volume statistics for {subject_name} ({model})...')
         output_manager.log_update(f'     - Extracting volume statistics for {model}')
-        out_vol_stats_csv = os.path.join(stats_dir, model.multilabel_prefix + subject_name + '_ct_volume.csv')
+        out_vol_stats_csv = os.path.join(stats_dir, f"{model.multilabel_prefix}{subject_name}_volume.csv")
         image_processing.get_shape_statistics(segmentation_image, model, out_vol_stats_csv)
-        output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT volume extracted for {subject_name}! {constants.ANSI_RESET}')
+        output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] Volume statistics extracted for {subject_name}! {constants.ANSI_RESET}')
         model_information["VOL_stats_file"] = out_vol_stats_csv
         time.sleep(1)
 
-        output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting CT hounsfield statistics for {subject_name} ({model})...')
-        output_manager.log_update(f'     - Extracting hounsfield statistics for {model}')
-        out_hu_stats_csv = os.path.join(stats_dir, model.multilabel_prefix + subject_name + '_ct_hu_values.csv')
-        image_processing.get_intensity_statistics(CT_image, segmentation_image, model, out_hu_stats_csv)
-        output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] CT hounsfield statistics extracted for {subject_name}! {constants.ANSI_RESET}')
-        model_information["HU_stats_file"] = out_hu_stats_csv
-        time.sleep(1)
+        # -----------------------------------------------
+        # INTENSITY STATISTICS — for every available modality
+        # -----------------------------------------------
+        for modality_prefix, raw_image in subject_available_images_raw.items():
+            modality_label = modality_prefix.rstrip("_")
+            output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting {modality_label} intensity statistics for {subject_name} ({model})...')
+            output_manager.log_update(f'     - Extracting {modality_label} intensity statistics for {model}')
 
-        # ----------------------------------
-        # EXTRACT PET ACTIVITY
-        # ----------------------------------
-        PT_files = file_utilities.get_modality_NIFTI_files(subject, 'PT_')
-        if PT_files:
-            PT_file_path = PT_files[0]
-            PT_image = SimpleITK.ReadImage(PT_file_path)
-            output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting PET activity for {subject_name} ({model})...')
-            output_manager.log_update(f'     - Extracting PET statistics for {model}')
-            resampled_multilabel_image = image_processing.ImageResampler.reslice_identity(PT_image, segmentation_image, is_label_image=True)
-            out_csv = os.path.join(stats_dir, model.multilabel_prefix + subject_name + '_pet_activity.csv')
-            image_processing.get_intensity_statistics(PT_image, resampled_multilabel_image, model, out_csv)
-            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] PET activity extracted for {subject_name}! {constants.ANSI_RESET}')
-            model_information["PET_stats_file"] = out_csv
+            if modality_prefix == input_prefix:
+                stats_segmentation = segmentation_image
+            else:
+                stats_segmentation = image_processing.ImageResampler.reslice_identity(raw_image, segmentation_image, is_label_image=True)
+
+            out_intensity_csv = os.path.join(stats_dir, f"{model.multilabel_prefix}{subject_name}_{modality_label}_intensity.csv")
+            image_processing.get_intensity_statistics(raw_image, stats_segmentation, model, out_intensity_csv)
+            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] {modality_label} intensity statistics extracted for {subject_name}! {constants.ANSI_RESET}')
+            model_information[f"{modality_label}_intensity_stats_file"] = out_intensity_csv
             time.sleep(1)
 
         performance_observer.time_phase()

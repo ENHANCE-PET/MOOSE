@@ -97,6 +97,11 @@ class Workflow:
         """Returns the fov_crop step if one exists, otherwise None."""
         return next((s for s in self.steps if s.role == "crop_FOV"), None)
 
+    @property
+    def input_modality(self) -> str:
+        """The modality prefix needed to look up this workflow's input image."""
+        return self.steps[0].model.modality_full + "_"
+
     def __len__(self) -> int:
         return len(self.steps)
 
@@ -213,13 +218,19 @@ def run(image: SimpleITK.Image, workflow: Workflow, accelerator: str, output_man
     return segmentation
 
 
-def run_all(image: SimpleITK.Image, workflows: List[Workflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]):
-    performance_observer.metadata_image_size = image.GetSize()
+def run_all(images: Dict[str, SimpleITK.Image], workflows: List[Workflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]):
+    performance_observer.metadata_image_size = next(iter(images.values())).GetSize()
     performance_observer.time_phase()
     subject_name, subject_index, number_of_subjects = subjects_information
     image_array_cache = {}
 
     for workflow in workflows:
+        image = images.get(workflow.input_modality)
+        if image is None:
+            output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: no {workflow.input_modality} image available. Skipping {workflow.target_model}.')
+            output_manager.log_update(f"     - No {workflow.input_modality} image found. Skipping {workflow.target_model}.")
+            continue
+
         performance_observer.record_phase(f"Predicting: {workflow.target_model}")
         model_time_start = time.time()
         output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {workflow}...')
