@@ -6,7 +6,7 @@ import shutil
 from typing import Tuple, List, Dict
 from moosez import system
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, DEFAULT_SPACING, DEFAULT_TRANSPOSE_IDENTITY,
-                              FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
+                              FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET, ALLOWED_MODALITY_CONFIGURATIONS)
 from moosez.mappings import SNOMED
 
 
@@ -135,19 +135,15 @@ class Model:
         self.transpose_backward = self.plans.get("transpose_backward", DEFAULT_TRANSPOSE_IDENTITY)
         self.voxel_spacing_t = tuple(self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING))
         self.voxel_spacing = tuple([self.voxel_spacing_t[i] for i in self.transpose_backward])
-        self.imaging_type, self.modality, self.region = self.__get_model_identifier_segments()
-        self.multilabel_prefix = f"{self.imaging_type}_{self.modality}_{self.region}_"
+        self.imaging_type, self.modality, self.modality_subtype, self.modality_full, self.region = self.__get_model_identifier_segments()
+        self.multilabel_prefix = f"{self.imaging_type}_{self.modality_full}_{self.region}_"
 
         self.organ_indices = self.__get_organ_indices()
         self.nr_training_data = self.__get_number_training_data()
 
     def get_expectation(self):
-        if self.modality == 'FDG-PET-CT':
-            expected_modalities = ['FDG-PET', 'CT']
-        else:
-            expected_modalities = [self.modality]
-        expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
-
+        expected_modalities = [self.modality_full]
+        expected_prefixes = [self.modality_full + "_"]
         return expected_modalities, expected_prefixes
 
     def __get_configuration_folders(self, output_manager: system.OutputManager) -> List[str]:
@@ -172,18 +168,28 @@ class Model:
         folds = tuple([fold.replace("fold_", "") for fold in folds_folders])
         return folds
 
-    def __get_model_identifier_segments(self) -> Tuple[str, str, str]:
+    def __get_model_identifier_segments(self) -> Tuple[str, str, str | None, str, str]:
         segments = self.model_identifier.split('_')
 
         imaging_type = segments[0]
-        if segments[1] == 'pt':
-            modality = f'{segments[1]}_{segments[2]}'.upper()
-            region = '_'.join(segments[3:])
+        modality = segments[1].upper()
+
+        if modality not in ALLOWED_MODALITY_CONFIGURATIONS:
+            raise ValueError(f"Invalid modality: {modality}")
+
+        if ALLOWED_MODALITY_CONFIGURATIONS[modality]:
+            modality_subtype = segments[2].upper()
+            if modality_subtype in ALLOWED_MODALITY_CONFIGURATIONS[modality]:
+                modality_full = f"{modality}_{modality_subtype}"
+                region = '_'.join(segments[3:])
+            else:
+                raise ValueError(f"Invalid modality subtype: {modality_subtype}")
         else:
-            modality = segments[1].upper()
+            modality_subtype = None
+            modality_full = modality
             region = '_'.join(segments[2:])
 
-        return imaging_type, modality, region
+        return imaging_type, modality, modality_subtype, modality_full, region
 
     def __get_model_data(self) -> Tuple[Dict, Dict]:
         dataset_json_path = os.path.join(self.configuration_directory, FILE_NAME_DATASET_JSON)
@@ -315,6 +321,8 @@ class Model:
             f" Voxel Spacing: {self.voxel_spacing}",
             f" Imaging Type: {self.imaging_type}",
             f" Modality: {self.modality}",
+            f" Modality Subtype: {self.modality_subtype}",
+            f" Modality Full: {self.modality_full}",
             f" Region: {self.region}",
             f" Multilabel Prefix: {self.multilabel_prefix}",
             f" Organ Indices:",

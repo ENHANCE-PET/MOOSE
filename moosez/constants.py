@@ -8,7 +8,11 @@ This module contains the constants that are used in the moosez.
 .. versionadded:: 3.0.0
 """
 
-ALLOWED_MODALITIES = ['CT', 'PT', 'MR']
+ALLOWED_MODALITY_CONFIGURATIONS = {'CT': [],
+                                   'PT': ['FDG', 'PSMA'],
+                                   'MR': ['T1', 'T2'],
+                                   'NM': ['LU'],
+                                   'ST': ['LU']}
 
 # COLOR CODES
 ANSI_ORANGE = '\033[38;5;208m'
@@ -73,7 +77,7 @@ file paths, folder names, and display parameters.
 
 This module contains the following constants:
 
-- `ALLOWED_MODALITIES`: A constant that stores a list of allowed modalities for the moosez algorithm.
+- `ALLOWED_MODALITY_CONFIGURATIONS`: A constant that stores a list of allowed modalities for the moosez algorithm.
 
 - `ANSI_ORANGE`: A constant that stores the ANSI color code for orange.
 - `ANSI_GREEN`: A constant that stores the ANSI color code for green.
