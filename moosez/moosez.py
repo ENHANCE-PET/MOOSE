@@ -266,9 +266,9 @@ def main():
     subjects = [os.path.join(parent_folder, d) for d in os.listdir(parent_folder) if os.path.isdir(os.path.join(parent_folder, d))]
     moose_compliant_subjects = input_validation.select_moose_compliant_subjects(subjects, modalities, output_manager)
 
-    num_subjects = len(moose_compliant_subjects)
+    num_moose_compliant_subjects = len(moose_compliant_subjects)
 
-    if num_subjects < 1:
+    if num_moose_compliant_subjects < 1:
         output_manager.console_update(f'{constants.ANSI_RED} {emoji.emojize(":cross_mark:")} No moose compliant subject found to continue!{constants.ANSI_RESET} {emoji.emojize(":light_bulb:")} See: https://github.com/ENHANCE-PET/MOOSE#directory-structure-and-naming-conventions-for-moose-%EF%B8%8F')
         return
 
@@ -290,30 +290,30 @@ def main():
     if moose_instances is not None:
         output_manager.log_update(f"- Branching out with {moose_instances} concurrent jobs.")
 
-        performance_observer = PerformanceObserver(f'All {num_subjects} subjects | {moose_instances} jobs', ', '.join(model_names))
+        performance_observer = PerformanceObserver(f'All {num_moose_compliant_subjects} subjects | {moose_instances} jobs', ', '.join(model_names))
         if benchmark:
             performance_observer.on()
 
         mp_context = mp.get_context('spawn')
         processed_subjects = 0
-        output_manager.spinner_update(f'[{processed_subjects}/{num_subjects}] subjects processed.')
+        output_manager.spinner_update(f'[{processed_subjects}/{num_moose_compliant_subjects}] subjects processed.')
 
         if device_count is not None and device_count > 1:
-            accelerator_assignments = [f"{accelerator}:{i % device_count}" for i in range(len(subjects))]
+            accelerator_assignments = [f"{accelerator}:{i % device_count}" for i in range(num_moose_compliant_subjects)]
         else:
-            accelerator_assignments = [accelerator] * len(subjects)
+            accelerator_assignments = [accelerator] * num_moose_compliant_subjects
 
         with concurrent.futures.ProcessPoolExecutor(max_workers=moose_instances, mp_context=mp_context) as executor:
             futures = []
-            for i, (subject, accelerator) in enumerate(zip(moose_compliant_subjects, accelerator_assignments)):
-                futures.append(executor.submit(moose_subject, subject, i, num_subjects, model_workflows,
-                                               accelerator, None, benchmark, single_labels))
+            for subject_index, (subject, subject_accelerator) in enumerate(zip(moose_compliant_subjects, accelerator_assignments)):
+                futures.append(executor.submit(moose_subject, subject, subject_index, num_moose_compliant_subjects, model_workflows,
+                                               subject_accelerator, None, benchmark, single_labels))
 
             for future in concurrent.futures.as_completed(futures):
                 if benchmark:
                     subject_performance_parameters.append(future.result())
                 processed_subjects += 1
-                output_manager.spinner_update(f'[{processed_subjects}/{num_subjects}] subjects processed.')
+                output_manager.spinner_update(f'[{processed_subjects}/{num_moose_compliant_subjects}] subjects processed.')
 
         performance_observer.record_phase("Total Processing Done")
         if benchmark:
@@ -321,8 +321,8 @@ def main():
             subject_performance_parameters.append(performance_observer.get_peak_resources())
 
     else:
-        for i, subject in enumerate(moose_compliant_subjects):
-            subject_performance = moose_subject(subject, i, num_subjects, model_workflows,
+        for subject_index, subject in enumerate(moose_compliant_subjects):
+            subject_performance = moose_subject(subject, subject_index, num_moose_compliant_subjects, model_workflows,
                                                 accelerator, output_manager, benchmark, single_labels)
             if benchmark:
                 subject_performance_parameters.append(subject_performance)
@@ -359,7 +359,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     Execute the MOOSE 3.0 image segmentation process.
 
     :param input_data: The input data to process, which can be one of the following:
-                       - str: A file path to a NIfTI file.
+                       - str: The file path to the NIfTI file.
                        - tuple[numpy.ndarray, tuple[float, float, float]]: A tuple containing a numpy array and spacing.
                        - SimpleITK.Image: An image object to process.
                        

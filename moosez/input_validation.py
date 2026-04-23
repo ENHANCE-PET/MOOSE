@@ -64,12 +64,12 @@ def determine_model_expectations(model_workflows: List[workflows.Workflow], outp
 
     output_manager.log_update(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)} "
                               f"| Required prefix for non-DICOM files: {required_prefixes} ")
-    output_manager.console_update(f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
+    output_manager.console_update(f"{constants.ANSI_ORANGE} Warning: Subjects without any of the required modalities [check file prefix] "
                                   f"will be skipped. {constants.ANSI_RESET}")
-    output_manager.log_update(" Skipping subjects without the required modalities (check file prefix).\n"
+    output_manager.log_update(" Skipping subjects without any of the required modalities (check file prefix).\n"
                               " These subjects will be excluded from analysis and their data will not be used.")
 
-    return required_modalities
+    return required_prefixes
 
 
 def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: List[str], output_manager: system.OutputManager) -> List[str]:

@@ -20,11 +20,10 @@ from moosez.benchmarking.benchmark import PerformanceObserver
 #                   "segmentation" → result is the final segmentation, yielded to the caller
 #   - fov_config  : only for "crop_FOV" steps, defines how the crop is applied
 #
-# Any model NOT listed here is implicitly a single-step workflow:
+# Any model NOT listed here is implicitly a single-step segmentation workflow:
 #   [{"model": model_identifier, "role": "segmentation"}]
 #
-# To add a new multi-step workflow, add an entry here. No other file needs
-# to change.
+# To add a new multi-step workflow, add an entry here. No other file needs to change.
 # ---------------------------------------------------------------------------
 
 WORKFLOW_REGISTRY: Dict[str, List[Dict]] = {
@@ -199,20 +198,30 @@ def restrict_fov(segmentation: SimpleITK.Image, crop_segmentation: SimpleITK.Ima
     return SimpleITK.Mask(segmentation, z_band)
 
 
-def run(image: SimpleITK.Image, workflow: Workflow, accelerator: str, output_manager: system.OutputManager, performance_observer: PerformanceObserver, image_array_cache: Dict = None) -> Optional[SimpleITK.Image]:
+def run(images: Dict[str, SimpleITK.Image], workflow: Workflow, accelerator: str, output_manager: system.OutputManager, performance_observer: PerformanceObserver, image_array_caches: Dict = None) -> Optional[SimpleITK.Image]:
     crop_step = workflow.fov_crop_step
 
     if crop_step is None:
+        input_modality = workflow.target_model.modality_full + "_"
+        image = images[input_modality]
+        if image_array_caches:
+            image_array_cache = image_array_caches.get(input_modality, {})
+        else:
+            image_array_cache = None
         return inference(image, workflow.target_model, accelerator, output_manager, performance_observer, image_array_cache)
 
-    crop_segmentation = inference(image, crop_step.model, accelerator, output_manager, performance_observer, image_array_cache)
+    crop_modality = crop_step.model.modality_full + "_"
+    crop_image = images[crop_modality]
+    crop_segmentation = inference(crop_image, crop_step.model, accelerator, output_manager, performance_observer)
 
-    cropped_image = crop_fov(image, crop_segmentation, crop_step.fov_config)
+    target_modality = workflow.target_model.modality_full + "_"
+    target_image = images.get(target_modality, crop_image)
+    cropped_image = crop_fov(target_image, crop_segmentation, crop_step.fov_config)
     if cropped_image is None:
         return None
 
     segmentation = inference(cropped_image, workflow.target_model, accelerator, output_manager, performance_observer)
-    segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
+    segmentation = image_processing.ImageResampler.resample_segmentation(target_image, segmentation)
     segmentation = restrict_fov(segmentation, crop_segmentation, crop_step.fov_config)
 
     return segmentation
@@ -222,11 +231,10 @@ def run_all(images: Dict[str, SimpleITK.Image], workflows: List[Workflow], outpu
     performance_observer.metadata_image_size = next(iter(images.values())).GetSize()
     performance_observer.time_phase()
     subject_name, subject_index, number_of_subjects = subjects_information
-    image_array_cache = {}
+    image_array_caches = {modality: {} for modality in images}
 
     for workflow in workflows:
-        image = images.get(workflow.input_modality)
-        if image is None:
+        if workflow.input_modality not in images:
             output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: no {workflow.input_modality} image available. Skipping {workflow.target_model}.')
             output_manager.log_update(f"     - No {workflow.input_modality} image found. Skipping {workflow.target_model}.")
             continue
@@ -236,7 +244,7 @@ def run_all(images: Dict[str, SimpleITK.Image], workflows: List[Workflow], outpu
         output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {workflow}...')
         output_manager.log_update(f'   - Workflow {workflow}')
 
-        segmentation = run(image, workflow, accelerator, output_manager, performance_observer, image_array_cache)
+        segmentation = run(images, workflow, accelerator, output_manager, performance_observer, image_array_caches)
 
         if segmentation is None:
             output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: organ to crop from not in initial FOV. No segmentation result ({workflow.target_model}) for this subject.')

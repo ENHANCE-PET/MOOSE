@@ -62,7 +62,7 @@ class OutputManager:
         progress_bar = Progress(console=self.console)
         return progress_bar
 
-    def create_table(self, header: List[str], styles: Union[List[str], None] = None) -> Table:
+    def create_table(self, header: List[str], styles: Union[List[Union[str, None]], None] = None) -> Table:
         table = Table()
         if styles is None:
             styles = [None] * len(header)
