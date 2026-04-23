@@ -177,17 +177,24 @@ class Model:
         if modality not in ALLOWED_MODALITY_CONFIGURATIONS:
             raise ValueError(f"Invalid modality: {modality}")
 
-        if ALLOWED_MODALITY_CONFIGURATIONS[modality]:
+        allowed_subtypes = ALLOWED_MODALITY_CONFIGURATIONS[modality]
+
+        if None not in allowed_subtypes:
             modality_subtype = segments[2].upper()
-            if modality_subtype in ALLOWED_MODALITY_CONFIGURATIONS[modality]:
+            if modality_subtype not in allowed_subtypes:
+                raise ValueError(f"Invalid modality subtype: {modality_subtype}")
+            modality_full = f"{modality}_{modality_subtype}"
+            region = '_'.join(segments[3:])
+        else:
+            known_subtypes = [s for s in allowed_subtypes if s is not None]
+            if known_subtypes and segments[2].upper() in known_subtypes:
+                modality_subtype = segments[2].upper()
                 modality_full = f"{modality}_{modality_subtype}"
                 region = '_'.join(segments[3:])
             else:
-                raise ValueError(f"Invalid modality subtype: {modality_subtype}")
-        else:
-            modality_subtype = None
-            modality_full = modality
-            region = '_'.join(segments[2:])
+                modality_subtype = None
+                modality_full = modality
+                region = '_'.join(segments[2:])
 
         return imaging_type, modality, modality_subtype, modality_full, region
 
