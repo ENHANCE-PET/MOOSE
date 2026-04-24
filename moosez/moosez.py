@@ -498,6 +498,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
         return subject_peak_performance
 
     subjects_information = (subject_name, subject_index, number_of_subjects)
+    performance_observer.time_phase()
 
     for segmentation_image, model in workflows.run_all(subject_available_images, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
         input_prefix = model.modality_full + "_"
