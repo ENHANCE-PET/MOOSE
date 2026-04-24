@@ -139,14 +139,19 @@ def inference(image: SimpleITK.Image, model: models.Model, accelerator: str, out
         if image_array_cache is not None:
             image_array_cache[model.voxel_spacing] = image_array_resampled
 
+    performance_observer.record_phase(f"Predicting: {model.model_identifier}")
     segmentation_array = predict.predict_from_array_by_iterator(image_array_resampled, model, accelerator, output_manager)
+    performance_observer.time_phase()
 
+    performance_observer.record_phase(f"Segmentation array to image")
     segmentation_image = SimpleITK.GetImageFromArray(segmentation_array)
     segmentation_image.SetSpacing(image_processing.reverse_axes(model.voxel_spacing))
     segmentation_image.SetOrigin(image.GetOrigin())
     segmentation_image.SetDirection(image.GetDirection())
 
     segmentation_image_resampled = image_processing.ImageResampler.resample_segmentation(image, segmentation_image)
+    performance_observer.time_phase()
+
     return segmentation_image_resampled
 
 
@@ -229,7 +234,6 @@ def run(images: Dict[str, SimpleITK.Image], workflow: Workflow, accelerator: str
 
 def run_all(images: Dict[str, SimpleITK.Image], workflows: List[Workflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]):
     performance_observer.metadata_image_size = next(iter(images.values())).GetSize()
-    performance_observer.time_phase()
     subject_name, subject_index, number_of_subjects = subjects_information
     image_array_caches = {modality: {} for modality in images}
 
@@ -239,9 +243,8 @@ def run_all(images: Dict[str, SimpleITK.Image], workflows: List[Workflow], outpu
             output_manager.log_update(f"     - No {workflow.input_modality} image found. Skipping {workflow.target_model}.")
             continue
 
-        performance_observer.record_phase(f"Predicting: {workflow.target_model}")
-        model_time_start = time.time()
-        output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running prediction for {subject_name} using {workflow}...')
+        workflow_time_start = time.time()
+        output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Running workflow for {subject_name} using {workflow}...')
         output_manager.log_update(f'   - Workflow {workflow}')
 
         segmentation = run(images, workflow, accelerator, output_manager, performance_observer, image_array_caches)
@@ -249,10 +252,8 @@ def run_all(images: Dict[str, SimpleITK.Image], workflows: List[Workflow], outpu
         if segmentation is None:
             output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: organ to crop from not in initial FOV. No segmentation result ({workflow.target_model}) for this subject.')
             output_manager.log_update("     - Organ to crop from not in initial FOV.")
-            performance_observer.time_phase()
             continue
 
-        output_manager.log_update(f"     - Prediction complete for {workflow.target_model} within {round((time.time() - model_time_start) / 60, 1)} min.")
-        performance_observer.time_phase()
+        output_manager.log_update(f"     - Workflow complete for {workflow.target_model} within {round((time.time() - workflow_time_start) / 60, 1)} min.")
         yield segmentation, workflow.target_model
 
