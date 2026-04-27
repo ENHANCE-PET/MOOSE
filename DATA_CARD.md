@@ -11,7 +11,7 @@
 | Estimated size   | Primary access method                                           | Support contact                   |
 |------------------|-----------------------------------------------------------------|-----------------------------------|
 | ~266 GB          | Science Data Bank (https://doi.org/10.57760/sciencedb.34150)    | Lalith.shiyam@med.uni-muenchen.de |
-|                  | see “Access on Science DB via MOOSE CLI” below)                 |                                   |
+|                  | see “Access on Science DB via MOOSE CLI” below                  |                                   |
 
 ---
 
