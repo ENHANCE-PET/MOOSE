@@ -117,14 +117,9 @@ MODEL_METADATA = {
         KEY_LIMIT_FOV: None
     },
     "clin_ct_face": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_Faces_08092025.zip",
-        KEY_FOLDER_NAME: "Dataset007_Faces",
-        KEY_LIMIT_FOV: {
-            "model_to_crop_from": "clin_ct_body",
-            "inference_fov_intensities": [3, 3],
-            "label_intensity_to_crop_from": 3,
-            "largest_component_only": True
-        }
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.7/clin_ct_face_ear_12052026.zip",
+        KEY_FOLDER_NAME: "Dataset006_face_ear_v2",
+        KEY_LIMIT_FOV: None
     },
     "preclin_mr_all": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_mr_all_05122023.zip",
