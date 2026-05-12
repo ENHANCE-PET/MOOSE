@@ -272,7 +272,7 @@ And that's it! MOOSE 3.0 lets you process with ease and speed. ⚡✨
 ### 📦 ENHANCE.PET MOOSE 1.6k Dataset FTW
 
 
-**An open, multi-center [18F]FDG-PET/CT dataset with 130 CT-derived anatomical segmentations per scan (~266 GB)**  
+**An open, multi-center [18F]FDG-PET/CT dataset with 130 CT-derived anatomical segmentations per scan (~266 GB).**  
 Part of the [ENHANCE.PET initiative](https://enhance.pet/) and hosted on Science Data Bank (https://doi.org/10.57760/sciencedb.34150).
 
 | Estimated size | Primary access method | Support contact |
