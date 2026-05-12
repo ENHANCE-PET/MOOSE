@@ -1,68 +1,62 @@
 # 🦌ENHANCE.PET MOOSE 1.6k — Dataset Organization & Access 
 
-----
-<a href="https://aws.amazon.com/opendata/open-data-sponsorship-program/">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://d0.awsstatic.com/logos/powered-by-aws-white.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://d0.awsstatic.com/logos/powered-by-aws.png">
-    <img alt="Powered by AWS" src="https://d0.awsstatic.com/logos/powered-by-aws.png" height="70" align="left" style="margin-right: 10px;">
-  </picture>
-</a>
-
-The ENHANCE.PET MOOSE 1.6k corpus is made available worldwide through the
-**[AWS Open Data Sponsorship Program](https://aws.amazon.com/opendata/open-data-sponsorship-program/)**. We gratefully acknowledge Amazon Web Services for enabling open access to this dataset.
 
 ----
 ### **Scope**  
 
-- ENHANCE.PET 1.6k contains **1,597 whole-/total-body [^18F]FDG-PET/CT studies** with **130 CT-derived, expert-verified segmentations** per scan.  
+- ENHANCE.PET 1.6k contains **1,683 whole-/total-body [18F]FDG-PET/CT studies** with **130 CT-derived, expert-verified segmentations** per scan.  
 - All imaging is provided as **anonymized NIfTI** volumes, plus spreadsheets covering CT/PET acquisition parameters and participant demographics.  
 - The dataset is intended for segmentation benchmarking, multi-organ analysis, radiomics, and PET/CT AI research.
 
-| Estimated size   | Primary access method | Support contact                      |
-|------------------|-----------------------|---------------------------------------|
-| ~250 GB          | MOOSE CLI (see “Access on AWS via MOOSE CLI” below) | Lalith.shiyam@med.uni-muenchen.de |
+| Estimated size   | Primary access method                                           | Support contact                   |
+|------------------|-----------------------------------------------------------------|-----------------------------------|
+| ~266 GB          | Science Data Bank (https://doi.org/10.57760/sciencedb.34150)    | Lalith.shiyam@med.uni-muenchen.de |
+|                  | see “Access on Science DB via MOOSE CLI” below                  |                                   |
 
 ---
 
-## 1) Storage layout (AWS Open Data bucket)
+## 1) Storage layout (Science Data Bank, https://doi.org/10.57760/sciencedb.34150)
 
-Top-level prefix : `enhance-pet-1-6k/`
+Top-level prefix: `ENHANCE-PET_1.6k/`
 
 ```
-s3://enhance-pet-1-6k/
+ENHANCE-PET_1.6k/
   CT-details.xlsx
   PT-details.xlsx
   labels.json
   imaging-data/
     images/
-      CT/
+      CT_0001-1000/
         0001.nii.gz
         ...
-        1597.nii.gz
-      PT/
+        1000.nii.gz
+      CT_1001-1683/
+        1001.nii.gz
+        ...
+        1683.nii.gz
+      PT_0001-1683/
         0001.nii.gz
         ...
-        1597.nii.gz
+        1683.nii.gz
     ground-truth/
       Body-Composition/
-        0001.nii.gz … 1597.nii.gz
+        0001.nii.gz … 1683.nii.gz
       Cardiac/
-        0001.nii.gz … 1597.nii.gz
+        0001.nii.gz … 1683.nii.gz
       Muscles/
-        0001.nii.gz … 1597.nii.gz
+        0001.nii.gz … 1683.nii.gz
       Organs/
-        0001.nii.gz … 1597.nii.gz
+        0001.nii.gz … 1683.nii.gz
       Peripheral-Bones/
-        0001.nii.gz … 1597.nii.gz
+        0001.nii.gz … 1683.nii.gz
       Ribs/
-        0001.nii.gz … 1597.nii.gz
+        0001.nii.gz … 1683.nii.gz
       Vertebrae/
-        0001.nii.gz … 1597.nii.gz
+        0001.nii.gz … 1683.nii.gz
 ```
 
 **Notes**
-- File IDs are **sequential** (`0001.nii.gz` … `1597.nii.gz`) and correspond across CT, PT, and each segmentation group.
+- File IDs are **sequential** (`0001.nii.gz` … `1683.nii.gz`) and correspond across CT, PT, and each segmentation group.
 - Segmentations are **grouped** into seven model-specific folders under `ground-truth/`.
 
 ---
@@ -126,7 +120,6 @@ Seven segmentation groups are provided. Below are **representative excerpts** fr
   "1": "adrenal_gland_left",
   "2": "adrenal_gland_right",
   "3": "bladder",
-  "4": "brain",
   "5": "gallbladder",
   "6": "kidney_left",
   "7": "kidney_right",
@@ -260,7 +253,7 @@ Seven segmentation groups are provided. Below are **representative excerpts** fr
 
 ## 4) Naming conventions
 
-- **Imaging files:** zero‑padded numeric IDs (`0001.nii.gz` … `1597.nii.gz`)  
+- **Imaging files:** zero‑padded numeric IDs (`0001.nii.gz` … `1683.nii.gz`)  
 - **One‑to‑one mapping:** the same ID indexes a **single case** across CT, PT, and each segmentation group  
 - **labels.json:** provides the **canonical intensity mapping** for each segmentation group
 
@@ -268,8 +261,7 @@ Seven segmentation groups are provided. Below are **representative excerpts** fr
 
 ## 5) Anonymization
 
-- Cohorts from Careggi and Leipzig are defaced (cranial region handled in CT and PET to prevent re‑identification).  
-- PET/CT contributions from AutoPET retain upstream anonymization + facial removal.  
+- All PET/CT contributions are defaced (cranial region handled in CT and PET to prevent re‑identification).    
 - All shared data are **anonymized** prior to release.
 
 ---
@@ -278,31 +270,17 @@ Seven segmentation groups are provided. Below are **representative excerpts** fr
 
 Licensing is **per originating site**, recorded in the `Data-Source` column of both `CT-details.xlsx` and `PT-details.xlsx`:
 
-| Data-Source                                     | License     | Notes                                      |
-|------------------------------------------------|-------------|--------------------------------------------|
-| AutoPET Challenge                              | CC BY-NC 4.0| Open challenge dataset; non-commercial use |
-| University Hospital Leipzig (Germany)          | CC BY 4.0   | LUCAPET Consortium                         |
-| Azienda Ospedaliero Universitaria Careggi (IT) | CC BY 4.0   | LUCAPET Consortium                         |
+| Data-Source                                    | License     | Notes                                                        |
+|------------------------------------------------|-------------|--------------------------------------------------------------|
+| AutoPET Challenge                              | CC BY-NC 4.0| Open challenge dataset; non-commercial use                   |
+| University Hospital Leipzig (DE).              | CC BY 4.0   | LUCAPET Consortium                                           |
+| Azienda Ospedaliero Universitaria Careggi (IT) | CC BY 4.0   | LUCAPET Consortium                                           |
+| University of California Davis (US) 		 | CC BY 4.0   | External contribution, provided directly by the institution  |
+
 
 ---
 
----
-
-## 7) Access to AWS via AWS CLI
-
-This dataset can be accessed (viewed and downloaded) using the `aws cli`.
-
-1. **[Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)**
-2. **[See the basic commands](https://docs.aws.amazon.com/cli/latest/reference/s3/)**
-3. Access the Open Data on AWS without signing up
-```bash
-    # list the content of the directory
-    aws s3 ls --no-sign-request s3://enhance-pet-1-6k/imaging-data/images/CT/
-```
-
----
-
-## 8) Access on AWS via MOOSE CLI
+## 7) Access to Science DB via MOOSE CLI
 
 This dataset is **distributed via the MOOSE CLI** to simplify discovery and download.
 
@@ -315,22 +293,22 @@ This dataset is **distributed via the MOOSE CLI** to simplify discovery and down
 
 ---
 
-## 9) Expected counts & integrity checks
+## 8) Expected counts & integrity checks
 
-- **CT volumes:** 1,597 files  
-- **PT volumes:** 1,597 files  
-- **Segmentations:** for each of the seven groups, **1,597 files**  
+- **CT volumes:** 1,683 files  
+- **PT volumes:** 1,683 files  
+- **Segmentations:** for each of the seven groups, **1,683 files**  
 - **Metadata files:** `CT-details.xlsx`, `PT-details.xlsx`, `labels.json`
 
 ---
 
-## 10) Known caveats
+## 9) Known caveats
 
 - Segmentations are **derived from CT**; in cases with notable **patient motion**, PET↔CT misalignment may be present.  
 - Some very small or thin structures can be more challenging (e.g., small vessels, digits), which should be considered during downstream QA.
 
 ---
 
-## 11) Contact
+## 10) Contact
 
 For questions, issues, or requests: **Lalith Kumar Shiyam Sundar** — `Lalith.shiyam@med.uni-muenchen.de`

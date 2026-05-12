@@ -555,7 +555,7 @@ def moose_subject(subject: str, subject_index: int, number_of_subjects: int, mod
 
 def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager, performance_observer: PerformanceObserver, accelerator: str, subjects_information: Tuple[str, int, int]) -> Iterator[Tuple[SimpleITK.Image, models.Model]]:
     current_image_array = SimpleITK.GetArrayFromImage(image)
-    current_image_array_spacing = image.GetSpacing()[::-1]
+    current_image_array_spacing = image_processing.reverse_axes(image.GetSpacing())
 
     performance_observer.metadata_image_size = image.GetSize()
     performance_observer.time_phase()
@@ -597,7 +597,7 @@ def run_workflows(image: SimpleITK.Image, model_workflows: List[models.ModelWork
         performance_observer.time_phase()
 
         segmentation = SimpleITK.GetImageFromArray(segmentation_array)
-        segmentation.SetSpacing(desired_spacing[::-1])
+        segmentation.SetSpacing(image_processing.reverse_axes(desired_spacing))
         segmentation.SetOrigin(image.GetOrigin())
         segmentation.SetDirection(image.GetDirection())
         resampled_segmentation = image_processing.ImageResampler.resample_segmentation(image, segmentation)
