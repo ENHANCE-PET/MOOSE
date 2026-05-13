@@ -125,7 +125,7 @@ def cropped_fov_prediction_pipeline(image: SimpleITK.Image, previous_segmentatio
     # Convert the segmentation array to SimpleITK image and set properties
     to_crop_segmentation = SimpleITK.GetImageFromArray(previous_segmentation)
     to_crop_segmentation.SetOrigin(image.GetOrigin())
-    to_crop_segmentation.SetSpacing(model_to_crop_from.voxel_spacing)
+    to_crop_segmentation.SetSpacing(image_processing.reverse_axes(model_to_crop_from.voxel_spacing))
     to_crop_segmentation.SetDirection(image.GetDirection())
 
     # Resample the image using the desired spacing
@@ -133,7 +133,7 @@ def cropped_fov_prediction_pipeline(image: SimpleITK.Image, previous_segmentatio
     to_crop_image_array = image_processing.ImageResampler.resample_image_SimpleITK_DASK_array(image, 'bspline', desired_spacing)
     to_crop_image = SimpleITK.GetImageFromArray(to_crop_image_array)
     to_crop_image.SetOrigin(image.GetOrigin())
-    to_crop_image.SetSpacing(desired_spacing)
+    to_crop_image.SetSpacing(image_processing.reverse_axes(desired_spacing))
     to_crop_image.SetDirection(image.GetDirection())
 
     # Resample the segmentation
@@ -147,7 +147,7 @@ def cropped_fov_prediction_pipeline(image: SimpleITK.Image, previous_segmentatio
 
     to_write_image = SimpleITK.GetImageFromArray(limited_fov_image_array)
     to_write_image.SetOrigin(image.GetOrigin())
-    to_write_image.SetSpacing(desired_spacing)
+    to_write_image.SetSpacing(image_processing.reverse_axes(desired_spacing))
     to_write_image.SetDirection(image.GetDirection())
 
     # Predict the limited FOV segmentation
