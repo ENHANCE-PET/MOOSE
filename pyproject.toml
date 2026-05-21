@@ -48,6 +48,7 @@ dependencies = [
   "rich",
   "pandas",
   "dicom2nifti",
+  'dcm2niix',
   "emoji",
   "matplotlib",
   "psutil",
