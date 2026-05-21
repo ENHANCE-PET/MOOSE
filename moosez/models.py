@@ -3,148 +3,113 @@ import json
 import zipfile
 import requests
 import shutil
-from typing import Union, Tuple, List, Dict, Set
+from typing import Tuple, List, Dict
 from moosez import system
-from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, KEY_LIMIT_FOV, DEFAULT_SPACING, DEFAULT_TRANSPOSE_IDENTITY,
-                              FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET)
+from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, DEFAULT_SPACING, DEFAULT_TRANSPOSE_IDENTITY,
+                              FILE_NAME_DATASET_JSON, FILE_NAME_PLANS_JSON, ANSI_GREEN, ANSI_RESET, ALLOWED_MODALITY_CONFIGURATIONS)
 from moosez.mappings import SNOMED
 
 
 MODEL_METADATA = {
     "clin_ct_body": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_body_27112023.zip",
-        KEY_FOLDER_NAME: "Dataset001_body",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset001_body"
     },
     "clin_ct_lungs": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_lungs_24062023.zip",
-        KEY_FOLDER_NAME: "Dataset333_HMS3dlungs",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset333_HMS3dlungs"
     },
     "clin_ct_organs": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_organs_ras_07052025.zip",
-        KEY_FOLDER_NAME: "Dataset123_Organs",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset123_Organs"
     },
     "clin_ct_ribs": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_ribs_ras_08052025.zip",
-        KEY_FOLDER_NAME: "Dataset444_Ribs",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset444_Ribs"
     },
     "clin_ct_muscles": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_muscles_ras_21052025.zip",
-        KEY_FOLDER_NAME: "Dataset555_Muscles",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset555_Muscles"
     },
     "clin_ct_peripheral_bones": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_peripheral_bones_ras_07052025.zip",
-        KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset666_Peripheral-Bones"
     },
     "clin_ct_vertebrae": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_vertebrae_ras_21052025.zip",
-        KEY_FOLDER_NAME: "Dataset111_Vertebrae",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset111_Vertebrae"
     },
     "clin_ct_cardiac": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_cardiac_ras_21052025.zip",
-        KEY_FOLDER_NAME: "Dataset888_Cardiac",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset888_Cardiac"
     },
     "clin_ct_digestive": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_digestive_06102024.zip",
-        KEY_FOLDER_NAME: "Dataset999_Digestive",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset999_Digestive"
     },
     "clin_ct_ALPACA": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_ALPACA.zip",
-        KEY_FOLDER_NAME: "Dataset080_Alpaca",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset080_Alpaca"
     },
     "clin_ct_PUMA": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_PUMA_1k_23052024.zip",
-        KEY_FOLDER_NAME: "Dataset002_PUMA",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset002_PUMA"
     },
     "clin_ct_PUMA4": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_PUMA4_06032024.zip",
-        KEY_FOLDER_NAME: "Dataset003_PUMA4",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset003_PUMA4"
     },
     "clin_ct_body_composition": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_body_composition_05092024.zip",
-        KEY_FOLDER_NAME: "Dataset778_Body_composition",
-        KEY_LIMIT_FOV: {
-            "model_to_crop_from": "clin_ct_fast_vertebrae",
-            "inference_fov_intensities": [20, 24],
-            "label_intensity_to_crop_from": 22,
-            "largest_component_only": True
-        }
+        KEY_FOLDER_NAME: "Dataset778_Body_composition"
     },
     "clin_ct_fast_organs": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_organs_6_02092024.zip",
-        KEY_FOLDER_NAME: "Dataset145_Fast_organs",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset145_Fast_organs"
     },
     "clin_ct_fast_vertebrae": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_vertebrae3_10092024.zip",
-        KEY_FOLDER_NAME: "Dataset112_FastVertebrae",
-        KEY_LIMIT_FOV: None
-        },
+        KEY_FOLDER_NAME: "Dataset112_FastVertebrae"
+    },
     "clin_ct_fast_cardiac": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_cardiac3_10092024.zip",
-        KEY_FOLDER_NAME: "Dataset890_FastCardiac",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset890_FastCardiac"
     },
     "clin_ct_all_bones_v1": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_all_bones_25102023.zip",
-        KEY_FOLDER_NAME: "Dataset600_Original_bones",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset600_Original_bones"
     },
     "clin_pt_fdg_brain_v1": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_fdg_pt_brain_v1_17112023.zip",
-        KEY_FOLDER_NAME: "Dataset100_Brain_v1",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset100_Brain_v1"
     },
     "clin_ct_fat_old": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_fat_31082023.zip",
-        KEY_FOLDER_NAME: "Dataset777_Fat",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset777_Fat"
     },
     "clin_ct_dental": {
         KEY_URL: "https://model.s.mdforge.com/Dataset112_DentalSegmentator_v100_moose.zip",
-        KEY_FOLDER_NAME: "Dataset112_DentalSegmentator_v100",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset112_DentalSegmentator_v100"
     },
     "clin_ct_face": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.7/clin_ct_face_ear_12052026.zip",
-        KEY_FOLDER_NAME: "Dataset006_face_ear_v2",
-        KEY_LIMIT_FOV: {
-            "model_to_crop_from": "clin_ct_body",
-            "inference_fov_intensities": [3, 3],
-            "label_intensity_to_crop_from": 3,
-            "largest_component_only": True
-        }
-    },
-    "preclin_mr_all": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_mr_all_05122023.zip",
-        KEY_FOLDER_NAME: "Dataset234_minimoose",
-        KEY_LIMIT_FOV: None
-    },
-    "preclin_ct_legs": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_ct_legs_05122023.zip",
-        KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset006_face_ear_v2"
     },
     "clin_pt_fdg_face": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.5/clin_pt_face_12012026.zip",
-        KEY_FOLDER_NAME: "Dataset183_PETface",
-        KEY_LIMIT_FOV: None
+        KEY_FOLDER_NAME: "Dataset183_PETface"
     },
-    "clin_ct_FVM": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.6/clin_ct_FVM.zip",
+    "preclin_mr_all": {
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_mr_all_05122023.zip",
+        KEY_FOLDER_NAME: "Dataset234_minimoose"
+    },
+    "preclin_ct_legs": {
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_ct_legs_05122023.zip",
+        KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles"
+    },
+    "clin_mr_FVM": {
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.2.0/clin_mr_FVM_30032026.zip",
         KEY_FOLDER_NAME: "Dataset501_FVM",
-        KEY_LIMIT_FOV: None
     } 
 }
 
@@ -156,7 +121,6 @@ class Model:
         self.model_identifier = model_identifier
         self.folder_name = MODEL_METADATA[self.model_identifier][KEY_FOLDER_NAME]
         self.url = MODEL_METADATA[self.model_identifier][KEY_URL]
-        self.limit_fov = MODEL_METADATA[self.model_identifier][KEY_LIMIT_FOV]
         self.base_directory = base_directory
         self.directory = os.path.join(self.base_directory, self.folder_name)
 
@@ -171,19 +135,15 @@ class Model:
         self.transpose_backward = self.plans.get("transpose_backward", DEFAULT_TRANSPOSE_IDENTITY)
         self.voxel_spacing_t = tuple(self.plans.get('configurations').get(self.resolution_configuration).get('spacing', DEFAULT_SPACING))
         self.voxel_spacing = tuple([self.voxel_spacing_t[i] for i in self.transpose_backward])
-        self.imaging_type, self.modality, self.region = self.__get_model_identifier_segments()
-        self.multilabel_prefix = f"{self.imaging_type}_{self.modality}_{self.region}_"
+        self.imaging_type, self.modality, self.modality_subtype, self.modality_full, self.region = self.__get_model_identifier_segments()
+        self.multilabel_prefix = f"{self.imaging_type}_{self.modality_full}_{self.region}_"
 
         self.organ_indices = self.__get_organ_indices()
         self.nr_training_data = self.__get_number_training_data()
 
     def get_expectation(self):
-        if self.modality == 'FDG-PET-CT':
-            expected_modalities = ['FDG-PET', 'CT']
-        else:
-            expected_modalities = [self.modality]
-        expected_prefixes = [m.replace('-', '_') + "_" for m in expected_modalities]
-
+        expected_modalities = [self.modality_full]
+        expected_prefixes = [self.modality_full + "_"]
         return expected_modalities, expected_prefixes
 
     def __get_configuration_folders(self, output_manager: system.OutputManager) -> List[str]:
@@ -208,18 +168,35 @@ class Model:
         folds = tuple([fold.replace("fold_", "") for fold in folds_folders])
         return folds
 
-    def __get_model_identifier_segments(self) -> Tuple[str, str, str]:
+    def __get_model_identifier_segments(self) -> Tuple[str, str, str | None, str, str]:
         segments = self.model_identifier.split('_')
 
         imaging_type = segments[0]
-        if segments[1] == 'pt':
-            modality = f'{segments[1]}_{segments[2]}'.upper()
+        modality = segments[1].upper()
+
+        if modality not in ALLOWED_MODALITY_CONFIGURATIONS:
+            raise ValueError(f"Invalid modality: {modality}")
+
+        allowed_subtypes = ALLOWED_MODALITY_CONFIGURATIONS[modality]
+
+        if None not in allowed_subtypes:
+            modality_subtype = segments[2].upper()
+            if modality_subtype not in allowed_subtypes:
+                raise ValueError(f"Invalid modality subtype: {modality_subtype}")
+            modality_full = f"{modality}_{modality_subtype}"
             region = '_'.join(segments[3:])
         else:
-            modality = segments[1].upper()
-            region = '_'.join(segments[2:])
+            known_subtypes = [s for s in allowed_subtypes if s is not None]
+            if known_subtypes and segments[2].upper() in known_subtypes:
+                modality_subtype = segments[2].upper()
+                modality_full = f"{modality}_{modality_subtype}"
+                region = '_'.join(segments[3:])
+            else:
+                modality_subtype = None
+                modality_full = modality
+                region = '_'.join(segments[2:])
 
-        return imaging_type, modality, region
+        return imaging_type, modality, modality_subtype, modality_full, region
 
     def __get_model_data(self) -> Tuple[Dict, Dict]:
         dataset_json_path = os.path.join(self.configuration_directory, FILE_NAME_DATASET_JSON)
@@ -351,19 +328,14 @@ class Model:
             f" Voxel Spacing: {self.voxel_spacing}",
             f" Imaging Type: {self.imaging_type}",
             f" Modality: {self.modality}",
+            f" Modality Subtype: {self.modality_subtype}",
+            f" Modality Full: {self.modality_full}",
             f" Region: {self.region}",
             f" Multilabel Prefix: {self.multilabel_prefix}",
             f" Organ Indices:",
         ]
         for index, organ in self.organ_indices.items():
             result.append(f"   {index}: {organ}")
-
-        if isinstance(self.limit_fov, dict):
-            result.append(f" Limit FOV:")
-            for key, value in self.limit_fov.items():
-                result.append(f"   {key}: {value}")
-        else:
-            result.append(f" Limit FOV: {self.limit_fov}")
 
         return "\n".join(result)
 
@@ -374,58 +346,12 @@ class Model:
             return False
 
         model_information = MODEL_METADATA[model_identifier]
-        if KEY_URL not in model_information or KEY_FOLDER_NAME not in model_information or KEY_LIMIT_FOV not in model_information:
-            output_manager.console_update("One or more of the required keys url, folder_name, limit_fov are missing.")
+        if KEY_URL not in model_information or KEY_FOLDER_NAME not in model_information:
+            output_manager.console_update("One or more of the required keys url, folder_name, are missing.")
             return False
 
-        if model_information[KEY_URL] == "" or model_information[KEY_FOLDER_NAME] == "" or (model_information[KEY_LIMIT_FOV] is not None and not isinstance(model_information[KEY_LIMIT_FOV], dict)):
-            output_manager.console_update("One or more of the required keys url, folder_name, limit_fov are not defined correctly.")
+        if model_information[KEY_URL] == "" or model_information[KEY_FOLDER_NAME] == "":
+            output_manager.console_update("One or more of the required keys url, folder_name, are not defined correctly.")
             return False
 
         return True
-
-
-class ModelWorkflow:
-    def __init__(self, model_identifier: str, output_manager: system.OutputManager):
-        self.workflow: List[Model] = []
-        self.required_modalities: Set[str] = set()
-
-        self.__construct_workflow(model_identifier, output_manager)
-        if self.workflow:
-            self.initial_desired_spacing = self.workflow[0].voxel_spacing
-            self.target_model = self.workflow[-1]
-
-    def __construct_workflow(self, model_identifier: str, output_manager: system.OutputManager):
-        model = Model(model_identifier, output_manager)
-        self.required_modalities.add(model.modality)
-        if model.limit_fov and isinstance(model.limit_fov, dict) and 'model_to_crop_from' in model.limit_fov:
-            self.__construct_workflow(model.limit_fov["model_to_crop_from"], output_manager)
-        self.workflow.append(model)
-
-    def __len__(self) -> int:
-        return len(self.workflow)
-
-    def __getitem__(self, index: int) -> Model:
-        return self.workflow[index]
-
-    def __iter__(self):
-        return iter(self.workflow)
-
-    def __str__(self) -> str:
-        return " -> ".join([model.model_identifier for model in self.workflow])
-
-
-def construct_model_workflows(model_identifiers: Union[str, List[str]], output_manager: system.OutputManager) -> List[ModelWorkflow]:
-    if isinstance(model_identifiers, str):
-        model_identifiers = [model_identifiers]
-
-    model_workflows: List[ModelWorkflow] = []
-    output_manager.log_update(' SETTING UP MODEL WORKFLOWS:')
-    for model_identifier in model_identifiers:
-        output_manager.log_update(' - Model name: ' + model_identifier)
-        model_workflow = ModelWorkflow(model_identifier, output_manager)
-        model_workflows.append(model_workflow)
-
-    model_workflows.sort(key=lambda model_workflow: model_workflow.initial_desired_spacing)
-
-    return model_workflows

@@ -35,7 +35,7 @@ def create_directory(directory_path: str) -> None:
 
 def get_files(directory: str, prefix: Union[str, Tuple[str, ...]], suffix: Union[str, Tuple[str, ...]]) -> List[str]:
     """
-    Returns the list of files in the directory with the specified wildcard.
+    Returns the list of files in the directory with the specified prefix and suffix wildcards.
     :param directory: The directory path.
     :type directory: str
     :param suffix: valid suffixes.
@@ -43,7 +43,7 @@ def get_files(directory: str, prefix: Union[str, Tuple[str, ...]], suffix: Union
     :param prefix: valid prefixes.
     :type prefix: str
     :return: The list of files.
-    :rtype: list
+    :rtype: list[str]
     """
 
     if isinstance(prefix, str):
@@ -52,34 +52,26 @@ def get_files(directory: str, prefix: Union[str, Tuple[str, ...]], suffix: Union
     if isinstance(suffix, str):
         suffix = (suffix,)
 
-    files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
-
-    modality_files = []
-    for file in files:
-        if file.startswith(prefix) and file.endswith(suffix):
-            modality_files.append(os.path.join(directory, file))
-    return modality_files
+    files = [item for item in os.listdir(directory) if os.path.isfile(os.path.join(directory, item)) and not item.startswith('.')]
+    matched_files = [file for file in files if file.startswith(prefix) and file.endswith(suffix)]
+    matched_file_paths = [os.path.join(directory, matched_file) for matched_file in matched_files]
+    return matched_file_paths
 
 
-def get_modality_file(directory: str, modality_prefix: str) -> Union[str, None]:
+
+def get_modality_NIFTI_files(directory: str, modality_prefix: str) -> List[str]:
     """
-    Finds the modality file in the specified folder.
+    Finds the modality files in the specified folder with a NIFTI extension.
     :param directory: The path to the folder.
     :type directory: str
     :param modality_prefix: The modality prefix.
     :type modality_prefix: str
-    :return: The path to the modality file.
-    :rtype: str
+    :return: The paths to the modality files.
+    :rtype: list[str]
     """
 
     modality_files = get_files(directory, modality_prefix, ('.nii', '.nii.gz'))
-
-    if len(modality_files) == 1:
-        return modality_files[0]
-    elif len(modality_files) > 1:
-        raise ValueError("More than one modality file found in the directory.")
-    else:
-        return None
+    return modality_files
 
 
 def moose_folder_structure(parent_directory: str) -> Tuple[str, str, str]:

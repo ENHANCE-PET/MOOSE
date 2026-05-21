@@ -18,26 +18,25 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import os
-from typing import Tuple, List, Dict
+from typing import List
 from moosez import constants
-from moosez import models
+from moosez import workflows
 from moosez import system
 
 
-def determine_model_expectations(model_workflows: List[models.ModelWorkflow], output_manager: system.OutputManager) -> List:
+def determine_model_expectations(model_workflows: List[workflows.Workflow], output_manager: system.OutputManager) -> List[str]:
     """
-    Display expected modality for the model.
+    Display expected modalities for the requested workflows and return the
+    deduplicated list of required modality prefixes.
 
-    This function displays the expected modality for the given model name. It also checks for a special case where
-    'FDG-PET-CT' should be split into 'FDG-PET' and 'CT'.
-
-    :param model_routine: The model routine
-    :type model_routine: Dict[Tuple, List[models.ModelWorkflow]]
+    :param model_workflows: The model routine
+    :type model_workflows: List[workflows.Workflow]
     :param output_manager: The output manager
     :type output_manager: system.OutputManager
-    :return: A list of modalities.
-    :rtype: list
+    :return: A list of required modality prefixes.
+    :rtype: List[str]
     """
+
     required_modalities = []
     required_prefixes = []
 
@@ -65,17 +64,17 @@ def determine_model_expectations(model_workflows: List[models.ModelWorkflow], ou
 
     output_manager.log_update(f" Required modalities: {required_modalities} | No. of modalities: {len(required_modalities)} "
                               f"| Required prefix for non-DICOM files: {required_prefixes} ")
-    output_manager.console_update(f"{constants.ANSI_ORANGE} Warning: Subjects which don't have the required modalities [check file prefix] "
+    output_manager.console_update(f"{constants.ANSI_ORANGE} Warning: Subjects without any of the required modalities [check file prefix] "
                                   f"will be skipped. {constants.ANSI_RESET}")
-    output_manager.log_update(" Skipping subjects without the required modalities (check file prefix).\n"
+    output_manager.log_update(" Skipping subjects without any of the required modalities (check file prefix).\n"
                               " These subjects will be excluded from analysis and their data will not be used.")
 
-    return required_modalities
+    return required_prefixes
 
 
 def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: List[str], output_manager: system.OutputManager) -> List[str]:
     """
-    Selects the subjects that have the files that have names that are compliant with the moosez.
+    Selects the subjects that have at least one of the required modality files.
 
     :param subject_paths: The path to the list of subjects that are present in the parent directory.
     :type subject_paths: List[str]
@@ -87,14 +86,12 @@ def select_moose_compliant_subjects(subject_paths: List[str], modality_tags: Lis
     :return: The list of subject paths that are moose compliant.
     :rtype: List[str]
     """
-    # go through each subject in the parent directory
+
     moose_compliant_subjects = []
     for subject_path in subject_paths:
-        # go through each subject and see if the files have the appropriate modality prefixes
-
         files = [file for file in os.listdir(subject_path) if file.endswith('.nii') or file.endswith('.nii.gz')]
-        prefixes = [file.startswith(tag) for tag in modality_tags for file in files]
-        if sum(prefixes) == len(modality_tags):
+        has_any = any(file.startswith(tag) for tag in modality_tags for file in files)
+        if has_any:
             moose_compliant_subjects.append(subject_path)
     output_manager.console_update(f"{constants.ANSI_ORANGE} Number of moose compliant subjects: {len(moose_compliant_subjects)} out of {len(subject_paths)} {constants.ANSI_RESET}")
     output_manager.log_update(f" Number of moose compliant subjects: {len(moose_compliant_subjects)} out of {len(subject_paths)}")
