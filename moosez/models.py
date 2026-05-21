@@ -92,8 +92,8 @@ MODEL_METADATA = {
         KEY_FOLDER_NAME: "Dataset112_DentalSegmentator_v100"
     },
     "clin_ct_face": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/clin_ct_Faces_08092025.zip",
-        KEY_FOLDER_NAME: "Dataset007_Faces"
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.7/clin_ct_face_ear_12052026.zip",
+        KEY_FOLDER_NAME: "Dataset006_face_ear_v2"
     },
     "clin_pt_fdg_face": {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.5/clin_pt_face_12012026.zip",
@@ -107,8 +107,8 @@ MODEL_METADATA = {
         KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.3/preclin_ct_legs_05122023.zip",
         KEY_FOLDER_NAME: "Dataset256_Preclin_leg_muscles"
     },
-    "clin_ct_FVM": {
-        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.1.6/clin_ct_FVM.zip",
+    "clin_mr_FVM": {
+        KEY_URL: "https://github.com/ENHANCE-PET/MOOSE/releases/download/moosez-v.3.2.0/clin_mr_FVM_30032026.zip",
         KEY_FOLDER_NAME: "Dataset501_FVM",
     } 
 }
