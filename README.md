@@ -105,7 +105,7 @@ Before you dive into the incredible world of MOOSE 3.2, here are a few things yo
 
 - **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 3.2 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
 
-- **Python**: Ensure that you have Python 3.10 installed on your system. MOOSE 3.2 likes to keep up with the latest, after all!
+- **Python**: Ensure that you have Python 3.10 or newer installed on your system. MOOSE 3.2 likes to keep up with the latest, after all!
 
 So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 3.2 has to offer. 🚀🌐
 
@@ -117,7 +117,7 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
 
 1. First, create a Python environment. You can name it to your liking; for example, 'moose-env'.
    ```bash
-   python3.10 -m venv moose-env
+   python -m venv moose-env
    ```
 
 2. Activate your newly created environment.
@@ -125,9 +125,9 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    source moose-env/bin/activate
    ```
 
-3. Install MOOSE 3.2.
+3. Install MOOSE 3.2 from PyPI.
    ```bash
-   pip install git+https://github.com/ENHANCE-PET/MOOSE.git
+   python -m pip install moosez
    ```
 
 Voila! You're all set to explore with MOOSE 3.2.
@@ -136,7 +136,7 @@ Voila! You're all set to explore with MOOSE 3.2.
 
 1. Create a Python environment. You could name it 'moose-env', or as you wish.
    ```bash
-   python3.10 -m venv moose-env
+   python -m venv moose-env
    ```
 
 2. Activate your newly created environment.
@@ -144,11 +144,11 @@ Voila! You're all set to explore with MOOSE 3.2.
    .\moose-env\Scripts\activate
    ```
 
-3. Go to the PyTorch website and install the appropriate PyTorch version for your system. **!DO NOT SKIP THIS!**
+3. If you need a CUDA-specific PyTorch build, install the appropriate PyTorch version for your system first. Otherwise, the PyPI install below will install the default PyTorch dependency.
 
-4. Finally, install MOOSE 3.2.
+4. Finally, install MOOSE 3.2 from PyPI.
    ```bash
-   pip install git+https://github.com/ENHANCE-PET/MOOSE.git
+   python -m pip install moosez
    ```
 
 There you have it! You're ready to venture into the world of 3D medical image segmentation with MOOSE 3.2.
