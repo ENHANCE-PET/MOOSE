@@ -81,7 +81,11 @@ jobs:
           python - <<'PY'
           import os
           import pathlib
-          import tomllib
+
+          try:
+              import tomllib
+          except ModuleNotFoundError:
+              import tomli as tomllib
 
           expected = os.environ["MOOSEZ_VERSION"]
           metadata = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
