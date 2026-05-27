@@ -3,49 +3,240 @@ name: "Unified Release - PyPI and Docker"
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish, for example moosez-v.3.2.1"
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PACKAGE_NAME: moosez
+  IMAGE_NAME: moosez
 
 jobs:
-  release:
+  release-meta:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+      docker_version: ${{ steps.meta.outputs.docker_version }}
+    steps:
+      - name: Extract release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ github.event.inputs.tag }}"
+          fi
+
+          if [[ ! "$TAG" =~ ^moosez-v\.([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Release tag must look like moosez-v.3.2.1; got '$TAG'." >&2
+            exit 1
+          fi
+
+          VERSION="${BASH_REMATCH[1]}"
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "docker_version=v$VERSION"
+          } >> "$GITHUB_OUTPUT"
+
+  build-python:
+    runs-on: ubuntu-latest
+    needs: release-meta
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.release-meta.outputs.tag }}
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.10"
+          cache: pip
 
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine
+          python -m pip install build twine
 
-      - name: Build and publish Python package
+      - name: Verify project version matches release tag
+        env:
+          MOOSEZ_VERSION: ${{ needs.release-meta.outputs.version }}
         run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import tomllib
+
+          expected = os.environ["MOOSEZ_VERSION"]
+          metadata = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          actual = metadata["project"]["version"]
+          if actual != expected:
+              raise SystemExit(
+                  f"pyproject.toml version {actual!r} does not match release tag version {expected!r}"
+              )
+          PY
+
+      - name: Build Python package
+        run: |
+          rm -rf dist
           python -m build
-          twine upload dist/* -u __token__ -p ${{ secrets.PYPI_API_TOKEN }}
+          python -m twine check dist/*
 
-      - name: Wait for PyPI propagation
+      - name: Upload Python distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: dist/*
+          if-no-files-found: error
+
+  publish-pypi:
+    runs-on: ubuntu-latest
+    needs:
+      - release-meta
+      - build-python
+
+    steps:
+      - name: Download Python distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist
+
+      - name: Check whether this version is already on PyPI
+        id: pypi_state
+        env:
+          MOOSEZ_VERSION: ${{ needs.release-meta.outputs.version }}
         run: |
-          echo "⏳ Waiting 45 seconds for PyPI to update..."
-          sleep 45
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import urllib.error
+          import urllib.request
+
+          version = os.environ["MOOSEZ_VERSION"]
+          dist_dir = pathlib.Path("dist")
+          local_hashes = {
+              path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in dist_dir.iterdir()
+              if path.is_file()
+          }
+
+          try:
+              with urllib.request.urlopen("https://pypi.org/pypi/moosez/json", timeout=20) as response:
+                  data = json.load(response)
+          except urllib.error.HTTPError as exc:
+              if exc.code == 404:
+                  print("exists=false")
+                  with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+                      print("exists=false", file=output)
+                  raise SystemExit(0)
+              raise
+
+          files = data.get("releases", {}).get(version, [])
+          if not files:
+              print("exists=false")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+                  print("exists=false", file=output)
+              raise SystemExit(0)
+
+          remote_hashes = {
+              item["filename"]: item["digests"]["sha256"]
+              for item in files
+          }
+          if remote_hashes != local_hashes:
+              raise SystemExit(
+                  "PyPI already has this version, but file hashes differ. "
+                  "Bump the version instead of reusing this release number."
+              )
+
+          print("exists=true")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              print("exists=true", file=output)
+          PY
+
+      - name: Publish package to PyPI
+        if: steps.pypi_state.outputs.exists != 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_MOOSEZ_TOKEN || secrets.PYPI_API_TOKEN }}
+          packages-dir: dist/
+
+      - name: Wait for exact PyPI artifacts
+        env:
+          MOOSEZ_VERSION: ${{ needs.release-meta.outputs.version }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import time
+          import urllib.request
+
+          version = os.environ["MOOSEZ_VERSION"]
+          local_hashes = {
+              path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in pathlib.Path("dist").iterdir()
+              if path.is_file()
+          }
+
+          for attempt in range(1, 31):
+              try:
+                  with urllib.request.urlopen("https://pypi.org/pypi/moosez/json", timeout=20) as response:
+                      data = json.load(response)
+                  remote_hashes = {
+                      item["filename"]: item["digests"]["sha256"]
+                      for item in data.get("releases", {}).get(version, [])
+                  }
+                  if remote_hashes == local_hashes:
+                      print(f"PyPI has moosez {version} with expected artifacts.")
+                      raise SystemExit(0)
+                  print(f"Attempt {attempt}: PyPI version exists but artifacts are not ready yet.")
+              except Exception as exc:
+                  print(f"Attempt {attempt}: {exc}")
+              time.sleep(10)
+
+          raise SystemExit(f"Timed out waiting for moosez {version} on PyPI.")
+          PY
+
+  publish-docker:
+    runs-on: ubuntu-latest
+    needs:
+      - release-meta
+      - publish-pypi
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.release-meta.outputs.tag }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Extract version from tag
-        id: extract_version
-        run: |
-          VERSION=$(echo "${GITHUB_REF##*/}" | sed -E 's/moosez-v\.([0-9]+\.[0-9]+\.[0-9]+)/v\1/')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -53,6 +244,9 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          build-args: |
+            MOOSEZ_VERSION=${{ needs.release-meta.outputs.version }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/moosez:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/moosez:${{ needs.release-meta.outputs.docker_version }}
+            ${{ secrets.DOCKER_USERNAME }}/moosez:${{ needs.release-meta.outputs.version }}
             ${{ secrets.DOCKER_USERNAME }}/moosez:latest

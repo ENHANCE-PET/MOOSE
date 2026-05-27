@@ -1,8 +1,10 @@
 # Base image
 FROM python:3.10-slim
 
-# Install MOOSE from PyPI
-RUN pip install moosez
+ARG MOOSEZ_VERSION
+
+# Install the exact MOOSE release from PyPI.
+RUN python -m pip install --no-cache-dir "moosez==${MOOSEZ_VERSION}"
 
 # Set working directory
 WORKDIR /app
