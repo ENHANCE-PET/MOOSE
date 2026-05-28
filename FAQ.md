@@ -25,7 +25,7 @@ IndexError: list index out_of_range
 **Solutions:**
 
 1. **Double-Check Requirements:**  ✅
-    - Make sure you're using Python version 3.10. You can check this by running `python --version` in your terminal. 
+    - Make sure you're using Python 3.10 or newer. You can check this by running `python --version` in your terminal.
     - Ensure you have enough RAM available for your tasks. Moose might require more RAM for complex datasets.
     - Refer to the official Moose repository for the complete list of requirements: [https://github.com/ENHANCE-PET/MOOSE](https://github.com/ENHANCE-PET/MOOSE)
 

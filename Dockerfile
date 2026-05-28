@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 ARG MOOSEZ_VERSION
 
