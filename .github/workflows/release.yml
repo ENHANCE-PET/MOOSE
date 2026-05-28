@@ -228,6 +228,25 @@ jobs:
       - publish-pypi
 
     steps:
+      - name: Wait for package on installer index
+        env:
+          MOOSEZ_VERSION: ${{ needs.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          for attempt in {1..30}; do
+            rm -rf /tmp/pypi-index-check
+            if python3 -m pip download --no-deps --dest /tmp/pypi-index-check "moosez==${MOOSEZ_VERSION}"; then
+              echo "pip can see moosez ${MOOSEZ_VERSION} on the installer index."
+              exit 0
+            fi
+            echo "Attempt ${attempt}: moosez ${MOOSEZ_VERSION} is not visible to installers yet."
+            sleep 10
+          done
+
+          echo "Timed out waiting for moosez ${MOOSEZ_VERSION} on the installer index." >&2
+          exit 1
+
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
