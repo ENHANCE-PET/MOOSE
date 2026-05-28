@@ -39,12 +39,12 @@ dependencies = [
   "SimpleITK",
   "nnunetv2>=2.6.0",
   "halo",
-  "pydicom",
+  "pydicom>=2.4.5",
   "numpy",
   "pyfiglet",
   "natsort",
   "colorama",
-  "dask",
+  "dask>=2026.1.0",
   "rich",
   "pandas",
   "dicom2nifti",
@@ -52,6 +52,7 @@ dependencies = [
   "emoji",
   "matplotlib",
   "psutil",
+  "requests>=2.33.0",
   "nibabel"
 ]
 
