@@ -42,13 +42,6 @@ WORKFLOW_REGISTRY: Dict[str, List[Dict]] = {
     ],
     "clin_ct_face": [
         {
-            "model": "clin_ct_body",
-            "role": "crop_FOV",
-            "fov_intensities": [3, 3],
-            "crop_label": 3,
-            "largest_component_only": True,
-        },
-        {
             "model": "clin_ct_face",
             "role": "segmentation",
         },
