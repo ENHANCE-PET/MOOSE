@@ -65,3 +65,6 @@ moosez = "moosez.moosez:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["moosez*"]
+
+[tool.setuptools.package-data]
+"moosez.mappings" = ["*.csv"]
