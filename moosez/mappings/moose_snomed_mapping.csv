@@ -143,3 +143,7 @@ face,Face,1,SCT,123037004,Anatomical Structure,SCT,89545001,Face,,,,,,,,,,"[255,
 body_composition,skeletal_muscle,1,SCT,123037004,Anatomical Structure,SCT,127954009,Skeletal muscle structure,,,,,,,,,,"[102, 51, 153]"
 body_composition,subcutaneous_fat,2,SCT,85756007,Tissue,SCT,67769002,Subcutaneous fatty tissue,,,,,,,,,,"[238, 130, 238]"
 body_composition,visceral_fat,3,SCT,85756007,Tissue,SCT,725273006,Structure of adipose tissue of abdomen,,,,,,,,,,"[250, 128, 114]"
+body,Legs,1,SCT,123037004,Anatomical Structure,SCT,61685007,Lower limb,SCT,51440002,Right and left,,,,,,,"[111, 184, 210]"
+body,body,2,SCT,123037004,Anatomical Structure,SCT,22943007,Trunk,,,,,,,,,,"[222, 154, 132]"
+body,head,3,SCT,123037004,Anatomical Structure,SCT,69536005,Head,,,,,,,,,,"[240, 185, 160]"
+body,arms,4,SCT,123037004,Anatomical Structure,SCT,53120007,Upper limb,SCT,51440002,Right and left,,,,,,,"[128, 174, 128]"
