@@ -22,7 +22,7 @@ dcmqi ``segmentAttributes`` record::
 
     moose_to_snomed["iliac_vena_left"] == {
         "SegmentedPropertyCategoryCodeSequence":
-            {"CodingSchemeDesignator": "SCT", "CodeValue": "123037004",
+            {"CodingSchemeDesignator": "SCT", "CodeValue": "91723000",
              "CodeMeaning": "Anatomical Structure"},
         "SegmentedPropertyTypeCodeSequence":
             {"CodingSchemeDesignator": "SCT", "CodeValue": "46027005",
