@@ -1,6 +1,6 @@
 ![Moose-logo](Images/moose.png)
 
-## MOOSE 3.2 🦌- Furiously Fast. Brutally Efficient. Unmatched Precision. 💪
+## MOOSE 3.3 🦌- Furiously Fast. Brutally Efficient. Unmatched Precision. 💪
 
 
 [![Documentation Status](https://img.shields.io/readthedocs/moosez/latest.svg?style=flat-square&logo=read-the-docs&color=CC00FF)](https://moosez.rtfd.io/en/latest/?badge=latest) [![PyPI version](https://img.shields.io/pypi/v/moosez?color=FF1493&style=flat-square&logo=pypi)](https://pypi.org/project/moosez/)
@@ -11,7 +11,7 @@
 Welcome to the new and improved MOOSE (v3.2), where speed and efficiency aren't just buzzwords—they're a way of life. 
 
 **💨 3x Faster Than Before**  
-Like a moose sprinting through the woods (okay, maybe not that fast), MOOSE 3.2 is built for speed. It's 3x faster than its older sibling, MOOSE 2.0, which was already no slouch. Blink, and you'll miss it. ⚡
+Like a moose sprinting through the woods (okay, maybe not that fast), MOOSE 3.3 is built for speed. It's 3x faster than its older sibling, MOOSE 2.0, which was already no slouch. Blink, and you'll miss it. ⚡
 
 **💻 Memory: Light as a Feather, Strong as a Bull**  
 Forget "Does it fit on my laptop?" The answer is YES. 🕺 Thanks to Dask wizardry, all that data stays in memory. No disk writes, no fuss. Run total-body CT on that 'decent' laptop you bought three years ago and feel like you’ve upgraded. 🥳
@@ -25,13 +25,13 @@ This is our best model yet, trained on a whopping 1.7k datasets. More data, bett
 **🖥️ The 'Herd' Mode 🖥️**  
 Got a powerhouse server just sitting around? Time to let the herd loose! Flip the **Herd Mode** switch and watch MOOSE multiply across your compute like... well, like a herd of moose! 🦌🦌🦌 The more hardware you have, the faster your inference gets done. Scale up, speed up, and make every bit of your server earn its oats. 🌾💨
 
-MOOSE 3.2 isn't just an upgrade—it's a lifestyle. A faster, leaner, and stronger lifestyle. Ready to join the herd? 🦌✨
+MOOSE 3.3 isn't just an upgrade—it's a lifestyle. A faster, leaner, and stronger lifestyle. Ready to join the herd? 🦌✨
 
 https://github.com/user-attachments/assets/b121a9f5-30b6-4a40-a451-6bad6570eb55
 
 ## Available Segmentation Models 🧬
 
-MOOSE 3.2 offers a wide range of segmentation models catering to various clinical and preclinical needs. Here are the models currently available:
+MOOSE 3.3 offers a wide range of segmentation models catering to various clinical and preclinical needs. Here are the models currently available:
 
 ### Clinical 👫🏽
 
@@ -55,11 +55,11 @@ MOOSE 3.2 offers a wide range of segmentation models catering to various clinica
 | `preclin_mr_all`      | 1:Brain, 2:Liver, 3:Intestines, 4:Pancreas, 5:Thyroid, 6:Spleen, 7:Bladder, 8:OuterKidney, 9:InnerKidney, 10:HeartInside, 11:HeartOutside, 12:WAT Subcutaneous, 13:WAT Visceral, 14:BAT, 15:Muscle TF, 16:Muscle TB, 17:Muscle BB, 18:Muscle BF, 19:Aorta, 20:Lung, 21:Stomach |
 
 
-Each model is designed to provide high-quality segmentation with MOOSE 3.2's optimized algorithms and data-centric AI principles.
+Each model is designed to provide high-quality segmentation with MOOSE 3.3's optimized algorithms and data-centric AI principles.
 
 ## Supported Modalities 🩻
 
-MOOSE 3.2 supports (or is prepared to support) multiple different modalities and their subtypes. 
+MOOSE 3.3 supports (or is prepared to support) multiple different modalities and their subtypes.
 Each model declares which modality (and optionally which subtype) it expects as input, allowing the same pipeline to handle a wide range of clinical and research data.
 
 | Modality | Subtype | Description                                     | File Prefix      |
@@ -97,21 +97,37 @@ The configuration lives in `moosez.constants.ALLOWED_MODALITY_CONFIGURATIONS`.
 
 ## Requirements ✅
 
-Before you dive into the incredible world of MOOSE 3.2, here are a few things you need to ensure for an optimal experience:
+Before you dive into the incredible world of MOOSE 3.3, here are a few things you need to ensure for an optimal experience:
 
-- **Operating System**: We've got you covered, whether you're on Windows, Mac, or Linux. MOOSE 3.2 has been tested across these platforms to ensure seamless operation.
+- **Operating System**: We've got you covered, whether you're on Windows, Mac, or Linux. MOOSE 3.3 has been tested across these platforms to ensure seamless operation.
 
-- **Memory**: MOOSE 3.2 has quite an appetite! Make sure you have at least 16GB of RAM for the smooth running of all tasks.
+- **Memory**: MOOSE 3.3 has quite an appetite! Make sure you have at least 16GB of RAM for the smooth running of all tasks.
 
-- **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 3.2 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
+- **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 3.3 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
 
 - **Python**: Ensure that you have Python 3.11 or newer installed on your system. This minimum allows security-fixed Pillow 13 releases.
 
-So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 3.2 has to offer. 🚀🌐
+So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 3.3 has to offer. 🚀🌐
+
+## Choosing a PyTorch build
+
+MOOSE 3.3 requires PyTorch 2.13 or newer. For NVIDIA GPUs on Linux or Windows,
+install a build compatible with your driver before installing MOOSE. For example,
+PyTorch publishes this CUDA 12.6 combination:
+
+```bash
+python -m pip install torch==2.13.0 torchvision==0.28.0 --index-url https://download.pytorch.org/whl/cu126
+python -m pip install moosez
+```
+
+Use the [official PyTorch installation options](https://pytorch.org/get-started/previous-versions/#v2130)
+to choose CUDA, ROCm, CPU, or macOS builds. An existing compatible PyTorch build
+satisfies MOOSE's dependency; installing MOOSE does not require switching it to the
+newest default CUDA build.
 
 ## Installation Guide 🛠️
 
-Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 3.2.
+Available on Windows, Linux, and MacOS, the installation is as simple as it gets. Follow our step-by-step guide below and set sail on your journey with MOOSE 3.3.
 
 ## For Linux 🐧 and Mac 🍏
 
@@ -125,12 +141,12 @@ Available on Windows, Linux, and MacOS, the installation is as simple as it gets
    source moose-env/bin/activate
    ```
 
-3. Install MOOSE 3.2 from PyPI.
+3. Install MOOSE 3.3 from PyPI.
    ```bash
    python -m pip install moosez
    ```
 
-Voila! You're all set to explore with MOOSE 3.2.
+Voila! You're all set to explore with MOOSE 3.3.
 
 ## For Windows 🪟
 
@@ -146,12 +162,12 @@ Voila! You're all set to explore with MOOSE 3.2.
 
 3. If you need a CUDA-specific PyTorch build, install the appropriate PyTorch version for your system first. Otherwise, the PyPI install below will install the default PyTorch dependency.
 
-4. Finally, install MOOSE 3.2 from PyPI.
+4. Finally, install MOOSE 3.3 from PyPI.
    ```bash
    python -m pip install moosez
    ```
 
-There you have it! You're ready to venture into the world of 3D medical image segmentation with MOOSE 3.2.
+There you have it! You're ready to venture into the world of 3D medical image segmentation with MOOSE 3.3.
 
 Happy exploring! 🚀🔬
 
@@ -159,7 +175,7 @@ Happy exploring! 🚀🔬
 
 ### Command-Line Tool for Batch Processing 🖥️🚀
 
-Getting started with MOOSE 3.2 is as easy as slicing through butter 🧈🔪. Use the command-line tool to process multiple segmentation models in sequence or in parallel, making your workflow a breeze. 🌬️
+Getting started with MOOSE 3.3 is as easy as slicing through butter 🧈🔪. Use the command-line tool to process multiple segmentation models in sequence or in parallel, making your workflow a breeze. 🌬️
 
 #### *Running Single/Multiple Models in Sequence* 🏃‍♂️🎯
 
@@ -189,7 +205,7 @@ moosez -d <path_to_image_dir> \
           clin_ct_ribs \
           clin_ct_vertebrae
  ```
-MOOSE 3.2 will handle each model one after the other—no fuss, no hassle. 🙌✨
+MOOSE 3.3 will handle each model one after the other—no fuss, no hassle. 🙌✨
 
 #### *Herd Mode: Running Parallel Instances* 🦌💨💻
 
@@ -204,7 +220,7 @@ moosez -d <path_to_image_dir> \
 ```
 MOOSE will run two instances at the same time, utilizing your compute power like a true multitasking pro. 💪👨‍💻👩‍💻
 
-And that's it! MOOSE 3.2 lets you process with ease and speed. ⚡✨
+And that's it! MOOSE 3.3 lets you process with ease and speed. ⚡✨
 
 ---
 ### 📦 ENHANCE.PET MOOSE 1.6k Dataset FTW
@@ -239,9 +255,9 @@ moosez -h
 
 This command will provide you with all the help and the information about the available [models](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/resources.py#L29) and the [regions](https://github.com/QIMP-Team/MOOSE/blob/3fcfad710df790e29a4a1ea16f22e480f784f38e/moosez/constants.py#L64) it segments.
 
-### Using MOOSE 3.2 as a Library 📦🐍
+### Using MOOSE 3.3 as a Library 📦🐍
 
-MOOSE 3.2 isn't just a command-line powerhouse; it’s also a flexible library for Python projects. Here’s how to make the most of it:
+MOOSE 3.3 isn't just a command-line powerhouse; it’s also a flexible library for Python projects. Here’s how to make the most of it:
 
 First, import the `moose` function from the `moosez` package in your Python script:
 
@@ -295,16 +311,16 @@ if __name__ == '__main__':
 
 #### Ready, Set, Segment! 🚀
 
-That's it! With these flexible inputs, you can use MOOSE 3.2 to fit your workflow perfectly—whether you’re processing a single image, a stack of files, or leveraging different data formats. 🖥️🎉
+That's it! With these flexible inputs, you can use MOOSE 3.3 to fit your workflow perfectly—whether you’re processing a single image, a stack of files, or leveraging different data formats. 🖥️🎉
 
-Happy segmenting with MOOSE 3.2! 🦌💫
+Happy segmenting with MOOSE 3.3! 🦌💫
 
 
 ## Directory Structure and Naming Conventions for MOOSE 📂🏷️
 
 ### Applicable only for batch mode ⚠️
 
-Using MOOSE 3.2 optimally requires your data to be structured according to specific conventions. MOOSE 3.2 supports both DICOM and NIFTI formats. For DICOM files, MOOSE infers the modality from the DICOM tags and checks if the given modality is suitable for the chosen segmentation model. However, for NIFTI files, users need to ensure the files are named with the correct modality suffix. For more information, see the [Supported Modalities](https://github.com/ENHANCE-PET/MOOSE/edit/main/README.md#supported-modalities-) section.
+Using MOOSE 3.3 optimally requires your data to be structured according to specific conventions. MOOSE 3.3 supports both DICOM and NIFTI formats. For DICOM files, MOOSE infers the modality from the DICOM tags and checks if the given modality is suitable for the chosen segmentation model. However, for NIFTI files, users need to ensure the files are named with the correct modality suffix. For more information, see the [Supported Modalities](https://github.com/ENHANCE-PET/MOOSE/edit/main/README.md#supported-modalities-) section.
 
 ### Required Directory Structure 🌳
 Please structure your dataset as follows:
@@ -332,7 +348,7 @@ MOOSEv2_data/ 📁
     └── CT_S5.nii 📄
 
 ```
-**Note:** If the necessary naming conventions are not followed, MOOSE 3.2 will skip the subjects.
+**Note:** If the necessary naming conventions are not followed, MOOSE 3.3 will skip the subjects.
 
 ### Naming Conventions for NIFTI files 📝
 When using NIFTI files, you should name the file with the appropriate modality as a suffix, specified by the models you want to use. 
@@ -340,7 +356,7 @@ When using NIFTI files, you should name the file with the appropriate modality a
 For instance, if you have chosen the `model_name` as `clin_ct_organs`, the CT scan for subject 'S2' in NIFTI format should have the modality tag 'CT_' attached to the file name, e.g. `CT_S2.nii`. In the directory shown above, every subject will be processed by `moosez` except S4.
 For more information on modality prefixes, see the [Supported Modalities](https://github.com/ENHANCE-PET/MOOSE/edit/main/README.md#supported-modalities-) section.
 
-**Remember:** Adhering to these file naming and directory structure conventions ensures smooth and efficient processing with MOOSE 3.2. Happy segmenting! 🚀
+**Remember:** Adhering to these file naming and directory structure conventions ensures smooth and efficient processing with MOOSE 3.3. Happy segmenting! 🚀
 
 ## A Note on QIMP Python Packages: The 'Z' Factor 📚🚀
 

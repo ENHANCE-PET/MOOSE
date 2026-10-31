@@ -1,9 +1,10 @@
 # Security audit — 2026-10-31
 
 Scope: current source, dependency declarations, model/data downloads, archive
-handling, subprocess calls, credential patterns, and GitHub workflows. No model
-weights or patient data were downloaded. This is not a claim that all possible
-vulnerabilities have been excluded.
+handling, subprocess calls, credential patterns, and GitHub workflows. No
+patient data were downloaded. Release validation subsequently used the public
+MOOSE lungs checkpoint with generated voxel data. This is not a claim that all
+possible vulnerabilities have been excluded.
 
 ## Verified findings and repairs
 
@@ -70,9 +71,37 @@ DS/IS advisory GHSA-6hp3-vr39-rqw8 concerns MONAI, not a separate pydicom floor.
   dependencies audited, none skipped, no known vulnerabilities reported. This is
   a dated advisory-database result, not a guarantee about every installable
   dependency combination or vulnerabilities missing from that database.
-- `python3 -m pytest -q`: collection stops at `tests/test_e2e.py` because SimpleITK
-  is not installed in the lightweight audit environment. Full inference was not
-  run; it needs the imaging stack, weights, and the existing clinical fixture.
+- The initial lightweight `python3 -m pytest -q` stopped collecting
+  `tests/test_e2e.py` because SimpleITK was missing. Subsequent validation below
+  uses the installed wheel and a real imaging environment.
+
+## Release candidate 3.3.0 validation
+
+- PyPI and GitHub latest were 3.2.2; 3.3.0 was unoccupied when checked. The minor
+  version records the Python 3.11 support change.
+- Built wheel and sdist using Python 3.11 and declared build dependencies;
+  `twine check` passes for both. Isolated pip bootstrap was blocked by local DNS,
+  so the local build used `--no-isolation` with setuptools 84.2.1/wheel 0.48.0.
+- The installed wheel imports and `moosez --help` succeed with real PyTorch
+  2.13.0, nnUNet 2.6.2, SimpleITK 2.5.2, and pydicom 3.0.2. `pip check` passes.
+- The published lungs (229,719,375 bytes) and organs (458,926,652 bytes) archives
+  match their pinned SHA256 values; the hardened extractor installs them and loads
+  their model metadata. Only HTTP transport was substituted with locally fetched
+  copies because child-process external DNS was restricted. Both archives contain
+  only their expected model root, with no Apple metadata sidecars.
+- The public `moose(SimpleITK.Image, "clin_ct_lungs", accelerator="cpu")` API ran
+  actual inference on a generated 32-cubed CT phantom in 21.92 seconds, producing
+  a 32-cubed segmentation with labels 0/1/3 and preserved geometry. The installed
+  CLI also processed this phantom and wrote segmentation plus nonempty intensity
+  and volume CSVs. This validates execution, not clinical accuracy, GPU inference,
+  other models, or every checkpoint's archive layout.
+- Two persistent functional tests cover synthetic NIfTI I/O, orientation,
+  resampling, overlapping chunk reconstruction, and known volume/intensity CSV
+  values. The complete suite, including the existing organs CPU-inference E2E
+  test, passes: 13 tests plus 7 subtests in 18.90 seconds, with 11 upstream
+  deprecation warnings. The E2E test used its already-present repository fixture;
+  no fixture or model was added to the commit. Its initial DNS download failure
+  was resolved by verifying and caching the public organs archive locally.
 
 ## Remaining trust and operational limits
 

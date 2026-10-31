@@ -159,8 +159,8 @@ class WorkflowSecurity(unittest.TestCase):
         for event in ('release', 'workflow_dispatch'):
             with self.subTest(event=event), tempfile.TemporaryDirectory() as tmp:
                 output = Path(tmp) / 'output'
-                env = dict(os.environ, RELEASE_TAG='moosez-v.3.2.2', DISPATCH_TAG='moosez-v.3.2.2',
+                env = dict(os.environ, RELEASE_TAG='moosez-v.3.3.0', DISPATCH_TAG='moosez-v.3.3.0',
                            GITHUB_EVENT_NAME=event, GITHUB_OUTPUT=str(output))
                 result = subprocess.run(['bash', '-c', script], env=env, capture_output=True, timeout=5)
                 self.assertEqual(result.returncode, 0, result.stderr.decode())
-                self.assertEqual(output.read_text(), 'tag=moosez-v.3.2.2\nversion=3.2.2\ndocker_version=v3.2.2\n')
+                self.assertEqual(output.read_text(), 'tag=moosez-v.3.3.0\nversion=3.3.0\ndocker_version=v3.3.0\n')
