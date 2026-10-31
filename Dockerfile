@@ -1,4 +1,4 @@
-# Base image
+# Python 3.13 satisfies the Python >=3.11 minimum required by Pillow 13.
 FROM python:3.13-slim
 
 ARG MOOSEZ_VERSION

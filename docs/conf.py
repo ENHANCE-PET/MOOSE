@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath('..'))
 project = 'MOOSE'
 copyright = '2023, Quantitative Imaging and Medical Physics Team, Medical University of Vienna'
 author = 'Lalith Kumar Shiyam Sundar | Sebastian Gutschmayer | Manuel Pires'
-release = '2.0'
+release = '3.3.0'
 
 # Extensions
 extensions = [

@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=84.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "moosez"
-version = "3.2.2"
+version = "3.3.0"
 description = "An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 
 authors = [
@@ -30,7 +30,6 @@ classifiers = [
   "Intended Audience :: Healthcare Industry",
   "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -38,11 +37,12 @@ classifiers = [
 ]
 
 dependencies = [
-  "torch",
+  "torch>=2.13.0",
+  "pillow>=13.0.0",
   "SimpleITK",
   "nnunetv2>=2.6.0",
   "halo",
-  "pydicom>=2.4.5",
+  "pydicom>=3.0.2",
   "numpy",
   "pyfiglet",
   "natsort",
@@ -50,13 +50,21 @@ dependencies = [
   "dask>=2026.1.0",
   "rich",
   "pandas",
-  "dicom2nifti",
+  "dicom2nifti>=2.6.2",
   'dcm2niix',
   "emoji",
   "matplotlib",
   "psutil",
   "requests>=2.33.0",
-  "nibabel"
+  "nibabel",
+  # Upgrade vulnerable transitive packages even in existing environments.
+  "anyio>=4.14.2",
+  "certifi>=2026.10.18",
+  "filelock>=4.2.1",
+  "fsspec>=2026.6.0",
+  "msgpack>=1.2.3",
+  "setuptools>=84.1.0",
+  "urllib3>=2.8.0",
 ]
 
 [project.scripts]
@@ -67,4 +75,5 @@ where = ["."]
 include = ["moosez*"]
 
 [tool.setuptools.package-data]
+"moosez" = ["model_checksums.json"]
 "moosez.mappings" = ["*.csv"]

@@ -5,7 +5,7 @@ Before embarking on your MOOSE 2.0 journey, let's ensure it's set up correctly o
 
 Prerequisites
 -------------
-- **Python:** Version 3.9 or higher.
+- **Python:** Version 3.11 or higher (required for security-fixed Pillow 13).
 - **pip:** The Python package manager.
 
 Installing via pip

@@ -1,8 +1,12 @@
 import os
+import hashlib
 import json
 import zipfile
 import requests
 import shutil
+import stat
+import tempfile
+from pathlib import Path, PurePosixPath
 from typing import Tuple, List, Dict
 from moosez import system
 from moosez.constants import (KEY_FOLDER_NAME, KEY_URL, DEFAULT_SPACING, DEFAULT_TRANSPOSE_IDENTITY,
@@ -113,6 +117,11 @@ MODEL_METADATA = {
     } 
 }
 
+# Pinned from GitHub Release asset SHA256 metadata on 2026-10-31.
+# The external DentalSegmentator distribution has no published trusted digest.
+with open(Path(__file__).with_name("model_checksums.json")) as checksum_file:
+    MODEL_CHECKSUMS = json.load(checksum_file)
+
 AVAILABLE_MODELS = MODEL_METADATA.keys()
 
 
@@ -121,6 +130,7 @@ class Model:
         self.model_identifier = model_identifier
         self.folder_name = MODEL_METADATA[self.model_identifier][KEY_FOLDER_NAME]
         self.url = MODEL_METADATA[self.model_identifier][KEY_URL]
+        self.sha256 = MODEL_CHECKSUMS.get(os.path.basename(self.url))
         self.base_directory = base_directory
         self.directory = os.path.join(self.base_directory, self.folder_name)
 
@@ -217,24 +227,28 @@ class Model:
         Download and extract the model if it does not exist locally
         or if the existing folder has a different URL recorded.
         """
-        # If folder already exists, check if we should remove it
+        if os.path.islink(self.directory):
+            raise ValueError("Model directory must not be a symbolic link")
+
+        # Reuse only the matching installed version. Keep old data until validation succeeds.
         if os.path.exists(self.directory):
             # Attempt to load the previously saved URL from version file
             version_file_path = os.path.join(self.directory, "model_version.json")
             old_url = None
+            old_checksum = None
 
             if os.path.exists(version_file_path):
                 try:
                     with open(version_file_path, 'r') as vf:
                         version_data = json.load(vf)
                         old_url = version_data.get("url")
+                        old_checksum = version_data.get("sha256")
                 except Exception:
                     pass  # If JSON is corrupted, we'll just treat it as mismatch
 
-            # If the existing folder's URL doesn't match the new URL, remove folder
-            if old_url != self.url:
-                output_manager.console_update(f" Model version mismatch detected for '{self.model_identifier}'. Removing outdated model and downloading the latest model...")
-                shutil.rmtree(self.directory, ignore_errors=True)
+            # Invalidate legacy caches when a pinned digest becomes available.
+            if old_url != self.url or old_checksum != self.sha256:
+                output_manager.console_update(f" Model version mismatch detected for '{self.model_identifier}'. Downloading the latest model...")
             else:
                 # If the URL matches, we skip re-downloading
                 output_manager.log_update(f"    - A local instance of {self.model_identifier} has been detected.")
@@ -249,46 +263,58 @@ class Model:
             raise ValueError(f" No URL specified for model '{self.model_identifier}'.")
 
         output_manager.log_update(f"    - Downloading {self.model_identifier}")
-        download_file_name = os.path.basename(self.url)
-        download_file_path = os.path.join(self.base_directory, download_file_name)
+        # Stage in a private directory: archive paths and pre-existing cache symlinks
+        # cannot select the download target or influence extraction destinations.
+        with tempfile.TemporaryDirectory(prefix=".moosez-", dir=self.base_directory) as staging:
+            download_file_path = os.path.join(staging, "model.zip")
+            digest = hashlib.sha256()
+            with requests.get(self.url, stream=True, timeout=(10, 120)) as response:
+                response.raise_for_status()
+                total_size = int(response.headers.get("Content-Length", 0))
+                with output_manager.create_file_progress_bar() as progress:
+                    task = progress.add_task(f"[white] Downloading {self.model_identifier}...", total=total_size)
+                    with open(download_file_path, "xb") as target:
+                        for chunk in response.iter_content(chunk_size=1024 * 10):
+                            if chunk:
+                                target.write(chunk)
+                                digest.update(chunk)
+                                progress.update(task, advance=len(chunk))
 
-        response = requests.get(self.url, stream=True)
-        if response.status_code != 200:
-            output_manager.log_update(f"    X Failed to download model from {self.url}")
-            raise Exception(f" Failed to download model from {self.url}")
+            if self.sha256 is not None and digest.hexdigest() != self.sha256:
+                raise ValueError("Model archive SHA256 does not match its pinned checksum")
 
-        total_size = int(response.headers.get("Content-Length", 0))
-        chunk_size = 1024 * 10
+            extraction_directory = os.path.join(staging, "extracted")
+            os.mkdir(extraction_directory)
+            with zipfile.ZipFile(download_file_path, 'r') as archive:
+                # Validate every entry before writing any of them. ZIP files must
+                # contain exactly this model, not other cached executable weights.
+                members = archive.infolist()
+                for member in members:
+                    path = PurePosixPath(member.filename)
+                    mode = stat.S_IFMT(member.external_attr >> 16)
+                    if (not path.parts or path.is_absolute()
+                            or path.parts[0] != self.folder_name
+                            or ".." in path.parts or "\\" in member.filename
+                            or ":" in member.filename
+                            or mode not in (0, stat.S_IFREG, stat.S_IFDIR)):
+                        raise ValueError(f"Unsafe model archive entry: {member.filename!r}")
+                with output_manager.create_file_progress_bar() as progress:
+                    task = progress.add_task(f"[white] Extracting {self.model_identifier}...",
+                                             total=sum(member.file_size for member in members))
+                    for member in members:
+                        archive.extract(member, extraction_directory)
+                        progress.update(task, advance=member.file_size)
 
-        progress = output_manager.create_file_progress_bar()
-        with progress:
-            task = progress.add_task(f"[white] Downloading {self.model_identifier}...", total=total_size)
-            with open(download_file_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=chunk_size):
-                    if chunk:
-                        f.write(chunk)
-                        progress.update(task, advance=chunk_size)
-
-        output_manager.log_update(f"    - {self.model_identifier} ({self.folder_name}) downloaded.")
-
-        # Extract
-        progress = output_manager.create_file_progress_bar()
-        with progress:
-            with zipfile.ZipFile(download_file_path, 'r') as zip_ref:
-                total_size = sum(file.file_size for file in zip_ref.infolist())
-                task = progress.add_task(f"[white] Extracting {self.model_identifier}...", total=total_size)
-                for file in zip_ref.infolist():
-                    zip_ref.extract(file, self.base_directory)
-                    progress.update(task, advance=file.file_size)
-
-        output_manager.log_update(f"    - {self.model_identifier} extracted.")
-        os.remove(download_file_path)
-
-        # Save a small version file with the URL
-        os.makedirs(self.directory, exist_ok=True)
-        version_file_path = os.path.join(self.directory, "model_version.json")
-        with open(version_file_path, 'w') as vf:
-            json.dump({"url": self.url}, vf)
+            staged_model = os.path.join(extraction_directory, self.folder_name)
+            if not os.path.isdir(staged_model):
+                raise ValueError("Model archive does not contain the expected model directory")
+            with open(os.path.join(staged_model, "model_version.json"), "w") as version_file:
+                json.dump({"url": self.url, "sha256": self.sha256}, version_file)
+            if os.path.islink(self.directory):
+                raise ValueError("Model directory must not be a symbolic link")
+            if os.path.exists(self.directory):
+                shutil.rmtree(self.directory)
+            os.replace(staged_model, self.directory)
 
         output_manager.log_update(f"    - {self.model_identifier} - setup complete.")
         output_manager.console_update(f"{ANSI_GREEN} {self.model_identifier} - setup complete. {ANSI_RESET}")

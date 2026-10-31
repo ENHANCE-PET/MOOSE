@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to publish, for example moosez-v.3.2.2"
+        description: "Release tag to publish, for example moosez-v.3.3.0"
         required: true
         type: string
 
@@ -32,17 +32,20 @@ jobs:
       - name: Extract release metadata
         id: meta
         shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          DISPATCH_TAG: ${{ github.event.inputs.tag }}
         run: |
           set -euo pipefail
 
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            TAG="${{ github.event.release.tag_name }}"
+          if [[ "$GITHUB_EVENT_NAME" == "release" ]]; then
+            TAG="$RELEASE_TAG"
           else
-            TAG="${{ github.event.inputs.tag }}"
+            TAG="$DISPATCH_TAG"
           fi
 
           if [[ ! "$TAG" =~ ^moosez-v\.([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            echo "Release tag must look like moosez-v.3.2.2; got '$TAG'." >&2
+            echo "Release tag must look like moosez-v.3.3.0; got '$TAG'." >&2
             exit 1
           fi
 
