@@ -7,7 +7,7 @@ name = "moosez"
 version = "3.2.2"
 description = "An AI-inference engine for 3D clinical and preclinical whole-body segmentation tasks"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 
 authors = [
@@ -30,7 +30,6 @@ classifiers = [
   "Intended Audience :: Healthcare Industry",
   "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -39,6 +38,7 @@ classifiers = [
 
 dependencies = [
   "torch>=2.13.0",
+  "pillow>=13.0.0",
   "SimpleITK",
   "nnunetv2>=2.6.0",
   "halo",

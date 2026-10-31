@@ -105,7 +105,7 @@ Before you dive into the incredible world of MOOSE 3.2, here are a few things yo
 
 - **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 3.2 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
 
-- **Python**: Ensure that you have Python 3.10 or newer installed on your system. MOOSE 3.2 likes to keep up with the latest, after all!
+- **Python**: Ensure that you have Python 3.11 or newer installed on your system. This minimum allows security-fixed Pillow 13 releases.
 
 So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 3.2 has to offer. 🚀🌐
 

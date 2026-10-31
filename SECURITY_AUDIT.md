@@ -30,14 +30,20 @@ vulnerabilities have been excluded.
   metadata observed on the audit date; it does not retrospectively establish
   model provenance or make arbitrary checkpoints safe to deserialize.
 - **Dependency declarations admitted known vulnerable versions.** Both manifests
-  now require `torch>=2.13.0` and `pydicom>=3.0.2`. The requirements file also
-  carries the existing pyproject bounds for Requests, Dask, and nnUNet.
+  now require `torch>=2.13.0`, `pydicom>=3.0.2`, and `pillow>=13.0.0`. Pillow is a
+  transitive image-processing dependency whose 12.3.0 release has multiple current
+  memory-safety and denial-of-service advisories. Pillow 13 requires Python 3.11;
+  package metadata, CI, and support documentation therefore raise the minimum
+  from Python 3.10 to 3.11. The Docker image already uses Python 3.13. The
+  requirements file also carries the existing pyproject bounds for Requests, Dask, and nnUNet.
 
 Authoritative advisory sources:
 
 - [PyTorch torch.jit.script memory corruption, patched 2.13.0](https://github.com/advisories/GHSA-rrmf-rvhw-rf47)
 - [PyTorch checkpoint loading RCE, patched 2.6.0](https://github.com/pytorch/pytorch/security/advisories/GHSA-53q9-r3pm-6pq6)
 - [pydicom FileSet traversal, patched 3.0.2 or 2.4.5](https://github.com/advisories/GHSA-v856-2rf8-9f28)
+- [Pillow FPX heap overflow, patched 13.0.0](https://github.com/advisories/GHSA-5x8w-8jj5-q52h)
+- [Pillow JPEG heap overflow, patched 13.0.0](https://github.com/advisories/GHSA-8g5g-8vmr-9782)
 
 The pydicom FileSet API is not directly called here, but old dependency
 installations still admitted the affected package versions. The 2026 MONAI
@@ -45,16 +51,20 @@ DS/IS advisory GHSA-6hp3-vr39-rqw8 concerns MONAI, not a separate pydicom floor.
 
 ## Validation and limits
 
-- `python3 -m pytest -q tests/test_security.py`: 10 tests and 7 subtests pass.
-  Tests use synthetic ZIPs, response bytes, filesystem symlinks, and real bash;
+- `python3 -m pytest -q tests/test_security.py`: 10 tests and 7 subtests pass
+  on Python 3.11.14 and 3.13. Tests use synthetic ZIPs, response bytes, filesystem symlinks, and real bash;
   only the heavy application/UI import and network boundary are substituted.
   Regressions were observed failing before the corresponding repair.
 - `python3 -m compileall -q moosez tests/test_security.py`: passes.
 - A wheel builds without dependencies and contains the checksum manifest.
-- `uv pip compile pyproject.toml --python-version 3.10`: complete metadata
-  resolution succeeds. Python 3.10 support remains; resolution chooses torch
-  2.14.1, nnunetv2 2.8.1, pydicom 3.0.2, and Pillow 12.3.0. This checks resolver
-  compatibility, not runtime inference compatibility or every transitive advisory.
+- `uv pip compile pyproject.toml --python-version 3.11`: complete metadata
+  resolution succeeds at the new minimum supported version. Resolution chooses
+  torch 2.15.0, nnunetv2 2.8.1, pydicom 3.0.2, and Pillow 13.0.0. This checks
+  resolver compatibility, not runtime inference compatibility.
+- `pip-audit -r moose-resolved-py311.txt --no-deps --disable-pip`: 101 resolved
+  dependencies audited, none skipped, no known vulnerabilities reported. This is
+  a dated advisory-database result, not a guarantee about every installable
+  dependency combination or vulnerabilities missing from that database.
 - `python3 -m pytest -q`: collection stops at `tests/test_e2e.py` because SimpleITK
   is not installed in the lightweight audit environment. Full inference was not
   run; it needs the imaging stack, weights, and the existing clinical fixture.
