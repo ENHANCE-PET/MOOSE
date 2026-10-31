@@ -35,7 +35,12 @@ vulnerabilities have been excluded.
   memory-safety and denial-of-service advisories. Pillow 13 requires Python 3.11;
   package metadata, CI, and support documentation therefore raise the minimum
   from Python 3.10 to 3.11. The Docker image already uses Python 3.13. The
-  requirements file also carries the existing pyproject bounds for Requests, Dask, and nnUNet.
+  requirements file also carries the existing pyproject bounds for Requests, Dask,
+  and nnUNet. Explicit security floors for already-transitive AnyIO, certifi,
+  filelock, fsspec, msgpack, setuptools, and urllib3 ensure an in-place installation
+  upgrades known vulnerable versions rather than keeping them satisfied under
+  upstream broad ranges. The setuptools build requirement uses the same floor.
+  Tornado is absent from this runtime graph and was not added.
 
 Authoritative advisory sources:
 

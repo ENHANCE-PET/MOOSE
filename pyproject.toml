@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=84.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -56,7 +56,15 @@ dependencies = [
   "matplotlib",
   "psutil",
   "requests>=2.33.0",
-  "nibabel"
+  "nibabel",
+  # Upgrade vulnerable transitive packages even in existing environments.
+  "anyio>=4.14.2",
+  "certifi>=2026.10.18",
+  "filelock>=4.2.1",
+  "fsspec>=2026.6.0",
+  "msgpack>=1.2.3",
+  "setuptools>=84.1.0",
+  "urllib3>=2.8.0",
 ]
 
 [project.scripts]
