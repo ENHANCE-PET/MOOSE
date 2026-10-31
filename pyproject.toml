@@ -38,11 +38,11 @@ classifiers = [
 ]
 
 dependencies = [
-  "torch",
+  "torch>=2.13.0",
   "SimpleITK",
   "nnunetv2>=2.6.0",
   "halo",
-  "pydicom>=2.4.5",
+  "pydicom>=3.0.2",
   "numpy",
   "pyfiglet",
   "natsort",
@@ -67,4 +67,5 @@ where = ["."]
 include = ["moosez*"]
 
 [tool.setuptools.package-data]
+"moosez" = ["model_checksums.json"]
 "moosez.mappings" = ["*.csv"]

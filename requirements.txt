@@ -1,13 +1,13 @@
-torch
+torch>=2.13.0
 SimpleITK
 nnunetv2>=2.6.0
 halo
-pydicom
+pydicom>=3.0.2
 numpy
 pyfiglet
 natsort
 colorama
-dask
+dask>=2026.1.0
 rich
 pandas
 dicom2nifti
@@ -15,4 +15,5 @@ dcm2niix
 emoji
 matplotlib
 psutil
+requests>=2.33.0
 nibabel

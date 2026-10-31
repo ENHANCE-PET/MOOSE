@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pathlib import Path
 import requests
 from typing import Union
@@ -25,22 +26,27 @@ def download_enhance_data(download_directory: Union[str, None], output_manager: 
 def download_enhance_item(item, download_file_path, output_manager: system.OutputManager):
 
     item_url = constants.ENHANCE_URLS[item]
-    response = requests.get(item_url, stream=True)
-    if response.status_code != 200:
-        output_manager.console_update(f"    X Failed to download {item} from {item_url}")
-        raise Exception(f"Failed to download {item} from {item_url}")
-
-    total_size = int(response.headers.get("Content-Length", 0))
-    chunk_size = 1024 * 10
-
-    progress = output_manager.create_file_progress_bar()
-    with progress:
-        task = progress.add_task(f"[white] Downloading {item}...", total=total_size)
-        with open(download_file_path, "wb") as f:
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                if chunk:
-                    f.write(chunk)
-                    progress.update(task, advance=chunk_size)
+    temporary_path = None
+    try:
+        with requests.get(item_url, stream=True, timeout=(10, 120)) as response:
+            response.raise_for_status()
+            total_size = int(response.headers.get("Content-Length", 0))
+            with output_manager.create_file_progress_bar() as progress:
+                task = progress.add_task(f"[white] Downloading {item}...", total=total_size)
+                # A private file in the destination directory avoids following a
+                # pre-existing destination symlink and allows an atomic replace.
+                with tempfile.NamedTemporaryFile(dir=os.path.dirname(os.path.abspath(download_file_path)),
+                                                 prefix=".enhance-", delete=False) as target:
+                    temporary_path = target.name
+                    for chunk in response.iter_content(chunk_size=1024 * 10):
+                        if chunk:
+                            target.write(chunk)
+                            progress.update(task, advance=len(chunk))
+        os.replace(temporary_path, download_file_path)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            os.unlink(temporary_path)
 
 
 def get_default_download_folder():
