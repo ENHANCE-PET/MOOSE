@@ -11,7 +11,7 @@ colorama
 dask>=2026.1.0
 rich
 pandas
-dicom2nifti
+dicom2nifti>=2.6.2
 dcm2niix
 emoji
 matplotlib

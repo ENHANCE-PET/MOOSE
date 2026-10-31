@@ -42,6 +42,12 @@ possible vulnerabilities have been excluded.
   upgrades known vulnerable versions rather than keeping them satisfied under
   upstream broad ranges. The setuptools build requirement uses the same floor.
   Tornado is absent from this runtime graph and was not added.
+- **DICOM conversion compatibility on upgrades.** The pydicom 3 security floor
+  requires a compatible converter. `dicom2nifti>=2.6.2` now prevents an in-place
+  install from retaining 2.4.11, whose removed `pydicom.read_file` calls break
+  Python conversion. A generated eight-slice CT series reproduces failure with
+  2.4.11 and passes with 2.6.2 plus pydicom 3.0.2. Its NIfTI shape, spacing, and
+  every voxel count are checked while the native converter fallback is unavailable.
 
 Authoritative advisory sources:
 
@@ -95,10 +101,11 @@ DS/IS advisory GHSA-6hp3-vr39-rqw8 concerns MONAI, not a separate pydicom floor.
   CLI also processed this phantom and wrote segmentation plus nonempty intensity
   and volume CSVs. This validates execution, not clinical accuracy, GPU inference,
   other models, or every checkpoint's archive layout.
-- Two persistent functional tests cover synthetic NIfTI I/O, orientation,
-  resampling, overlapping chunk reconstruction, and known volume/intensity CSV
-  values. The complete suite, including the existing organs CPU-inference E2E
-  test, passes: 13 tests plus 7 subtests in 18.90 seconds, with 11 upstream
+- Three persistent functional tests cover synthetic NIfTI I/O, orientation,
+  resampling, overlapping chunk reconstruction, known volume/intensity CSV
+  values, and primary Python DICOM-to-NIfTI conversion. The complete suite,
+  including the existing organs CPU-inference E2E test and synthetic DICOM
+  conversion regression, passes: 14 tests plus 7 subtests, with upstream
   deprecation warnings. The E2E test used its already-present repository fixture;
   no fixture or model was added to the commit. Its initial DNS download failure
   was resolved by verifying and caching the public organs archive locally.

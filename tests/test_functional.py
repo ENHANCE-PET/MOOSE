@@ -45,3 +45,52 @@ def test_synthetic_mask_statistics_are_written_with_expected_volume_and_mean(tmp
     assert volumes.loc[1, 'Volume(mm3)'] == 512.0
     assert volumes.loc[1, 'Regions-Present'] == 'synthetic region'
     assert intensities.loc[1, 'Mean'] == 255.5
+
+
+def test_synthetic_dicom_series_converts_with_pydicom3_without_native_fallback(tmp_path, monkeypatch):
+    """The declared converter must work with pydicom 3, which removed read_file."""
+    import nibabel as nib
+    from pydicom.dataset import FileDataset, FileMetaDataset
+    from pydicom.uid import CTImageStorage, ExplicitVRLittleEndian, generate_uid
+    from moosez import image_conversion
+
+    source = tmp_path / 'synthetic_ct'
+    source.mkdir()
+    study_uid, series_uid, frame_uid = generate_uid(), generate_uid(), generate_uid()
+    for index in range(8):
+        instance_uid = generate_uid()
+        meta = FileMetaDataset()
+        meta.MediaStorageSOPClassUID = CTImageStorage
+        meta.MediaStorageSOPInstanceUID = instance_uid
+        meta.TransferSyntaxUID = ExplicitVRLittleEndian
+        dataset = FileDataset(str(source / f'slice_{index}.dcm'), {}, file_meta=meta, preamble=b'\0' * 128)
+        dataset.SOPClassUID, dataset.SOPInstanceUID = CTImageStorage, instance_uid
+        dataset.StudyInstanceUID, dataset.SeriesInstanceUID = study_uid, series_uid
+        dataset.FrameOfReferenceUID = frame_uid
+        dataset.PatientName, dataset.PatientID = 'Synthetic^Phantom', 'SYNTHETIC'
+        dataset.Modality, dataset.Manufacturer = 'CT', 'Synthetic'
+        dataset.ImageType = ['ORIGINAL', 'PRIMARY', 'AXIAL']
+        dataset.InstanceNumber = index + 1
+        dataset.ImagePositionPatient = [0.0, 0.0, float(index * 2)]
+        dataset.ImageOrientationPatient = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+        dataset.PixelSpacing, dataset.SliceThickness = [1.0, 1.0], 2.0
+        dataset.Rows, dataset.Columns = 8, 8
+        dataset.SamplesPerPixel, dataset.PhotometricInterpretation = 1, 'MONOCHROME2'
+        dataset.BitsAllocated, dataset.BitsStored, dataset.HighBit = 16, 16, 15
+        dataset.PixelRepresentation = 1
+        dataset.RescaleSlope, dataset.RescaleIntercept = 1, 0
+        dataset.PixelData = np.full((8, 8), index * 10, dtype='<i2').tobytes()
+        dataset.save_as(dataset.filename, enforce_file_format=True)
+
+    def unavailable_native_converter(*args, **kwargs):
+        raise OSError('Native fallback is deliberately unavailable for this Python-converter regression')
+
+    monkeypatch.setattr(image_conversion.subprocess, 'run', unavailable_native_converter)
+    output = image_conversion.dicom_to_nifti(str(source), str(tmp_path), compression=True)
+    assert output is not None, 'Python DICOM conversion must succeed without the native fallback'
+    converted = nib.load(output)
+    assert converted.shape == (8, 8, 8)
+    assert converted.header.get_zooms() == (1.0, 1.0, 2.0)
+    values, counts = np.unique(converted.get_fdata(), return_counts=True)
+    np.testing.assert_array_equal(values, [0, 10, 20, 30, 40, 50, 60, 70])
+    np.testing.assert_array_equal(counts, [64] * 8)
