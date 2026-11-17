@@ -24,20 +24,30 @@ ANSI_RESET = '\033[0m'
 # FOLDER NAMES
 SEGMENTATIONS_FOLDER = 'segmentations'
 STATS_FOLDER = 'stats'
-
-# PREPROCESSING PARAMETERS
-INTERPOLATION = 'bspline'
-CHUNK_THRESHOLD_RESAMPLING = 150
-CHUNK_THRESHOLD_INFERRING = 350
+SINGLE_LABELS_FOLDER = 'individual_segmentations'
 
 # MODELS
 KEY_FOLDER_NAME = "folder_name"
 KEY_URL = "url"
-DEFAULT_SPACING = (1.5, 1.5, 1.5)
-DEFAULT_TRANSPOSE_IDENTITY = [0, 1, 2]
-OVERLAP_PER_AXIS = (0, 20, 20, 20)
+# optional per-model settings, see models.MODEL_METADATA
+KEY_READER = "reader"
+KEY_ORIENTATION = "orientation"
+KEY_INPUT_RESAMPLING = "input_resampling"
+KEY_ROI = "roi"
+INPUT_RESAMPLING_CUBIC = "cubic"
+# moosez reads every image with SimpleITK, so a model runs with one of these nnU-Net readers. A model whose plans name
+# another reader that gives the same arrays runs with its SimpleITK twin: NibabelIOWithReorient and
+# SimpleITKIOWithReorient both give the image in RAS as a (z, y, x) array with its spacing (bitwise equal on ENHANCE.PET
+# CTs; headers whose qform and sform disagree, or that ITK cannot read as orthonormal, are not covered).
+SUPPORTED_READERS = ("SimpleITKIO", "SimpleITKIOWithReorient")
+SIMPLEITK_READER_FOR = {"NibabelIOWithReorient": "SimpleITKIOWithReorient"}
 FILE_NAME_DATASET_JSON = "dataset.json"
 FILE_NAME_PLANS_JSON = "plans.json"
+
+# Weights that are placed into the models directory by hand instead of being downloaded.
+LOCAL_URL_PREFIX = "local://"
+# Runs when no model is named.
+DEFAULT_MODEL = "clin_ct_anatomy"
 
 
 ENHANCE_URLS = {
@@ -59,8 +69,11 @@ ENHANCE_URLS = {
 
 USAGE_MESSAGE = """
 Usage:
+  moosez -i <IMAGE_FILES_OR_FOLDERS> -o <OUTPUT_DIRECTORY> [-m <MODEL_NAMES>]
   moosez -d <MAIN_DIRECTORY> -m <MODEL_NAMES> -b
-Example:  
+Example:
+  moosez -i /Documents/CTs/ -o /Documents/CT_segmentations/
+  moosez -d /Documents/Data_to_moose/
   moosez -d /Documents/Data_to_moose/ -m clin_ct_organs
   moosez -d /Documents/Data_to_moose/ -m clin_ct_organs clin_ct_ribs clin_ct_muscles 
   moosez -d /Documents/Data_to_moose/ -m clin_ct_organs clin_ct_ribs clin_ct_muscles -h 2

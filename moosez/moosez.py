@@ -16,6 +16,7 @@
 #
 # ----------------------------------------------------------------------------------------------------------------------
 import os
+import sys
 import argparse
 import time
 import SimpleITK
@@ -30,12 +31,10 @@ from moosez import constants
 from moosez import download
 from moosez import file_utilities
 from moosez import image_conversion
-from moosez import image_processing
 from moosez import input_validation
 from moosez import system
 from moosez import models
-from moosez import workflows
-from moosez.nnUNet_custom_trainer.utility import add_custom_trainers_to_local_nnunetv2
+from moosez import streaming
 from moosez.benchmarking.benchmark import PerformanceObserver
 
 
@@ -63,8 +62,33 @@ def main():
         nargs='+',
         type=str,
         choices=models.AVAILABLE_MODELS,
+        default=[constants.DEFAULT_MODEL],
         metavar="<MODEL_NAMES>",
-        help="Choose the models for segmentation from the following:\n" + "\n".join(models.AVAILABLE_MODELS)
+        help=f"Choose the models for segmentation (default: {constants.DEFAULT_MODEL}) from the following:\n" +
+             "\n".join(models.AVAILABLE_MODELS)
+    )
+
+    # Flat input: image files and / or folders of image files, no subject folders
+    parser.add_argument(
+        "-i", "--input",
+        nargs='+',
+        type=str,
+        metavar="<INPUT>",
+        help="Image files and/or folders of image files to segment, instead of -d. Needs -o."
+    )
+
+    parser.add_argument(
+        "-o", "--output",
+        type=str,
+        metavar="<OUTPUT_DIRECTORY>",
+        help="Output folder for -i."
+    )
+
+    parser.add_argument(
+        "-ns", "--no_statistics",
+        action="store_true",
+        default=False,
+        help="Skip the volume and intensity statistics."
     )
 
     parser.add_argument(
@@ -89,9 +113,9 @@ def main():
     parser.add_argument(
         '-herd', '--moose_herd',
         nargs='?',
-        const=2,
+        const=0,
         type=int,
-        help='Specify the concurrent jobs (default: 2)'
+        help='Use several GPUs: one process per GPU, each with its share of the subjects (default: every GPU).'
     )
 
     parser.add_argument(
@@ -121,6 +145,14 @@ def main():
         choices=models.AVAILABLE_MODELS,
         metavar="<MODEL_NAMES>",
         help='Download one or more models from the model zoo without running segmentation.'
+    )
+
+    parser.add_argument(
+        '-mi', '--model_install',
+        type=str,
+        metavar="<ARCHIVE.zip>",
+        help='Install a model from a zip archive that holds its model folder (such as the weights of clin_ct_anatomy), '
+             'without running segmentation.'
     )
 
     parser.add_argument(
@@ -171,6 +203,17 @@ def main():
     # DOWNLOADING THE MODEL
     # ----------------------------------
 
+    if args.model_install:
+        installed = models.install_model_archive(os.path.abspath(args.model_install), output_manager)
+        if not installed:
+            output_manager.console_update(f"{constants.ANSI_RED} {args.model_install} holds the model folder of no MOOSE "
+                                          f"model.{constants.ANSI_RESET}")
+            sys.exit(1)
+        for identifier in installed:
+            output_manager.console_update(f"{constants.ANSI_GREEN} Installed {identifier}. Run it with: moosez -i <images> "
+                                          f"-o <output folder> -m {identifier}{constants.ANSI_RESET}")
+        return
+
     if args.model_download:
         output_manager.console_update(f'\n{constants.ANSI_VIOLET} {emoji.emojize(":package:")} INITIATING MODEL(S) DOWNLOAD: {constants.ANSI_RESET}\n')
         output_manager.console_update("")
@@ -205,10 +248,20 @@ def main():
     # START MOOSE
     # ----------------------------------
 
+    model_names = list(dict.fromkeys(args.model_names))      # a model named twice runs once
+
+    if args.input:
+        if args.main_directory or not args.output:
+            parser.error("-i needs -o and cannot be combined with -d")
+        moose_files(args.input, os.path.abspath(args.output), model_names, output_manager, args.benchmark,
+                    args.single_labels, not args.no_statistics)
+        return
+
+    if not args.main_directory:
+        parser.error("Give the subject folders with -d, or image files / folders with -i and -o")
+
     parent_folder = os.path.abspath(args.main_directory)
-    model_names = args.model_names
     benchmark = args.benchmark
-    moose_instances = args.moose_herd
     single_labels = args.single_labels
 
     output_manager.configure_logging(parent_folder)
@@ -220,12 +273,7 @@ def main():
     # DOWNLOADING THE MODEL
     # ----------------------------------
 
-    output_manager.console_update(f'')
-    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
-    output_manager.console_update(f'')
-    model_path = system.MODELS_DIRECTORY_PATH
-    file_utilities.create_directory(model_path)
-    model_workflows = workflows.construct_workflows(model_names, output_manager)
+    requested_models = prepare_models(model_names, output_manager)
 
     # ----------------------------------
     # INPUT VALIDATION AND PREPARATION
@@ -238,12 +286,8 @@ def main():
     output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":memo:")} NOTE:{constants.ANSI_RESET}')
     output_manager.console_update(f' ')
 
-    modalities = input_validation.determine_model_expectations(model_workflows, output_manager)
-    custom_trainer_status = add_custom_trainers_to_local_nnunetv2()
-    output_manager.log_update(f'- Custom trainer: {custom_trainer_status}')
+    modalities = input_validation.determine_model_expectations(requested_models, output_manager)
     accelerator, device_count = system.check_device(output_manager)
-    if moose_instances is not None:
-        output_manager.console_update(f" Number of moose instances run in parallel: {moose_instances}")
 
     # ----------------------------------
     # INPUT STANDARDIZATION
@@ -285,47 +329,27 @@ def main():
     output_manager.spinner_start(' Initiating')
     start_total_time = time.time()
 
-    subject_performance_parameters = []
-
-    if moose_instances is not None:
-        output_manager.log_update(f"- Branching out with {moose_instances} concurrent jobs.")
-
-        performance_observer = PerformanceObserver(f'All {num_moose_compliant_subjects} subjects | {moose_instances} jobs', ', '.join(model_names))
-        if benchmark:
-            performance_observer.on()
-
-        mp_context = mp.get_context('spawn')
-        processed_subjects = 0
-        output_manager.spinner_update(f'[{processed_subjects}/{num_moose_compliant_subjects}] subjects processed.')
-
-        if device_count is not None and device_count > 1:
-            accelerator_assignments = [f"{accelerator}:{i % device_count}" for i in range(num_moose_compliant_subjects)]
-        else:
-            accelerator_assignments = [accelerator] * num_moose_compliant_subjects
-
-        with concurrent.futures.ProcessPoolExecutor(max_workers=moose_instances, mp_context=mp_context) as executor:
-            futures = []
-            for subject_index, (subject, subject_accelerator) in enumerate(zip(moose_compliant_subjects, accelerator_assignments)):
-                futures.append(executor.submit(moose_subject, subject, subject_index, num_moose_compliant_subjects, model_workflows,
-                                               subject_accelerator, None, benchmark, single_labels))
-
-            for future in concurrent.futures.as_completed(futures):
-                if benchmark:
-                    subject_performance_parameters.append(future.result())
-                processed_subjects += 1
-                output_manager.spinner_update(f'[{processed_subjects}/{num_moose_compliant_subjects}] subjects processed.')
-
-        performance_observer.record_phase("Total Processing Done")
-        if benchmark:
-            performance_observer.off()
-            subject_performance_parameters.append(performance_observer.get_peak_resources())
-
+    performance_observer = PerformanceObserver(f'All {num_moose_compliant_subjects} subjects', ', '.join(model_names))
+    if benchmark:
+        performance_observer.on()
+    moose_directories = {subject: file_utilities.moose_folder_structure(subject) for subject in moose_compliant_subjects}
+    herd = 1 if args.moose_herd is None else min(args.moose_herd or device_count or 1, device_count or 1,
+                                                 num_moose_compliant_subjects)
+    if herd > 1:
+        # one process per GPU, each with every herd-th subject
+        output_manager.spinner_update(f' Predicting on {herd} GPUs')
+        with concurrent.futures.ProcessPoolExecutor(herd, mp_context=mp.get_context('spawn')) as executor:
+            shares = [executor.submit(streaming.run_subjects, moose_compliant_subjects[gpu::herd], model_names,
+                                      moose_directories, f"{accelerator}:{gpu}", None, single_labels,
+                                      not args.no_statistics) for gpu in range(herd)]
+        for share in shares:        # a process that failed fails the run, once the others are done
+            share.result()
     else:
-        for subject_index, subject in enumerate(moose_compliant_subjects):
-            subject_performance = moose_subject(subject, subject_index, num_moose_compliant_subjects, model_workflows,
-                                                accelerator, output_manager, benchmark, single_labels)
-            if benchmark:
-                subject_performance_parameters.append(subject_performance)
+        streaming.run_subjects(moose_compliant_subjects, requested_models, moose_directories, accelerator,
+                               output_manager, single_labels, not args.no_statistics)
+    performance_observer.record_phase("Total Processing Done")
+    if benchmark:
+        performance_observer.off()
 
     end_total_time = time.time()
     total_elapsed_time = (end_total_time - start_total_time) / 60
@@ -344,17 +368,84 @@ def main():
     output_manager.log_update(f'  - Time (per subject): {round(time_per_dataset, 2)}min')
     output_manager.log_update(f'  - Time (per model):   {round(time_per_model, 2)}min')
     if benchmark:
-        df = pd.DataFrame(subject_performance_parameters, columns=['Image', 'Model', 'Image Size', 'Runtime [s]', 'Peak Memory [GB]'])
-        csv_file_path = os.path.join(parent_folder, f'moosez-v{system.MOOSE_VERSION}_peak_performance_parameters.csv')
-        df.to_csv(csv_file_path, index=False)
+        csv_file_path = write_peak_performance(performance_observer, parent_folder)
         output_manager.log_update(f'  - Resource utilization written to {csv_file_path}')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
     output_manager.log_update(f'                                     FINISHED MOOSE-Z v{system.MOOSE_VERSION}                                       ')
     output_manager.log_update('----------------------------------------------------------------------------------------------------')
 
 
+def write_peak_performance(performance_observer: PerformanceObserver, directory: str) -> str:
+    """Writes the peak resources of a benchmarked run (-b) as a csv file into directory and returns its path."""
+    df = pd.DataFrame([performance_observer.get_peak_resources()], columns=['Image', 'Model', 'Image Size', 'Runtime [s]', 'Peak Memory [GB]'])
+    csv_file_path = os.path.join(directory, f'moosez-v{system.MOOSE_VERSION}_peak_performance_parameters.csv')
+    df.to_csv(csv_file_path, index=False)
+    return csv_file_path
+
+
+def prepare_models(model_names: List[str], output_manager: system.OutputManager) -> List[models.Model]:
+    """
+    The requested models, and the models that give their roi, downloaded where needed before any prediction runs: the
+    download progress does not run under the prediction spinner or into the prediction time, and -herd processes find
+    every model in place. A model whose weights are missing ends the run with its message.
+    """
+    output_manager.console_update(f'')
+    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":globe_with_meridians:")} MODEL DOWNLOAD:{constants.ANSI_RESET}')
+    output_manager.console_update(f'')
+    file_utilities.create_directory(system.MODELS_DIRECTORY_PATH)
+    try:
+        requested_models = [models.Model(model_name, output_manager) for model_name in model_names]
+        models.with_roi_models(requested_models, output_manager)
+    except FileNotFoundError as e:
+        output_manager.console_update(f"{constants.ANSI_RED}{e}{constants.ANSI_RESET}")
+        sys.exit(1)
+    return requested_models
+
+
+def moose_files(inputs: List[str], output_directory: str, model_names: List[str], output_manager: system.OutputManager,
+                benchmark: bool = False, single_labels: bool = False, compute_statistics: bool = True) -> None:
+    """
+    moosez -i ... -o ...: image files and folders of image files (no subject folders); every image is given to every
+    model, and the outputs go flat into output_directory (streaming.run_files).
+    """
+    image_files = streaming.collect_image_files(inputs)
+    if not image_files:
+        output_manager.console_update(f"{constants.ANSI_RED} No image files ({', '.join(streaming.IMAGE_FILE_ENDINGS)}) found in {', '.join(inputs)}.{constants.ANSI_RESET}")
+        return
+
+    os.makedirs(output_directory, exist_ok=True)
+    output_manager.configure_logging(output_directory)
+    output_manager.log_update(f'                                     STARTING MOOSE-Z v{system.MOOSE_VERSION}                                       ')
+    output_manager.log_update(f'- {len(image_files)} images -> {output_directory}')
+    requested_models = prepare_models(model_names, output_manager)
+    output_manager.console_update(f'')
+    output_manager.console_update(f'{constants.ANSI_VIOLET} {emoji.emojize(":crystal_ball:")} PREDICT:{constants.ANSI_RESET}')
+    output_manager.console_update(f'')
+    accelerator, _ = system.check_device(output_manager)
+
+    information = system.get_system_information()
+    information["single_labels"] = single_labels
+    performance_observer = PerformanceObserver(f'{len(image_files)} images', ', '.join(model_names))
+    if benchmark:
+        performance_observer.on()
+    start = time.time()
+    output_manager.spinner_start(' Initiating')
+    information["models"] = streaming.run_files(image_files, output_directory, requested_models, accelerator,
+                                                output_manager, single_labels, compute_statistics)
+    system.write_information_json(information, output_directory)
+    elapsed = time.time() - start
+    output_manager.spinner_succeed(f'{constants.ANSI_GREEN} All predictions done! | {len(image_files)} images, '
+                                   f'{len(model_names)} models: {round(elapsed / 60, 1)} min | '
+                                   f'per image: {round(elapsed / len(image_files), 1)} s {constants.ANSI_RESET}')
+    output_manager.log_update(f' ALL IMAGES PROCESSED in {round(elapsed, 1)} s')
+    if benchmark:
+        performance_observer.record_phase("Total Processing Done")
+        performance_observer.off()
+        write_peak_performance(performance_observer, output_directory)
+
+
 def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]], SimpleITK.Image],
-          model_names: Union[str, List[str]], output_dir: str = None, accelerator: str = None) -> Tuple[Union[List[str], List[SimpleITK.Image], List[numpy.ndarray]], List[models.Model]]:
+          model_names: Union[str, List[str]] = constants.DEFAULT_MODEL, output_dir: str = None, accelerator: str = None) -> Tuple[Union[List[str], List[SimpleITK.Image], List[numpy.ndarray]], List[models.Model]]:
     """
     Execute the MOOSE 3.0 image segmentation process.
 
@@ -363,7 +454,7 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
                        - tuple[numpy.ndarray, tuple[float, float, float]]: A tuple containing a numpy array and spacing.
                        - SimpleITK.Image: An image object to process.
                        
-    :param model_names: The name(s) of the model(s) to be used for segmentation.
+    :param model_names: The name(s) of the model(s) to be used for segmentation (default: the default model).
     :type model_names: str or list[str]
 
     :param output_dir: Path to the directory where the output will be saved if the input is a file path.
@@ -383,20 +474,19 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
     >>> moose((numpy_array, (1.5, 1.5, 1.5)), 'model_name', '/path/to/output', 'cuda')
     >>> moose(simple_itk_image, 'model_name', '/path/to/output', 'cuda')
     """
-    # Load the image and set a default filename based on input type
     if isinstance(input_data, str):
-        image_raw = image_processing.image_read(input_data)
-        image_raw_orientation_code = image_processing.image_get_orientation_code(image_raw)
-        image = image_processing.image_reorient(image_raw, "RAS")
+        image = input_data
         file_name = file_utilities.get_nifti_file_stem(input_data)
+        if output_dir is None:
+            output_dir = os.path.dirname(input_data)
     elif isinstance(input_data, SimpleITK.Image):
         image = input_data
-        file_name = 'image_from_simpleitk'
     elif isinstance(input_data, tuple) and isinstance(input_data[0], numpy.ndarray) and isinstance(input_data[1], tuple):
+        # an array has no orientation: it is taken as RAS
         numpy_array, spacing = input_data
         image = SimpleITK.GetImageFromArray(numpy_array)
         image.SetSpacing(spacing)
-        file_name = 'image_from_array'
+        image.SetDirection(SimpleITK.DICOMOrientImageFilter_GetDirectionCosinesFromOrientation("RAS"))
     else:
         raise ValueError("Invalid input format. `input_data` must be either a file path (str), "
                          "a SimpleITK.Image, or a tuple (numpy array, spacing).")
@@ -405,172 +495,18 @@ def moose(input_data: Union[str, Tuple[numpy.ndarray, Tuple[float, float, float]
         model_names = [model_names]
 
     output_manager = system.OutputManager(False, False)
-
-    add_custom_trainers_to_local_nnunetv2()
-    model_path = system.MODELS_DIRECTORY_PATH
-    file_utilities.create_directory(model_path)
-    model_workflows = workflows.construct_workflows(model_names, output_manager)
-
-    if accelerator is None:
-        accelerator, _ = system.check_device(output_manager)
-
-    subjects_information = ("temp", 0, 1)
-    performance_observer = PerformanceObserver("temp", ', '.join(model_names))
-
-    images = {workflow.input_modality: image for workflow in model_workflows}
-    generated_segmentations = []
-    used_models = []
-
-    for segmentation_image, model in workflows.run_all(images, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
-        image_output = None
-        if isinstance(input_data, str):
-            if output_dir is None:
-                output_dir = os.path.dirname(input_data)
-            image_output = os.path.join(output_dir, f"{model.multilabel_prefix}segmentation_{file_name}.nii.gz")
-            segmentation_image = image_processing.image_reorient(segmentation_image, image_raw_orientation_code)
-            SimpleITK.WriteImage(segmentation_image, image_output)
-        elif isinstance(input_data, SimpleITK.Image):
-            image_output = segmentation_image
-        elif isinstance(input_data, tuple):
-            image_output = SimpleITK.GetArrayFromImage(segmentation_image)
-
-        generated_segmentations.append(image_output)
-        used_models.append(model)
-
-    return generated_segmentations, used_models
-
-
-def moose_subject(subject: str, subject_index: int, number_of_subjects: int, model_workflows: List[workflows.Workflow], accelerator: str,
-                  output_manager: Union[system.OutputManager, None], benchmark: bool = False, single_labels: bool = False):
-    subject_name = os.path.basename(subject)
-    moose_information = system.get_system_information()
-    moose_information["single_labels"] = single_labels
-    moose_information["models"] = {}
-
-    if output_manager is None:
-        output_manager = system.OutputManager(False, False)
-
-    output_manager.log_update(' ')
-    output_manager.log_update(f' SUBJECT: {subject_name}')
-
-    model_names = [model_workflow.target_model.model_identifier for model_workflow in model_workflows]
-
-    performance_observer = PerformanceObserver(subject_name, ', '.join(model_names))
-    subject_peak_performance = None
-    if benchmark:
-        performance_observer.on()
-
-    output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Setting up directory structure for {subject_name}...')
-    output_manager.log_update(' ')
-    output_manager.log_update(f' SETTING UP MOOSE-Z DIRECTORY:')
-    output_manager.log_update(' ')
-    moose_dir, segmentations_dir, stats_dir = file_utilities.moose_folder_structure(subject)
-    output_manager.log_update(f" MOOSE directory for subject {subject_name} at: {moose_dir}")
-
-    start_time = time.time()
-    output_manager.log_update(' ')
-    output_manager.log_update(' RUNNING PREDICTION:')
-    output_manager.log_update(' ')
-
-    performance_observer.record_phase("Loading Images")
-
-    subject_available_images = {}
-    subject_available_images_raw = {}
-    subject_orientation_codes = {}
-    subject_file_stems = {}
-
-    required_prefixes = set()
-    for model_workflow in model_workflows:
-        required_prefixes.add(model_workflow.input_modality)
-
-    for prefix in required_prefixes:
-        modality_files = file_utilities.get_modality_NIFTI_files(subject, prefix)
-        if modality_files:
-            raw_image = image_processing.image_read(modality_files[0])
-            subject_orientation_codes[prefix] = image_processing.image_get_orientation_code(raw_image)
-            subject_available_images_raw[prefix] = raw_image
-            subject_available_images[prefix] = image_processing.image_reorient(raw_image, "RAS")
-            subject_file_stems[prefix] = file_utilities.get_nifti_file_stem(modality_files[0])
-
-    if not subject_available_images:
-        output_manager.spinner_warn(f'[{subject_index + 1}/{number_of_subjects}] {subject_name}: no matching modality images found. Skipping subject.')
-        output_manager.log_update(f"     - No matching modality images found for {subject_name}. Skipping.")
-        return subject_peak_performance
-
-    subjects_information = (subject_name, subject_index, number_of_subjects)
-    performance_observer.time_phase()
-
-    for segmentation_image, model in workflows.run_all(subject_available_images, model_workflows, output_manager, performance_observer, accelerator, subjects_information):
-        input_prefix = model.modality_full + "_"
-        segmentation_image = image_processing.image_reorient(segmentation_image, subject_orientation_codes[input_prefix])
-
-        model_information = {"model_directory": model.directory}
-        performance_observer.record_phase("Writing Images and Statistics")
-
-        seg_file_name = subject_file_stems[input_prefix]
-        segmentation_image_path = os.path.join(segmentations_dir, f"{model.multilabel_prefix}segmentation_{seg_file_name}.nii.gz")
-        output_manager.log_update(f'     - Writing segmentation for {model}')
-        model_information["segmentation_file"] = segmentation_image_path
-        SimpleITK.WriteImage(segmentation_image, segmentation_image_path)
-        output_manager.log_update(f'     - Writing organ indices for {model}')
-        model.organ_indices_to_json(segmentations_dir)
-
-        if single_labels:
-            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] extracting individual labels {subject_name}! {constants.ANSI_RESET}')
-            output_manager.log_update(f'     - Extracting individual labels and writing them for {model}')
-            individual_segmentations_dir = os.path.join(segmentations_dir, "individual_segmentations")
-            image_processing.extract_labels_and_write(segmentation_image, model, individual_segmentations_dir)
-            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] labels extracted and written {subject_name}! {constants.ANSI_RESET}')
-
-        # -----------------------------------------------
-        # VOLUME STATISTICS
-        # -----------------------------------------------
-        output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting volume statistics for {subject_name} ({model})...')
-        output_manager.log_update(f'     - Extracting volume statistics for {model}')
-        out_vol_stats_csv = os.path.join(stats_dir, f"{model.multilabel_prefix}{subject_name}_volume.csv")
-        image_processing.get_shape_statistics(segmentation_image, model, out_vol_stats_csv)
-        output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] Volume statistics extracted for {subject_name}! {constants.ANSI_RESET}')
-        model_information["VOL_stats_file"] = out_vol_stats_csv
-        time.sleep(1)
-
-        # -----------------------------------------------
-        # INTENSITY STATISTICS — for every available modality
-        # -----------------------------------------------
-        for modality_prefix, raw_image in subject_available_images_raw.items():
-            modality_label = modality_prefix.rstrip("_")
-            output_manager.spinner_update(f'[{subject_index + 1}/{number_of_subjects}] Extracting {modality_label} intensity statistics for {subject_name} ({model})...')
-            output_manager.log_update(f'     - Extracting {modality_label} intensity statistics for {model}')
-
-            if modality_prefix == input_prefix:
-                stats_segmentation = segmentation_image
-            else:
-                stats_segmentation = image_processing.ImageResampler.reslice_identity(raw_image, segmentation_image, is_label_image=True)
-
-            out_intensity_csv = os.path.join(stats_dir, f"{model.multilabel_prefix}{subject_name}_{modality_label}_intensity.csv")
-            image_processing.get_intensity_statistics(raw_image, stats_segmentation, model, out_intensity_csv)
-            output_manager.spinner_update(f'{constants.ANSI_GREEN} [{subject_index + 1}/{number_of_subjects}] {modality_label} intensity statistics extracted for {subject_name}! {constants.ANSI_RESET}')
-            model_information[f"{modality_label}_intensity_stats_file"] = out_intensity_csv
-            time.sleep(1)
-
-        performance_observer.time_phase()
-        moose_information["models"][model.model_identifier] = model_information
-
-    system.write_information_json(moose_information, moose_dir)
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    output_manager.spinner_update(f' {constants.ANSI_GREEN}[{subject_index + 1}/{number_of_subjects}] Prediction done for {subject_name} using {len(model_names)} models: '
-                                  f' | Elapsed time: {round(elapsed_time / 60, 1)} min{constants.ANSI_RESET}')
-    time.sleep(1)
-    output_manager.log_update(f' Prediction done for {subject_name} using {len(model_names)} models: {", ".join(model_names)}!' 
-                              f' | Elapsed time: {round(elapsed_time / 60, 1)} min')
-
-    performance_observer.record_phase("Total Processing Done")
-    if benchmark:
-        performance_observer.off()
-        performance_observer.plot_performance(stats_dir)
-        subject_peak_performance = performance_observer.get_peak_resources()
-
-    return subject_peak_performance
+    with output_manager.manage_nnUNet_output(), \
+            streaming.MoosePredictor(model_names, accelerator, output_manager=output_manager) as predictor:
+        # a file gives files, an image gives images
+        outputs = {model.model_identifier: {'file': streaming.segmentation_file(model, output_dir, file_name)}
+                   for model in predictor.requested} if isinstance(input_data, str) else {}
+        results = predictor.predict([image], [outputs])[0]
+    # a model whose roi is not in the image gives no result
+    used_models = [model for model in predictor.requested if results.get(model.model_identifier) is not None]
+    segmentations = [results[model.model_identifier] for model in used_models]
+    if isinstance(input_data, tuple):       # an array gives arrays
+        segmentations = [SimpleITK.GetArrayFromImage(segmentation) for segmentation in segmentations]
+    return segmentations, used_models
 
 
 if __name__ == '__main__':

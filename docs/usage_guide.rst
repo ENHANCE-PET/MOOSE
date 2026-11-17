@@ -10,6 +10,13 @@ Engage with MOOSE 2.0's command-line tool effortlessly. The tool requires the di
 
    moosez -d <path_to_image_dir> -m <model_name>
 
+Without ``-m`` the default model ``clin_ct_anatomy`` runs. Image files (or folders of image files) without subject
+folders, with all outputs in one folder:
+
+.. code-block:: bash
+
+   moosez -i <image_files_or_folders> -o <output_dir> -m <model_name>
+
 For guidance:
 
 .. code-block:: bash

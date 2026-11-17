@@ -17,10 +17,8 @@ pyfiglet
 natsort
 pillow
 colorama
-dask
 rich
 dicom2nifti
 emoji
-dask[distributed]
 opencv-python
 

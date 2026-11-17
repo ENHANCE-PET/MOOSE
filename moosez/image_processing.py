@@ -18,16 +18,12 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 import SimpleITK
-import itertools
-import dask.array as da
 import numpy as np
 import pandas as pd
 import nibabel
 import os
-import math
 import tempfile
-from typing import Union, Tuple, List, Dict
-from moosez.constants import CHUNK_THRESHOLD_RESAMPLING, CHUNK_THRESHOLD_INFERRING
+from typing import Dict
 from moosez import models
 
 
@@ -80,14 +76,12 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model: models.Model, out_c
     :type out_csv: str
     :return: None
     """
-    label_shape_filter = SimpleITK.LabelShapeStatisticsImageFilter()
-    label_shape_filter.Execute(mask_image)
-
-    stats_list = [(label_shape_filter.GetPhysicalSize(i),) for i in label_shape_filter.GetLabels() if
-                  i != 0]  # exclude background label
+    # voxels per label times the volume of a voxel (what LabelShapeStatisticsImageFilter's GetPhysicalSize gives)
+    voxel_counts = label_voxel_counts(mask_image)
+    voxel_volume = float(np.prod(mask_image.GetSpacing()))
     columns = ['Volume(mm3)']
-    stats_df = pd.DataFrame(data=stats_list, index=[i for i in label_shape_filter.GetLabels() if i != 0],
-                            columns=columns)
+    stats_df = pd.DataFrame(data=[(count * voxel_volume,) for count in voxel_counts.values()],
+                            index=list(voxel_counts), columns=columns)
 
     labels_present = stats_df.index.to_list()
     regions_present = []
@@ -101,38 +95,25 @@ def get_shape_statistics(mask_image: SimpleITK.Image, model: models.Model, out_c
     stats_df.to_csv(out_csv)
 
 
-def extract_labels_and_write(multilabel_image: SimpleITK.Image, model: models.Model, output_directory: str):
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
+def label_voxel_counts(label_image: SimpleITK.Image) -> Dict[int, int]:
+    """
+    The number of voxels of every label in the image, without the background, in ascending order of the labels.
 
-    label_stats = SimpleITK.LabelStatisticsImageFilter()
-    label_stats.Execute(multilabel_image, multilabel_image)
-    unique_labels = label_stats.GetLabels()
-
-    for label in unique_labels:
-        if label == 0:
-            continue
-
-        if label not in model.organ_indices:
-            continue
-
-        label_mask = SimpleITK.BinaryThreshold(multilabel_image, lowerThreshold=label, upperThreshold=label, insideValue=1, outsideValue=0)
-
-        label_name = model.organ_indices[label]
-        file_path = os.path.join(output_directory, f"{label_name}.nii.gz")
-        SimpleITK.WriteImage(label_mask, file_path)
+    :param label_image: The multilabel mask image.
+    :type label_image: sitk.Image
+    :return: The voxel count per label present.
+    :rtype: Dict[int, int]
+    """
+    labels = SimpleITK.GetArrayViewFromImage(label_image)
+    counts = np.zeros(int(labels.max()) + 1, dtype=np.int64)
+    for label_slice in labels:  # per slice: np.bincount copies what it counts to int64
+        counts += np.bincount(label_slice.ravel(), minlength=len(counts))
+    return {int(label): int(counts[label]) for label in np.flatnonzero(counts) if label != 0}
 
 
 def image_get_orientation_code(image: SimpleITK.Image) -> str:
     image_orientation_code = SimpleITK.DICOMOrientImageFilter_GetOrientationFromDirectionCosines(image.GetDirection())
     return image_orientation_code
-
-
-def image_reorient(image: SimpleITK.Image, new_orientation_code: str) -> SimpleITK.Image:
-    image_orientation_code = image_get_orientation_code(image)
-    if image_orientation_code != new_orientation_code:
-        return SimpleITK.DICOMOrient(image, new_orientation_code)
-    return image
 
 
 def image_read(image_path: str) -> SimpleITK.Image:
@@ -149,247 +130,16 @@ def image_read(image_path: str) -> SimpleITK.Image:
     return image
 
 
-def reverse_axes(axes: tuple | list) -> tuple:
-    axes_reversed = reversed(axes)
-    return tuple(axes_reversed)
+def reslice_label_image(reference_image: SimpleITK.Image, label_image: SimpleITK.Image) -> SimpleITK.Image:
+    """
+    Reslices a label image onto the grid of another image (nearest neighbour), as int32.
 
-
-class ImageChunker:
-    @staticmethod
-    def __compute_interior_indices(axis_length: int, number_of_chunks: int) -> Tuple[List[int], List[int]]:
-        chunk_base_size = axis_length // number_of_chunks
-        remaining_slices = axis_length % number_of_chunks
-
-        start_indices = []
-        end_indices = []
-        chunk_current_index = 0
-
-        for i in range(number_of_chunks):
-            chunk_size = chunk_base_size + (1 if i < remaining_slices else 0)
-            start_indices.append(chunk_current_index)
-            chunk_current_index += chunk_size
-            end_indices.append(chunk_current_index)
-
-        return start_indices, end_indices
-
-    @staticmethod
-    def __chunk_array_with_overlap(array_shape: Union[List[int], Tuple[int, ...]], splits_per_dimension: Union[List[int], Tuple[int, ...]], overlap_per_dimension: Union[List[int], Tuple[int, ...]]) -> List[Dict]:
-        dims = array_shape
-        num_dims = len(array_shape)
-        starts_list = []
-        ends_list = []
-
-        for dimension_index in range(num_dims):
-            axis_length = dims[dimension_index]
-            number_of_chunks = splits_per_dimension[dimension_index]
-            start_index, end_index = ImageChunker.__compute_interior_indices(axis_length, number_of_chunks)
-            starts_list.append(start_index)
-            ends_list.append(end_index)
-
-        chunk_info = []
-        for idx in itertools.product(*(range(len(s)) for s in starts_list)):
-            chunk_slice = []
-            interior_slice = []
-            dest_slice = []
-            for dimension_index, chunk_index in enumerate(idx):
-                start_index = starts_list[dimension_index]
-                end_index = ends_list[dimension_index]
-                axis_length = dims[dimension_index]
-                number_of_chunks = splits_per_dimension[dimension_index]
-                overlap = overlap_per_dimension[dimension_index]
-
-                start = max(0, start_index[chunk_index] - overlap if chunk_index > 0 else start_index[chunk_index])
-                end = min(axis_length, end_index[chunk_index] + overlap if chunk_index < number_of_chunks - 1 else end_index[chunk_index])
-
-                start_in_chunk = start_index[chunk_index] - start
-                end_in_chunk = start_in_chunk + (end_index[chunk_index] - start_index[chunk_index])
-
-                start_in_full = start_index[chunk_index]
-                end_in_full = end_index[chunk_index]
-
-                chunk_slice.append(slice(start, end))
-                interior_slice.append(slice(start_in_chunk, end_in_chunk))
-                dest_slice.append(slice(start_in_full, end_in_full))
-
-            chunk_info.append({
-                'chunk_slice': tuple(chunk_slice),
-                'interior_slice': tuple(interior_slice),
-                'dest_slice': tuple(dest_slice)
-            })
-
-        return chunk_info
-
-    @staticmethod
-    def array_to_chunks(image_array: np.ndarray, splits_per_dimension: Union[List[int], Tuple[int, ...]], overlap_per_dimension: Union[List[int], Tuple[int, ...]]) -> Tuple[List[np.ndarray], List[Dict]]:
-        chunk_info = ImageChunker.__chunk_array_with_overlap(image_array.shape, splits_per_dimension, overlap_per_dimension)
-        image_chunks = []
-        positions = []
-
-        for info in chunk_info:
-            image_chunk = image_array[info['chunk_slice']]
-            positions.append({
-                'interior_slice': info['interior_slice'],
-                'dest_slice': info['dest_slice']
-            })
-            image_chunks.append(image_chunk)
-
-        return image_chunks, positions
-
-    @staticmethod
-    def chunks_to_array(image_chunks: List[np.ndarray], image_chunk_positions: List[Dict], final_shape: Union[List[int], Tuple[int, ...]]) -> np.ndarray:
-        final_arr = np.empty(final_shape, dtype=image_chunks[0].dtype)
-        for image_chunk, image_chunk_position in zip(image_chunks, image_chunk_positions):
-            interior_region = image_chunk[image_chunk_position['interior_slice']]
-            final_arr[image_chunk_position['dest_slice']] = interior_region
-
-        return final_arr
-
-    @staticmethod
-    def determine_splits(image_array: np.ndarray) -> Tuple:
-        image_shape = image_array.shape
-        splits = []
-        for axis in image_shape:
-            if axis == 1:
-                split = 1
-            else:
-                split = max(1, math.ceil(axis / CHUNK_THRESHOLD_INFERRING))
-            splits.append(split)
-
-        return tuple(splits)
-
-
-class ImageResampler:
-    @staticmethod
-    def chunk_along_axis(axis: int) -> int:
-        """
-        Determines the maximum number of evenly-sized chunks that the axis can be split into.
-        Each chunk is at least of size CHUNK_THRESHOLD.
-
-        :param axis: Length of the axis.
-        :type axis: int
-        :return: The maximum number of evenly-sized chunks.
-        :rtype: int
-        :raises ValueError: If axis is negative or if CHUNK_THRESHOLD is less than or equal to 0.
-        """
-        # Check for negative input values
-        if axis < 0:
-            raise ValueError('Axis must be non-negative')
-
-        if CHUNK_THRESHOLD_RESAMPLING <= 0:
-            raise ValueError('CHUNK_THRESHOLD must be greater than 0')
-
-        # If the axis is smaller than the threshold, it cannot be split into smaller chunks
-        if axis < CHUNK_THRESHOLD_RESAMPLING:
-            return 1
-
-        # Determine the maximum number of chunks that the axis can be split into
-        split = axis // CHUNK_THRESHOLD_RESAMPLING
-
-        # Reduce the number of chunks until the axis is evenly divisible by split
-        while axis % split != 0:
-            split -= 1
-
-        return split
-
-    @staticmethod
-    def resample_chunk_SimpleITK(image_chunk: np.ndarray, input_spacing_xyz: Tuple, interpolation_method: int,
-                                 output_spacing_xyz: Tuple, output_size_xyz: Tuple) -> np.ndarray:
-        """
-        Resamples a dask array chunk.
-
-        :param image_chunk: The chunk (part of an image) to be resampled.
-        :type image_chunk: da.array
-        :param input_spacing_xyz: The original spacing of the chunk (part of an image).
-        :type input_spacing_xyz: tuple
-        :param interpolation_method: SimpleITK interpolation type.
-        :type interpolation_method: int
-        :param output_spacing_xyz: Spacing of the newly resampled chunk.
-        :type output_spacing_xyz: tuple
-        :param output_size_xyz: Size of the newly resampled chunk.
-        :type output_size_xyz: tuple
-        :return: The resampled chunk (part of an image).
-        :rtype: da.array
-        """
-        sitk_image_chunk = SimpleITK.GetImageFromArray(image_chunk)
-        sitk_image_chunk.SetSpacing(input_spacing_xyz)
-
-        resampled_sitk_image = SimpleITK.Resample(sitk_image_chunk, output_size_xyz, SimpleITK.Transform(),
-                                                  interpolation_method, sitk_image_chunk.GetOrigin(), output_spacing_xyz,
-                                                  sitk_image_chunk.GetDirection(), 0.0,
-                                                  sitk_image_chunk.GetPixelIDValue())
-
-        resampled_array = SimpleITK.GetArrayFromImage(resampled_sitk_image)
-        return resampled_array
-
-    @staticmethod
-    def resample_image_SimpleITK_DASK_array(sitk_image: SimpleITK.Image, interpolation: str,
-                                            output_spacing_zyx: Tuple[float, float, float] = (1.5, 1.5, 1.5),
-                                            output_size_zyx: Union[Tuple[float, float, float], None] = None) -> np.ndarray:
-        if interpolation == 'nearest':
-            interpolation_method = SimpleITK.sitkNearestNeighbor
-        elif interpolation == 'linear':
-            interpolation_method = SimpleITK.sitkLinear
-        elif interpolation == 'bspline':
-            interpolation_method = SimpleITK.sitkBSpline
-        else:
-            raise ValueError('The interpolation method is not supported.')
-
-        input_spacing_xyz = sitk_image.GetSpacing()
-        input_spacing_zyx = reverse_axes(input_spacing_xyz)
-        input_size_xyz = sitk_image.GetSize()
-        input_size_zyx = reverse_axes(input_size_xyz)
-        input_chunks_xyz = [axis / ImageResampler.chunk_along_axis(axis) for axis in input_size_xyz]
-        input_chunks_zyx = reverse_axes(input_chunks_xyz)
-
-        array_dask = da.from_array(SimpleITK.GetArrayViewFromImage(sitk_image), chunks=input_chunks_zyx)
-
-        if output_size_zyx is not None:
-            output_spacing_zyx = [input_spacing_zyx[i] * (input_size_zyx[i] / output_size_zyx[i]) for i in range(len(input_spacing_zyx))]
-
-        output_spacing_xyz = reverse_axes(output_spacing_zyx)
-        output_chunks_xyz = [round(input_chunks_xyz[i] * (input_spacing_xyz[i] / output_spacing_xyz[i])) for i in range(len(input_chunks_xyz))]
-        output_chunks_zyx = reverse_axes(output_chunks_xyz)
-
-        result = da.map_blocks(ImageResampler.resample_chunk_SimpleITK, array_dask, input_spacing_xyz, interpolation_method,
-                               output_spacing_xyz, output_chunks_xyz, chunks=output_chunks_zyx, meta=np.array(()), dtype=np.float32)
-
-        return result.compute()
-
-    @staticmethod
-    def reslice_identity(reference_image: SimpleITK.Image, moving_image: SimpleITK.Image,
-                         output_image_path: Union[str, None] = None, is_label_image: bool = False) -> SimpleITK.Image:
-        """
-        Reslices an image to the same space as another image.
-
-        :param reference_image: The reference image.
-        :type reference_image: SimpleITK.Image
-        :param moving_image: The image to reslice to the reference image.
-        :type moving_image: SimpleITK.Image
-        :param output_image_path: Path to the resliced image. Default is None.
-        :type output_image_path: str
-        :param is_label_image: Determines if the image is a label image. Default is False.
-        :type is_label_image: bool
-        :return: The resliced image as SimpleITK.Image.
-        :rtype: SimpleITK.Image
-        """
-        resampler = SimpleITK.ResampleImageFilter()
-        resampler.SetReferenceImage(reference_image)
-
-        if is_label_image:
-            resampler.SetInterpolator(SimpleITK.sitkNearestNeighbor)
-        else:
-            resampler.SetInterpolator(SimpleITK.sitkLinear)
-
-        resampled_image = resampler.Execute(moving_image)
-        resampled_image = SimpleITK.Cast(resampled_image, SimpleITK.sitkInt32)
-        if output_image_path is not None:
-            SimpleITK.WriteImage(resampled_image, output_image_path)
-        return resampled_image
-
-    @staticmethod
-    def resample_segmentation(reference_image: SimpleITK.Image, segmentation_image: SimpleITK.Image):
-        resampled_sitk_image = SimpleITK.Resample(segmentation_image, reference_image.GetSize(), SimpleITK.Transform(),
-                                                  SimpleITK.sitkNearestNeighbor, reference_image.GetOrigin(),
-                                                  reference_image.GetSpacing(), reference_image.GetDirection(), 0.0,
-                                                  segmentation_image.GetPixelIDValue())
-        return resampled_sitk_image
+    :param reference_image: The image whose grid the labels go to.
+    :type reference_image: SimpleITK.Image
+    :param label_image: The label image to reslice.
+    :type label_image: SimpleITK.Image
+    :return: The resliced label image.
+    :rtype: SimpleITK.Image
+    """
+    resliced = SimpleITK.Resample(label_image, reference_image, SimpleITK.Transform(), SimpleITK.sitkNearestNeighbor)
+    return SimpleITK.Cast(resliced, SimpleITK.sitkInt32)
