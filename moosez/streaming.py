@@ -493,12 +493,12 @@ def _run(moose: MoosePredictor, subjects: list, outputs: List[Dict[str, dict]], 
 def run_subjects(subjects: List[str], requested_models: Sequence[Union[str, models.Model]],
                  moose_directories: Dict[str, Tuple[str, str, str]], accelerator: str,
                  output_manager: Optional[system.OutputManager] = None, single_labels: bool = False,
-                 statistics: bool = True) -> None:
+                 statistics: bool = False) -> None:
     """
     moosez -d: every subject folder with every requested model whose modality the subject has. Writes into
     <subject>/moosez-<timestamp>/ (moose_directories: file_utilities.moose_folder_structure) the label map and organ
-    indices of each model, its volume statistics and its intensity statistics for each of the requested models'
-    modalities the subject has, and the subject's MOOSE_information.json.
+    indices of each model, with statistics also its volume statistics and its intensity statistics for each of the
+    requested models' modalities the subject has, and the subject's MOOSE_information.json.
     """
     if output_manager is None:
         output_manager = system.OutputManager(False, False)
@@ -553,11 +553,12 @@ def image_file_stem(file_path: str) -> str:
 
 def run_files(image_files: List[str], output_directory: str, requested_models: Sequence[Union[str, models.Model]],
               accelerator: str, output_manager: system.OutputManager, single_labels: bool = False,
-              statistics: bool = True) -> dict:
+              statistics: bool = False) -> dict:
     """
     moosez -i ... -o ...: a flat list of image files, each with every requested model. Writes into output_directory,
-    per model and image, <prefix>segmentation_<stem>.nii.gz, once per model <prefix>organ_indices.json, and
-    stats/<prefix><stem>_volume.csv / _<modality>_intensity.csv. Returns the information for MOOSE_information.json.
+    per model and image, <prefix>segmentation_<stem>.nii.gz, once per model <prefix>organ_indices.json, and with
+    statistics stats/<prefix><stem>_volume.csv / _<modality>_intensity.csv. Returns the information for
+    MOOSE_information.json.
     """
     stems = [image_file_stem(f) for f in image_files]
     duplicates = sorted(stem for stem, count in Counter(stems).items() if count > 1)

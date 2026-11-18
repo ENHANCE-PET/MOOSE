@@ -346,7 +346,7 @@ def test_run_files_writes_the_outputs(tiny_model, tmp_path):
         SimpleITK.WriteImage(SimpleITK.DICOMOrient(synthetic_ct(seed), code), str(input_directory / f"case{seed}.nii.gz"))
     files = streaming.collect_image_files([str(input_directory)])
     information = streaming.run_files(files, str(output_directory), [tiny_model], "cpu", system.OutputManager(False, False),
-                                      single_labels=True)
+                                      single_labels=True, statistics=True)
     prefix = "clin_CT_tiny_"
     for seed in range(2):
         segmentation = output_directory / f"{prefix}segmentation_case{seed}.nii.gz"
@@ -369,7 +369,8 @@ def test_a_broken_image_does_not_stop_the_batch(tiny_model, tmp_path):
         SimpleITK.WriteImage(synthetic_ct(seed), str(input_directory / f"case{seed}.nii.gz"))
     (input_directory / "broken.nii.gz").write_bytes(b"not an image")
     files = streaming.collect_image_files([str(input_directory)])
-    information = streaming.run_files(files, str(output_directory), [tiny_model], "cpu", system.OutputManager(False, False))
+    information = streaming.run_files(files, str(output_directory), [tiny_model], "cpu", system.OutputManager(False, False),
+                                      statistics=True)
     assert set(information[tiny_model]["cases"]) == {"case0", "case1"}
     assert not (output_directory / "clin_CT_tiny_segmentation_broken.nii.gz").exists()
     for seed in range(2):
@@ -573,6 +574,7 @@ def test_single_label_files_of_one_folder_wait_for_the_model_before(tiny_model, 
 
 
 def test_run_subjects_writes_each_subjects_information(tiny_model, tmp_path):
+    """Statistics are opt-in: without them no stats folder and no statistics entries."""
     subjects = []
     for seed in range(2):
         subject = tmp_path / f"subject{seed}"
@@ -580,13 +582,15 @@ def test_run_subjects_writes_each_subjects_information(tiny_model, tmp_path):
         SimpleITK.WriteImage(synthetic_ct(seed), str(subject / f"CT_subject{seed}.nii.gz"))
         subjects.append(str(subject))
     directories = {subject: file_utilities.moose_folder_structure(subject) for subject in subjects}
-    streaming.run_subjects(subjects, [tiny_model], directories, "cpu", statistics=False)
+    streaming.run_subjects(subjects, [tiny_model], directories, "cpu")
     for seed, subject in enumerate(subjects):
-        moose_directory, segmentations_directory, _ = directories[subject]
+        moose_directory, segmentations_directory, stats_directory = directories[subject]
         information = json.load(open(os.path.join(moose_directory, "MOOSE_information.json")))
+        assert set(information["models"][tiny_model]) == {"model_directory", "segmentation_file"}
         assert information["models"][tiny_model]["segmentation_file"] == \
             os.path.join(segmentations_directory, f"clin_CT_tiny_segmentation_CT_subject{seed}.nii.gz")
         assert os.path.isfile(information["models"][tiny_model]["segmentation_file"])
+        assert not os.path.exists(stats_directory)
 
 
 def test_moosez_installs_a_model_archive_into_a_models_directory_that_does_not_exist_yet(tmp_path, monkeypatch):

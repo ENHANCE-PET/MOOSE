@@ -186,6 +186,9 @@ class OutputManager:
         self.console_update(" Fully Automated, Semantic Segmentation of Whole-Body [18F]-FDG PET/CT Images Based on Data-Centric Artificial Intelligence")
         self.console_update(" 10.2967/jnumed.122.264063")
         self.console_update(" ")
+        self.console_update(" Segment Everything, Materialize Nothing: Exact Streaming Inference for Many-Class 3D Segmentation")
+        self.console_update(" arXiv:XXXX.XXXXX (streaming inference and the clin_ct_anatomy model)")
+        self.console_update(" ")
         self.console_update(" Copyright 2022, Quantitative Imaging and Medical Physics Team, Medical University of Vienna")
 
     def display_docker_usage(self, docker_bind: str, example_model: str):

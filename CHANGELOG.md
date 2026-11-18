@@ -27,10 +27,11 @@ Requires nnU-Net 2.9.0 or newer (`nnunetv2>=2.9.0`).
   outputs go into one folder.
 - `-mi <archive.zip>` installs a model from a zip archive that holds its model folder, and prints the model's name.
 - `-m` is optional (default: `clin_ct_anatomy`).
-- `-ns` skips the statistics.
 - `MoosePredictor` (Python): models loaded once, any number of images.
+- The start banner also cites the streaming-inference paper.
 
 ### Changed
+- Statistics are opt-in: `-s` writes the volume and intensity statistics (`stats/`). 3.2.2 always wrote them.
 - `-herd` starts one process per GPU, each with its share of the subjects (`-herd N`: N GPUs). It was N parallel
   instances.
 - `-b` writes one row for the whole run. There are no per-subject rows or plots any more.

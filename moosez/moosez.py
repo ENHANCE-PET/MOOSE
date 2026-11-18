@@ -85,10 +85,10 @@ def main():
     )
 
     parser.add_argument(
-        "-ns", "--no_statistics",
+        "-s", "--statistics",
         action="store_true",
         default=False,
-        help="Skip the volume and intensity statistics."
+        help="Also write the volume and intensity statistics of each label map (csv files in stats/)."
     )
 
     parser.add_argument(
@@ -254,7 +254,7 @@ def main():
         if args.main_directory or not args.output:
             parser.error("-i needs -o and cannot be combined with -d")
         moose_files(args.input, os.path.abspath(args.output), model_names, output_manager, args.benchmark,
-                    args.single_labels, not args.no_statistics)
+                    args.single_labels, args.statistics)
         return
 
     if not args.main_directory:
@@ -341,12 +341,12 @@ def main():
         with concurrent.futures.ProcessPoolExecutor(herd, mp_context=mp.get_context('spawn')) as executor:
             shares = [executor.submit(streaming.run_subjects, moose_compliant_subjects[gpu::herd], model_names,
                                       moose_directories, f"{accelerator}:{gpu}", None, single_labels,
-                                      not args.no_statistics) for gpu in range(herd)]
+                                      args.statistics) for gpu in range(herd)]
         for share in shares:        # a process that failed fails the run, once the others are done
             share.result()
     else:
         streaming.run_subjects(moose_compliant_subjects, requested_models, moose_directories, accelerator,
-                               output_manager, single_labels, not args.no_statistics)
+                               output_manager, single_labels, args.statistics)
     performance_observer.record_phase("Total Processing Done")
     if benchmark:
         performance_observer.off()
@@ -403,7 +403,7 @@ def prepare_models(model_names: List[str], output_manager: system.OutputManager)
 
 
 def moose_files(inputs: List[str], output_directory: str, model_names: List[str], output_manager: system.OutputManager,
-                benchmark: bool = False, single_labels: bool = False, compute_statistics: bool = True) -> None:
+                benchmark: bool = False, single_labels: bool = False, compute_statistics: bool = False) -> None:
     """
     moosez -i ... -o ...: image files and folders of image files (no subject folders); every image is given to every
     model, and the outputs go flat into output_directory (streaming.run_files).

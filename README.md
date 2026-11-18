@@ -208,7 +208,7 @@ moosez -d <path_to_image_dir> \
  ```
 MOOSE 3.2 reads each image once and runs every model on it—no fuss, no hassle. 🙌✨
 
-Leave out `-m` to run the default model `clin_ct_anatomy`. Add `-ns` to skip the volume and intensity statistics, and `-sl` to also write one file per structure.
+Leave out `-m` to run the default model `clin_ct_anatomy`. Add `-s` to also write the volume and intensity statistics, and `-sl` to also write one file per structure.
 
 #### *Image Files Instead of Subject Folders* 📄➡️📁
 
@@ -221,7 +221,7 @@ moosez -i <image_files_or_folders> -o <output_dir> [-m <model_name1> <model_name
 - Every image goes to every model; no modality prefix is needed. Images: `.nii.gz`, `.nii`, `.mha`, `.nrrd`; a folder contributes its image files, not its subfolders.
 - Per model and image: `<prefix>segmentation_<image name>.nii.gz`, with `<prefix>` = `clin_CT_anatomy_`, `clin_CT_organs_`, ...
 - Per model: `<prefix>organ_indices.json`.
-- Statistics: `stats/<prefix><image name>_volume.csv` and `_CT_intensity.csv`.
+- With `-s`: `stats/<prefix><image name>_volume.csv` and `_CT_intensity.csv`.
 - With `-sl`: `individual_segmentations/<prefix><image name>/<structure>.nii.gz`.
 - Label maps come out on the grid and in the orientation of the input image.
 
