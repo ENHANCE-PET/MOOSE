@@ -68,10 +68,10 @@ moosez.moosez module
    :undoc-members:
    :show-inheritance:
 
-moosez.predict module
----------------------
+moosez.streaming module
+-----------------------
 
-.. automodule:: moosez.predict
+.. automodule:: moosez.streaming
    :members:
    :undoc-members:
    :show-inheritance:

@@ -14,16 +14,13 @@ Welcome to the new and improved MOOSE (v3.2), where speed and efficiency aren't 
 Like a moose sprinting through the woods (okay, maybe not that fast), MOOSE 3.2 is built for speed. It's 3x faster than its older sibling, MOOSE 2.0, which was already no slouch. Blink, and you'll miss it. ⚡
 
 **💻 Memory: Light as a Feather, Strong as a Bull**  
-Forget "Does it fit on my laptop?" The answer is YES. 🕺 Thanks to Dask wizardry, all that data stays in memory. No disk writes, no fuss. Run total-body CT on that 'decent' laptop you bought three years ago and feel like you’ve upgraded. 🥳
+Forget "Does it fit on my laptop?" The answer is YES. 🕺 Every model runs through nnU-Net's streaming inference (nnU-Net 2.9.0): the label map is built slab by slab at the resolution of your image, and the per-class probabilities of the whole image are never held in memory. No chunking, no disk writes, no fuss. Run total-body CT on that 'decent' laptop you bought three years ago and feel like you’ve upgraded. 🥳
 
 **🛠️ Any OS, Anytime, Anywhere**  
 Windows, Mac, Linux—we don’t play favorites. 🍏 Mac users, you’re in luck: MOOSE runs natively on MPS, getting you GPU-like speeds without the NVIDIA guilt. 🚀 
 
 **🎯 Trained to Perfection**  
 This is our best model yet, trained on a whopping 1.7k datasets. More data, better results. Plus you can run multiple models at the same time - You'll be slicing through images like a knife through warm butter. (Or tofu, if you prefer.) 🧈🔪
-
-**🖥️ The 'Herd' Mode 🖥️**  
-Got a powerhouse server just sitting around? Time to let the herd loose! Flip the **Herd Mode** switch and watch MOOSE multiply across your compute like... well, like a herd of moose! 🦌🦌🦌 The more hardware you have, the faster your inference gets done. Scale up, speed up, and make every bit of your server earn its oats. 🌾💨
 
 MOOSE 3.2 isn't just an upgrade—it's a lifestyle. A faster, leaner, and stronger lifestyle. Ready to join the herd? 🦌✨
 
@@ -37,6 +34,7 @@ MOOSE 3.2 offers a wide range of segmentation models catering to various clinica
 
 | **Model Name**        | **Intensities and Regions**                                                                                                                                                                                                                           |
 |-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `clin_ct_anatomy`     | The 125 structures of `clin_ct_cardiac`, `clin_ct_muscles`, `clin_ct_organs`, `clin_ct_peripheral_bones`, `clin_ct_ribs` and `clin_ct_vertebrae` in one model, without brain, skull and trachea. Ids 1-125 follow that order (1-13 cardiac, 14-23 muscles, 24-40 organs, 41-70 peripheral bones, 71-97 ribs, 98-125 vertebrae); names in `clin_CT_anatomy_organ_indices.json`. The default model, see [below](#the-default-model-clin_ct_anatomy-). |
 | `clin_ct_body`        | 1:Legs, 2:Body, 3:Head, 4:Arms                                                                                                                                                                                                                        |
 | `clin_ct_cardiac`     | 1: heart_myocardium, 2: heart_atrium_left, 3: heart_atrium_right, 4: heart_ventricle_left, 5: heart_ventricle_right, 6: aorta, 7: iliac_artery_left, 8: iliac_artery_right, 9: iliac_vena_left, 10: iliac_vena_right, 11: inferior_vena_cava, 12: portal_splenic_vein, 13: pulmonary_artery|
 | `clin_ct_digestive`   | 1: colon, 2: duodenum, 3: esophagus, 4: small_bowel                                                                                                                                                                  |                                                                                      
@@ -56,6 +54,18 @@ MOOSE 3.2 offers a wide range of segmentation models catering to various clinica
 
 
 Each model is designed to provide high-quality segmentation with MOOSE 3.2's optimized algorithms and data-centric AI principles.
+
+### The default model `clin_ct_anatomy` 🦴🫀
+
+`clin_ct_anatomy` runs when no model is named (`-m` left out, `moose(image)`). One model does the work of the six models it replaces, in a single pass over the image.
+
+- **Weights:** not downloaded automatically. Install them once from the model archive; moosez puts them into the models folder of the installed package and names the model:
+   ```bash
+   moosez -mi enhance_pet_125class_resenc192.zip          # -> Installed clin_ct_anatomy
+   moosez -i <image_files_or_folders> -o <output_dir> -m clin_ct_anatomy
+   ```
+  `-m clin_ct_anatomy` can be left out: it is the default model.
+- **Licence of these weights:** CC BY-NC 4.0, because part of the training data carries that licence. The other models keep the licence in the badge above.
 
 ## Supported Modalities 🩻
 
@@ -93,6 +103,7 @@ The configuration lives in `moosez.constants.ALLOWED_MODALITY_CONFIGURATIONS`.
 - Ferrara, D., Pires, M., Gutschmayer, S. et al. Sharing a whole-/total-body [18F]FDG-PET/CT dataset with CT-derived segmentations: an ENHANCE.PET initiative. Sci Data (2026). https://doi.org/10.1038/s41597-026-07218-y
 - Shiyam Sundar, L. K., Yu, J., Muzik, O., Kulterer, O., Fueger, B. J., Kifjak, D., Nakuz, T., Shin, H. M., Sima, A. K., Kitzmantl, D., Badawi, R. D., Nardo, L., Cherry, S. R., Spencer, B. A., Hacker, M., & Beyer, T. (2022). Fully-automated, semantic segmentation of whole-body <sup>18</sup>F-FDG PET/CT images based on data-centric artificial intelligence. *Journal of Nuclear Medicine*. https://doi.org/10.2967/jnumed.122.264063
 - Isensee, F., Jaeger, P.F., Kohl, S.A.A. et al. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods 18, 203–211 (2021). https://doi.org/10.1038/s41592-020-01008-z
+- Isensee, F., Wasserthal, J., Shiyam Sundar, L. K., Rokuss, M., Langenberg, M., Ulrich Harsy, C., Happold, S. M., & Maier-Hein, K. H. (2026). Segment Everything, Materialize Nothing: Exact Streaming Inference for Many-Class 3D Segmentation. arXiv:XXXX.XXXXX. (streaming inference and the `clin_ct_anatomy` model)
 
 
 ## Requirements ✅
@@ -106,6 +117,12 @@ Before you dive into the incredible world of MOOSE 3.2, here are a few things yo
 - **GPU**: If speed is your game, an NVIDIA GPU is the name! MOOSE 3.2 leverages GPU acceleration to deliver results fast. Don't worry if you don't have one, though - it will still work, just at a slower pace.
 
 - **Python**: Ensure that you have Python 3.10 or newer installed on your system. MOOSE 3.2 likes to keep up with the latest, after all!
+
+- **nnU-Net**: 2.9.0 or newer (`nnunetv2>=2.9.0`), which brings the streaming inference. Until nnU-Net 2.9.0 is on PyPI, install it from GitHub first, then MOOSE:
+   ```bash
+   python -m pip install git+https://github.com/MIC-DKFZ/nnUNet.git
+   python -m pip install <path_to_this_folder>
+   ```
 
 So, that's it! Make sure you're geared up with these specifications, and you're all set to explore everything MOOSE 3.2 has to offer. 🚀🌐
 
@@ -189,20 +206,36 @@ moosez -d <path_to_image_dir> \
           clin_ct_ribs \
           clin_ct_vertebrae
  ```
-MOOSE 3.2 will handle each model one after the other—no fuss, no hassle. 🙌✨
+MOOSE 3.2 reads each image once and runs every model on it—no fuss, no hassle. 🙌✨
 
-#### *Herd Mode: Running Parallel Instances* 🦌💨💻
+Leave out `-m` to run the default model `clin_ct_anatomy`. Add `-s` to also write the volume and intensity statistics, and `-sl` to also write one file per structure.
 
-Got a powerful server or HPC? Let the herd roam! 🦌🚀 Use **Herd Mode** to run multiple MOOSE instances in parallel. Just add the `-herd` flag with the number of instances you wish to run simultaneously:
+#### *Image Files Instead of Subject Folders* 📄➡️📁
+
+Got a folder full of scans and no patience for subject folders? Hand MOOSE the image files (or folders of image files) with `-i` and an output folder with `-o`:
+
+```bash
+moosez -i <image_files_or_folders> -o <output_dir> [-m <model_name1> <model_name2> ...]
+```
+
+- Every image goes to every model; no modality prefix is needed. Images: `.nii.gz`, `.nii`, `.mha`, `.nrrd`; a folder contributes its image files, not its subfolders.
+- Per model and image: `<prefix>segmentation_<image name>.nii.gz`, with `<prefix>` = `clin_CT_anatomy_`, `clin_CT_organs_`, ...
+- Per model: `<prefix>organ_indices.json`.
+- With `-s`: `stats/<prefix><image name>_volume.csv` and `_CT_intensity.csv`.
+- With `-sl`: `individual_segmentations/<prefix><image name>/<structure>.nii.gz`.
+- Label maps come out on the grid and in the orientation of the input image.
+
+#### *Herd Mode: Several GPUs* 🦌💨💻
+
+Got a server with several GPUs? Let the herd roam! 🦌🚀 Add the `-herd` flag and MOOSE starts one process per GPU, each with its share of the subjects (`-herd 2` uses two GPUs):
 
 ```bash
 moosez -d <path_to_image_dir> \
        -m clin_ct_organs \
           clin_ct_ribs \
           clin_ct_vertebrae \
-       -herd 2
+       -herd
 ```
-MOOSE will run two instances at the same time, utilizing your compute power like a true multitasking pro. 💪👨‍💻👩‍💻
 
 And that's it! MOOSE 3.2 lets you process with ease and speed. ⚡✨
 
@@ -292,6 +325,23 @@ if __name__ == '__main__':
     accelerator = 'cuda'
     moose(input_file, models, output_directory, accelerator)
 ```
+
+#### *Many Images: `MoosePredictor`* 🦌🦌🦌
+
+`moose()` loads the models for every call. To segment many images, load them once:
+
+```python
+from moosez import MoosePredictor
+
+if __name__ == '__main__':
+    with MoosePredictor(['clin_ct_organs', 'clin_ct_ribs'], 'cuda') as predictor:
+        results = predictor.predict(['/path/to/ct_1.nii.gz', '/path/to/ct_2.nii.gz'])
+    # one dict per image: {model name: label map as a SimpleITK image on the input's grid}
+```
+
+- **Inputs:** `predict` takes file paths or SimpleITK images.
+- **Several modalities:** pass a dict per subject, `{'CT': ct_image, 'PT_FDG': pet_image}`; a model then gets the image of its modality.
+- **Reading ahead:** while the GPU predicts one image, threads read and preprocess the next ones and write the outputs of finished ones.
 
 #### Ready, Set, Segment! 🚀
 

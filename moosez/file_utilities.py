@@ -76,7 +76,7 @@ def get_modality_NIFTI_files(directory: str, modality_prefix: str) -> List[str]:
 
 def moose_folder_structure(parent_directory: str) -> Tuple[str, str, str]:
     """
-    Creates the moose folder structure.
+    Creates the moose folder structure. The stats directory is created when statistics are written (-s).
     
     :param parent_directory: The path to the parent directory.
     :type parent_directory: str
@@ -90,7 +90,6 @@ def moose_folder_structure(parent_directory: str) -> Tuple[str, str, str]:
     segmentation_dir = os.path.join(moose_dir, constants.SEGMENTATIONS_FOLDER)
     stats_dir = os.path.join(moose_dir, constants.STATS_FOLDER)
     create_directory(segmentation_dir)
-    create_directory(stats_dir)
     return moose_dir, segmentation_dir, stats_dir
 
 

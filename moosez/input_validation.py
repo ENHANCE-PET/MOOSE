@@ -20,17 +20,17 @@
 import os
 from typing import List
 from moosez import constants
-from moosez import workflows
+from moosez import models
 from moosez import system
 
 
-def determine_model_expectations(model_workflows: List[workflows.Workflow], output_manager: system.OutputManager) -> List[str]:
+def determine_model_expectations(requested_models: List[models.Model], output_manager: system.OutputManager) -> List[str]:
     """
-    Display expected modalities for the requested workflows and return the
+    Display expected modalities for the requested models and return the
     deduplicated list of required modality prefixes.
 
-    :param model_workflows: The model routine
-    :type model_workflows: List[workflows.Workflow]
+    :param requested_models: The requested models
+    :type requested_models: List[models.Model]
     :param output_manager: The output manager
     :type output_manager: system.OutputManager
     :return: A list of required modality prefixes.
@@ -45,17 +45,14 @@ def determine_model_expectations(model_workflows: List[workflows.Workflow], outp
     styles = [None, "cyan", None, None, None, None, None]
     table = output_manager.create_table(header, styles)
 
-    for model_nr, model_workflow in enumerate(model_workflows):
-        modalities, prefixes = model_workflow.target_model.get_expectation()
+    for model_nr, model in enumerate(requested_models):
+        modalities, prefixes = model.get_expectation()
         required_modalities = required_modalities + modalities
         required_prefixes = required_prefixes + prefixes
 
-        model_identifier = model_workflow.target_model.model_identifier
-        modality = model_workflow.target_model.modality
-        imaging = f"{model_workflow.target_model.imaging_type}ical".capitalize()
-        regions = str(model_workflow.target_model.organ_indices)
-        nr_training_data = model_workflow.target_model.nr_training_data
-        table.add_row(str(model_nr + 1), model_identifier, regions, imaging, modality, ', '.join(prefixes), nr_training_data)
+        imaging = f"{model.imaging_type}ical".capitalize()
+        table.add_row(str(model_nr + 1), model.model_identifier, str(model.organ_indices), imaging, model.modality,
+                      ', '.join(prefixes), model.nr_training_data)
 
     output_manager.console_update(table)
 
